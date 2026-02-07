@@ -13,7 +13,7 @@ export default class UniformResponse {
       status: props.status,
       message: props.message,
       data: props.data,
-      timestamp: moment.tz(CONFIG.timezone),
+      timestamp: moment.tz(CONFIG.APP_TZ),
     };
   }
 }

@@ -21,7 +21,7 @@ describe('<object> Application', () => {
     sinon.restore();
     clock.restore();
     fakeMoment.restore();
-    CONFIG.timezone = saveCONFIG.timezone;
+    CONFIG.APP_TZ = saveCONFIG.APP_TZ;
   });
   it('creates and checks value of Application object.', () => {
     const app = new Application({
@@ -244,14 +244,14 @@ describe('<object> Application', () => {
       }),
       custom_label: 'custom',
       generated_label: 'generated',
-      creation_date: moment.tz(CONFIG.timezone),
+      creation_date: moment.tz(CONFIG.APP_TZ),
       hash: 'hashha',
       username: 'b_lefebvre',
       password: 'password',
       id_user: 2,
       id_environment: 1,
       state_application: 'Off',
-      state_changed_date: moment.tz(CONFIG.timezone),
+      state_changed_date: moment.tz(CONFIG.APP_TZ),
       programming_shutdown_date: null,
       environment: new Environment({
         id_environment: 1,
@@ -262,13 +262,13 @@ describe('<object> Application', () => {
     });
     chai.expect(app.id_application).to.be.equal(1);
     chai.expect(app.custom_label).to.be.equal('custom');
-    chai.expect(app.creation_date.isSame(moment.tz(CONFIG.timezone))).to.be
+    chai.expect(app.creation_date.isSame(moment.tz(CONFIG.APP_TZ))).to.be
       .true;
     chai.expect(app.hash).to.be.equal('hashha');
     chai.expect(app.id_user).to.be.equal(2);
     chai.expect(app.id_environment).to.be.equal(1);
     chai.expect(app.state_application).to.be.equal('Off');
-    chai.expect(app.state_changed_date.isSame(moment.tz(CONFIG.timezone))).to.be
+    chai.expect(app.state_changed_date.isSame(moment.tz(CONFIG.APP_TZ))).to.be
       .true;
     chai.expect(app.history).to.be.deep.equal(new History());
     chai.expect(app.programming_shutdown_date).to.be.equal(null);
@@ -280,10 +280,10 @@ describe('<object> Application', () => {
         interfaces: [],
       })
     );
-    app.programming_shutdown_date = moment.tz(CONFIG.timezone).add(13, 'h');
+    app.programming_shutdown_date = moment.tz(CONFIG.APP_TZ).add(13, 'h');
     chai.expect(
       app.programming_shutdown_date.isSame(
-        moment.tz(CONFIG.timezone).add(13, 'h')
+        moment.tz(CONFIG.APP_TZ).add(13, 'h')
       )
     ).to.be.true;
     chai.expect(app.toJSON()).to.deep.equal({
@@ -299,16 +299,16 @@ describe('<object> Application', () => {
       history: {
         records: [],
       },
-      creation_date: moment.tz(CONFIG.timezone).format(),
+      creation_date: moment.tz(CONFIG.APP_TZ).format(),
       hash: 'hashha',
       username: 'b_lefebvre',
       password: 'password',
       id_user: 2,
       id_environment: 1,
       state_application: 'Off',
-      state_changed_date: moment.tz(CONFIG.timezone).format(),
+      state_changed_date: moment.tz(CONFIG.APP_TZ).format(),
       programming_shutdown_date: moment
-        .tz(CONFIG.timezone)
+        .tz(CONFIG.APP_TZ)
         .add(13, 'h')
         .format(),
       environment: {

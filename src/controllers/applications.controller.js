@@ -281,8 +281,8 @@ export const create = async (
         label: req.body.label === undefined ? '' : req.body.label,
         state_changed_date:
           req.body.state_changed_date === undefined
-            ? moment.tz(CONFIG.timezone)
-            : moment(req.body.state_changed_date).tz(CONFIG.timezone),
+            ? moment.tz(CONFIG.APP_TZ)
+            : moment(req.body.state_changed_date).tz(CONFIG.APP_TZ),
       })
     ).then((application) => {
       logs.info(

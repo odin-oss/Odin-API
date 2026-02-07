@@ -49,7 +49,7 @@ class DBManager {
           },
         },
         logging: CONFIG.NODE_ENV === 'development',
-        timezone: CONFIG.timezone,
+        timezone: CONFIG.APP_TZ,
       }
     );
     return this.sequelize;

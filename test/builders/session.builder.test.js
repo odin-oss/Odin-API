@@ -29,8 +29,8 @@ describe('session.builder.create()', () => {
     sinon.restore();
   });
   it('called with the good arguments and should create a new session.', async () => {
-    const fakeBeginDate = moment.tz(CONFIG.timezone);
-    const fakeEndDate = moment.tz(CONFIG.timezone).add(1, 'hour');
+    const fakeBeginDate = moment.tz(CONFIG.APP_TZ);
+    const fakeEndDate = moment.tz(CONFIG.APP_TZ).add(1, 'hour');
     const props = {
       label: 'test',
       begin_date: fakeBeginDate,
@@ -55,8 +55,8 @@ describe('session.builder.create()', () => {
   });
   it('should manage sequelize error.', async () => {
     try {
-      const fakeBeginDate = moment.tz(CONFIG.timezone);
-      const fakeEndDate = moment.tz(CONFIG.timezone).add(1, 'hour');
+      const fakeBeginDate = moment.tz(CONFIG.APP_TZ);
+      const fakeEndDate = moment.tz(CONFIG.APP_TZ).add(1, 'hour');
       const props = {
         label: 'test',
         begin_date: fakeBeginDate,
@@ -74,7 +74,7 @@ describe('session.builder.create()', () => {
   it('should reject for misformed begin_date.', async () => {
     try {
       const fakeBeginDate = 'oiznef';
-      const fakeEndDate = moment.tz(CONFIG.timezone).add(1, 'hour');
+      const fakeEndDate = moment.tz(CONFIG.APP_TZ).add(1, 'hour');
       const props = {
         label: 'test',
         begin_date: fakeBeginDate,
@@ -88,8 +88,8 @@ describe('session.builder.create()', () => {
   });
   it('should reject for misformed id_environment.', async () => {
     try {
-      const fakeBeginDate = moment.tz(CONFIG.timezone);
-      const fakeEndDate = moment.tz(CONFIG.timezone).add(1, 'hour');
+      const fakeBeginDate = moment.tz(CONFIG.APP_TZ);
+      const fakeEndDate = moment.tz(CONFIG.APP_TZ).add(1, 'hour');
       const props = {
         label: 'test',
         begin_date: fakeBeginDate,
@@ -103,8 +103,8 @@ describe('session.builder.create()', () => {
   });
   it('should reject for misformed id_environment.', async () => {
     try {
-      const fakeBeginDate = moment.tz(CONFIG.timezone);
-      const fakeEndDate = moment.tz(CONFIG.timezone).add(1, 'hour');
+      const fakeBeginDate = moment.tz(CONFIG.APP_TZ);
+      const fakeEndDate = moment.tz(CONFIG.APP_TZ).add(1, 'hour');
       const props = {
         label: 'test',
         begin_date: fakeBeginDate,
@@ -846,9 +846,9 @@ describe('session.builder.get_on_administrateur()', async () => {
       Promise.resolve({
         id_session: 1,
         label: 'test',
-        begin_date: moment('2025-10-11 11:11:11').tz(CONFIG.timezone),
+        begin_date: moment('2025-10-11 11:11:11').tz(CONFIG.APP_TZ),
         id_environment: 3,
-        end_date: moment('2025-10-12 11:11:11').tz(CONFIG.timezone),
+        end_date: moment('2025-10-12 11:11:11').tz(CONFIG.APP_TZ),
         ENVIRONMENT: {
           id_environment: 1,
           label: 'env',
@@ -909,9 +909,9 @@ describe('session.builder.get_on_administrateur()', async () => {
       new Session({
         id_session: 1,
         label: 'test',
-        begin_date: moment('2025-10-11 11:11:11').tz(CONFIG.timezone),
+        begin_date: moment('2025-10-11 11:11:11').tz(CONFIG.APP_TZ),
         id_environment: 3,
-        end_date: moment('2025-10-11 11:11:11').tz(CONFIG.timezone),
+        end_date: moment('2025-10-11 11:11:11').tz(CONFIG.APP_TZ),
         environment: new Environment({
           id_environment: 1,
           label: 'env',

@@ -44,8 +44,8 @@ describe('storage_controller.exportStorage()', () => {
         new Application_export({
           id_export: 1,
           id_application: 1,
-          init_date: moment.tz(CONFIG.timezone),
-          expiration_date: moment.tz(CONFIG.timezone),
+          init_date: moment.tz(CONFIG.APP_TZ),
+          expiration_date: moment.tz(CONFIG.APP_TZ),
           id_enum_export_state: 1,
         })
       )
@@ -57,8 +57,8 @@ describe('storage_controller.exportStorage()', () => {
       result: {
         id_export: 1,
         id_application: 1,
-        init_date: moment.tz(CONFIG.timezone).format(),
-        expiration_date: moment.tz(CONFIG.timezone).format(),
+        init_date: moment.tz(CONFIG.APP_TZ).format(),
+        expiration_date: moment.tz(CONFIG.APP_TZ).format(),
         id_enum_export_state: 1,
         status: null,
         download_link: null,
@@ -76,8 +76,8 @@ describe('storage_controller.exportStorage()', () => {
         new Application_export({
           id_export: 1,
           id_application: 1,
-          init_date: moment.tz(CONFIG.timezone),
-          expiration_date: moment.tz(CONFIG.timezone),
+          init_date: moment.tz(CONFIG.APP_TZ),
+          expiration_date: moment.tz(CONFIG.APP_TZ),
           id_enum_export_state: 1,
         })
       )
@@ -99,8 +99,8 @@ describe('storage_controller.exportStorage()', () => {
         new Application_export({
           id_export: 1,
           id_application: 1,
-          init_date: moment.tz(CONFIG.timezone),
-          expiration_date: moment.tz(CONFIG.timezone),
+          init_date: moment.tz(CONFIG.APP_TZ),
+          expiration_date: moment.tz(CONFIG.APP_TZ),
           id_enum_export_state: 1,
         })
       )
@@ -122,8 +122,8 @@ describe('storage_controller.exportStorage()', () => {
         new Application_export({
           id_export: 1,
           id_application: 1,
-          init_date: moment.tz(CONFIG.timezone),
-          expiration_date: moment.tz(CONFIG.timezone),
+          init_date: moment.tz(CONFIG.APP_TZ),
+          expiration_date: moment.tz(CONFIG.APP_TZ),
           id_enum_export_state: 1,
         })
       )
@@ -145,8 +145,8 @@ describe('storage_controller.exportStorage()', () => {
         new Application_export({
           id_export: 1,
           id_application: 1,
-          init_date: moment.tz(CONFIG.timezone),
-          expiration_date: moment.tz(CONFIG.timezone),
+          init_date: moment.tz(CONFIG.APP_TZ),
+          expiration_date: moment.tz(CONFIG.APP_TZ),
           id_enum_export_state: 1,
         })
       )
@@ -168,8 +168,8 @@ describe('storage_controller.exportStorage()', () => {
         new Application_export({
           id_export: 1,
           id_application: 1,
-          init_date: moment.tz(CONFIG.timezone),
-          expiration_date: moment.tz(CONFIG.timezone),
+          init_date: moment.tz(CONFIG.APP_TZ),
+          expiration_date: moment.tz(CONFIG.APP_TZ),
           id_enum_export_state: 1,
         })
       )

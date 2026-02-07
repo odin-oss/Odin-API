@@ -21,25 +21,25 @@ describe('<object> Application_export', () => {
     sinon.restore();
     clock.restore();
     fakeMoment.restore();
-    CONFIG.timezone = saveCONFIG.timezone;
+    CONFIG.APP_TZ = saveCONFIG.APP_TZ;
   });
 
   it('creates and checks value of Application_export object.', () => {
     const appExport = new Application_export({
       id_export: 1,
       id_application: 1,
-      init_date: moment.tz(CONFIG.timezone),
-      expiration_date: moment.tz(CONFIG.timezone).add(1, 'days'),
+      init_date: moment.tz(CONFIG.APP_TZ),
+      expiration_date: moment.tz(CONFIG.APP_TZ).add(1, 'days'),
       id_enum_export_state: 1,
     });
 
     chai.expect(appExport.id_export).to.be.equal(1);
     chai.expect(appExport.id_application).to.be.equal(1);
-    chai.expect(appExport.init_date.isSame(moment.tz(CONFIG.timezone))).to.be
+    chai.expect(appExport.init_date.isSame(moment.tz(CONFIG.APP_TZ))).to.be
       .true;
     chai.expect(
       appExport.expiration_date.isSame(
-        moment.tz(CONFIG.timezone).add(1, 'days')
+        moment.tz(CONFIG.APP_TZ).add(1, 'days')
       )
     ).to.be.true;
     chai.expect(appExport.id_enum_export_state).to.be.equal(1);
@@ -51,8 +51,8 @@ describe('<object> Application_export', () => {
     const appExport = new Application_export({
       id_export: 1,
       id_application: 1,
-      init_date: moment.tz(CONFIG.timezone),
-      expiration_date: moment.tz(CONFIG.timezone).add(1, 'days'),
+      init_date: moment.tz(CONFIG.APP_TZ),
+      expiration_date: moment.tz(CONFIG.APP_TZ).add(1, 'days'),
       id_enum_export_state: 1,
       download_link: 'https://example.com/download',
     });
@@ -67,14 +67,14 @@ describe('<object> Application_export', () => {
     appExport.id_provider = 'jfsMze_y12-ct';
     chai.expect(appExport.id_provider).to.be.equal('jfsMze_y12-ct');
 
-    appExport.init_date = moment.tz(CONFIG.timezone);
-    chai.expect(appExport.init_date.isSame(moment.tz(CONFIG.timezone))).to.be
+    appExport.init_date = moment.tz(CONFIG.APP_TZ);
+    chai.expect(appExport.init_date.isSame(moment.tz(CONFIG.APP_TZ))).to.be
       .true;
 
-    appExport.expiration_date = moment.tz(CONFIG.timezone).add(2, 'days');
+    appExport.expiration_date = moment.tz(CONFIG.APP_TZ).add(2, 'days');
     chai.expect(
       appExport.expiration_date.isSame(
-        moment.tz(CONFIG.timezone).add(2, 'days')
+        moment.tz(CONFIG.APP_TZ).add(2, 'days')
       )
     ).to.be.true;
 
@@ -97,16 +97,16 @@ describe('<object> Application_export', () => {
     const appExport = new Application_export({
       id_export: 1,
       id_application: 1,
-      init_date: moment.tz(CONFIG.timezone),
-      expiration_date: moment.tz(CONFIG.timezone).add(1, 'days'),
+      init_date: moment.tz(CONFIG.APP_TZ),
+      expiration_date: moment.tz(CONFIG.APP_TZ).add(1, 'days'),
       id_enum_export_state: 1,
     });
 
     chai.expect(appExport.public_format()).to.deep.equal({
       id_export: 1,
       id_application: 1,
-      init_date: moment.tz(CONFIG.timezone).format(),
-      expiration_date: moment.tz(CONFIG.timezone).add(1, 'days').format(),
+      init_date: moment.tz(CONFIG.APP_TZ).format(),
+      expiration_date: moment.tz(CONFIG.APP_TZ).add(1, 'days').format(),
       id_enum_export_state: 1,
       status: null,
       download_link: null,
@@ -118,16 +118,16 @@ describe('<object> Application_export', () => {
     const appExport = new Application_export({
       id_export: 1,
       id_application: 1,
-      init_date: moment.tz(CONFIG.timezone),
-      expiration_date: moment.tz(CONFIG.timezone).add(1, 'days'),
+      init_date: moment.tz(CONFIG.APP_TZ),
+      expiration_date: moment.tz(CONFIG.APP_TZ).add(1, 'days'),
       id_enum_export_state: 1,
     });
 
     chai.expect(appExport.toJSON()).to.deep.equal({
       id_export: 1,
       id_application: 1,
-      init_date: moment.tz(CONFIG.timezone).format(),
-      expiration_date: moment.tz(CONFIG.timezone).add(1, 'days').format(),
+      init_date: moment.tz(CONFIG.APP_TZ).format(),
+      expiration_date: moment.tz(CONFIG.APP_TZ).add(1, 'days').format(),
       id_enum_export_state: 1,
       status: null,
       id_provider: null,

@@ -72,18 +72,18 @@ export const get = async function (
         id_application: r.id_application,
         custom_label: r.custom_label,
         generated_label: r.generated_label,
-        creation_date: moment(r.creation_date).tz(CONFIG.timezone),
+        creation_date: moment(r.creation_date).tz(CONFIG.APP_TZ),
         hash: r.hash,
         username: r.username,
         password: r.password,
         id_user: r.id_user,
         id_environment: r.id_environment,
         state_application: r.ENUM_STATE_APPLICATION.label,
-        state_changed_date: moment(r.state_changed_date).tz(CONFIG.timezone),
+        state_changed_date: moment(r.state_changed_date).tz(CONFIG.APP_TZ),
         programming_shutdown_date:
           r.programming_shutdown_date == null
             ? null
-            : moment(r.programming_shutdown_date).tz(CONFIG.timezone),
+            : moment(r.programming_shutdown_date).tz(CONFIG.APP_TZ),
         datacenter: new Datacenter({ id_datacenter: r.id_datacenter }),
         environment: new Environment({
           id_environment: r.ENVIRONMENT.id_environment,
@@ -140,7 +140,7 @@ export const list = async function (
             id_application: app.id_application,
             custom_label: app.custom_label,
             generated_label: app.generated_label,
-            creation_date: moment(app.creation_date).tz(CONFIG.timezone),
+            creation_date: moment(app.creation_date).tz(CONFIG.APP_TZ),
             hash: app.hash,
             username: app.username,
             password: app.password,
@@ -148,12 +148,12 @@ export const list = async function (
             id_environment: app.id_environment,
             state_application: app.ENUM_STATE_APPLICATION.label,
             state_changed_date: moment(app.state_changed_date).tz(
-              CONFIG.timezone
+              CONFIG.APP_TZ
             ),
             programming_shutdown_date:
               app.programming_shutdown_date == null
                 ? null
-                : moment(app.programming_shutdown_date).tz(CONFIG.timezone),
+                : moment(app.programming_shutdown_date).tz(CONFIG.APP_TZ),
             datacenter: new Datacenter({
               id_datacenter: app.id_datacenter,
               label: '',
@@ -209,9 +209,9 @@ export const renew_expiration = async function (
 
     const opt_update = {
       programming_shutdown_date: moment
-        .tz(CONFIG.timezone)
+        .tz(CONFIG.APP_TZ)
         .clone()
-        .add(CONFIG.expiration, 's')
+        .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 's')
         .utc()
         .format(),
     };
@@ -285,7 +285,7 @@ export const create = async function (
   try {
     // We find the state from different parameters.
     let creation_state = 'Scheduled';
-    if (!CONFIG.ms_deployment_activated) creation_state = 'Ready';
+    //if (!CONFIG.ms_deployment_activated) creation_state = 'Ready';
 
     const esp_options = {
       where: { label: creation_state },
@@ -307,21 +307,21 @@ export const create = async function (
       custom_label:
         props.custom_label === '' ? props.generated_label : props.custom_label,
       generated_label: props.generated_label,
-      creation_date: moment.tz(CONFIG.timezone).utc().format(),
+      creation_date: moment.tz(CONFIG.APP_TZ).utc().format(),
       hash: props.hash,
       username: props.username,
       password: props.password,
       state_changed_date: moment(props.state_changed_date)
-        .tz(CONFIG.timezone)
+        .tz(CONFIG.APP_TZ)
         .utc()
         .format(),
       programming_shutdown_date:
         creation_state !== 'Ready'
           ? null
           : moment(props.state_changed_date)
-              .tz(CONFIG.timezone)
+              .tz(CONFIG.APP_TZ)
               .clone()
-              .add(CONFIG.expiration, 's')
+              .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 's')
               .utc()
               .format(),
     };
@@ -332,18 +332,18 @@ export const create = async function (
         id_application: r.id_application,
         custom_label: r.custom_label,
         generated_label: r.generated_label,
-        creation_date: moment(r.creation_date).tz(CONFIG.timezone),
+        creation_date: moment(r.creation_date).tz(CONFIG.APP_TZ),
         hash: r.hash,
         username: r.username,
         password: r.password,
         id_user: r.id_user,
         id_environment: r.id_environment,
         state_application: creation_state,
-        state_changed_date: moment(r.state_changed_date).tz(CONFIG.timezone),
+        state_changed_date: moment(r.state_changed_date).tz(CONFIG.APP_TZ),
         programming_shutdown_date:
           r.programming_shutdown_date == null
             ? null
-            : moment(r.programming_shutdown_date).tz(CONFIG.timezone),
+            : moment(r.programming_shutdown_date).tz(CONFIG.APP_TZ),
         datacenter: undefined,
         environment: new Environment({
           id_environment: r.id_environment,
@@ -637,14 +637,14 @@ export const update_state = async function (
 
     const opt_update = {
       id_enum_state_application: id_enum_state_application,
-      state_changed_date: moment.tz(CONFIG.timezone).utc().format(),
+      state_changed_date: moment.tz(CONFIG.APP_TZ).utc().format(),
       programming_shutdown_date:
         props.state_application !== 'Ready'
           ? null
           : moment
-              .tz(CONFIG.timezone)
+              .tz(CONFIG.APP_TZ)
               .clone()
-              .add(CONFIG.expiration, 's')
+              .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 's')
               .utc()
               .format(),
     };

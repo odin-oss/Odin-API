@@ -48,8 +48,8 @@ router.get('/', function (req, res, next) {
   counter_get.inc();
   res.send({
     result: {
-      timezone: CONFIG.timezone,
-      date: moment.tz(CONFIG.timezone).format(),
+      timezone: CONFIG.APP_TZ,
+      date: moment.tz(CONFIG.APP_TZ).format(),
       message: 'Odin (by Caelus) is working well.',
       version: JSON.parse(fs.readFileSync('package.json', 'utf8')).version,
     },

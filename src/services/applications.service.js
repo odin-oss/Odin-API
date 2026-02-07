@@ -7,7 +7,7 @@ import {
   exec_shutdown,
   exec_start,
   exec_deletion,
-} from '../modules/ms-deployment.module.js';
+} from './deployment.service.js';
 import * as storage_service from './application/storage.service.js';
 import moment from 'moment-timezone';
 import * as password from '../utils/password.service.js';
@@ -350,8 +350,8 @@ export const create = async function (
   });
   const launch_date =
     props.state_changed_date === undefined
-      ? moment.tz(CONFIG.timezone)
-      : moment(props.state_changed_date).tz(CONFIG.timezone);
+      ? moment.tz(CONFIG.APP_TZ)
+      : moment(props.state_changed_date).tz(CONFIG.APP_TZ);
   const promises = [
     fns.application_create({
       id_user: props.id_user,

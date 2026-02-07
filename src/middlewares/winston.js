@@ -57,7 +57,7 @@ const consoleTransport = new transports.Console({
   format: format.combine(
     format.colorize(),
     format.simple(),
-    appendTimestamp({ tz: CONFIG.timezone }),
+    appendTimestamp({ tz: CONFIG.APP_TZ }),
     myFormat
   ),
   prettyPrint: true,
@@ -80,7 +80,7 @@ const rotateTransportAll = new transports.DailyRotateFile({
 
 const logs = createLogger({
   levels: config.levels,
-  format: combine(appendTimestamp({ tz: CONFIG.timezone }), myFormat),
+  format: combine(appendTimestamp({ tz: CONFIG.APP_TZ }), myFormat),
   transports: [consoleTransport, rotateTransportAll],
   exceptionHandlers: [
     rotateTransportExceptions,

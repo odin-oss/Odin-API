@@ -41,18 +41,18 @@ export class Application {
     this.#id_application = id_application;
     this.#custom_label = custom_label;
     this.#generated_label = generated_label;
-    this.#creation_date = moment(creation_date).tz(CONFIG.timezone);
+    this.#creation_date = moment(creation_date).tz(CONFIG.APP_TZ);
     this.#hash = hash;
     this.#username = username;
     this.#password = password;
     this.#id_user = id_user;
     this.#id_environment = id_environment;
     this.#state_application = state_application;
-    this.#state_changed_date = moment(state_changed_date).tz(CONFIG.timezone);
+    this.#state_changed_date = moment(state_changed_date).tz(CONFIG.APP_TZ);
     this.#programming_shutdown_date =
       programming_shutdown_date == null
         ? null
-        : moment(programming_shutdown_date).tz(CONFIG.timezone);
+        : moment(programming_shutdown_date).tz(CONFIG.APP_TZ);
     this.#environment = environment;
     this.#datacenter = datacenter;
     this.#history = history;
@@ -197,7 +197,7 @@ export class Application {
         this.#programming_shutdown_date == null
           ? null
           : moment(this.#programming_shutdown_date)
-              .tz(CONFIG.timezone)
+              .tz(CONFIG.APP_TZ)
               .format(),
       state_application: this.#state_application,
       history: this.#history.public_format(),
@@ -237,7 +237,7 @@ export class Application {
         this.#programming_shutdown_date == null
           ? null
           : moment(this.#programming_shutdown_date)
-              .tz(CONFIG.timezone)
+              .tz(CONFIG.APP_TZ)
               .format(),
       environment: this.#environment.toJSON(),
       datacenter: this.#datacenter.toJSON(),

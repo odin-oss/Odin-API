@@ -37,9 +37,9 @@ describe('storage.builder.get()', () => {
   it('called with valid id_export and should return application export data', async () => {
     const mockResponse = {
       id_export: 1,
-      init_date: moment().tz(CONFIG.timezone).format(),
+      init_date: moment().tz(CONFIG.APP_TZ).format(),
       id_application: 1,
-      expiration_date: moment().tz(CONFIG.timezone).add(1, 'days').format(),
+      expiration_date: moment().tz(CONFIG.APP_TZ).add(1, 'days').format(),
       id_provider: 1,
       download_link: 'http://example.com/download',
       id_enum_export_state: 1,
@@ -140,8 +140,8 @@ describe('storage.builder.create()', () => {
       Promise.resolve({
         id_export: 1,
         id_application: 1,
-        init_date: moment().tz(CONFIG.timezone).format(),
-        expiration_date: moment().tz(CONFIG.timezone).add(1, 'days').format(),
+        init_date: moment().tz(CONFIG.APP_TZ).format(),
+        expiration_date: moment().tz(CONFIG.APP_TZ).add(1, 'days').format(),
         id_enum_export_state: 1,
       })
     );
@@ -156,8 +156,8 @@ describe('storage.builder.create()', () => {
       .expect(fakeApplicationExportCreate)
       .to.have.been.calledOnceWithExactly({
         id_application: 1,
-        init_date: moment().tz(CONFIG.timezone).format(),
-        expiration_date: moment().tz(CONFIG.timezone).add(1, 'days').format(),
+        init_date: moment().tz(CONFIG.APP_TZ).format(),
+        expiration_date: moment().tz(CONFIG.APP_TZ).add(1, 'days').format(),
         id_enum_export_state: 1,
       });
 
@@ -165,8 +165,8 @@ describe('storage.builder.create()', () => {
       new Application_export({
         id_export: 1,
         id_application: 1,
-        init_date: moment().tz(CONFIG.timezone).format(),
-        expiration_date: moment().tz(CONFIG.timezone).add(1, 'days').format(),
+        init_date: moment().tz(CONFIG.APP_TZ).format(),
+        expiration_date: moment().tz(CONFIG.APP_TZ).add(1, 'days').format(),
         id_enum_export_state: 1,
       })
     );
@@ -488,8 +488,8 @@ describe('storage.builder.getLatestStorage()', () => {
     const mockExport = {
       id_export: 1,
       id_application: 1,
-      init_date: moment().tz(CONFIG.timezone).format(),
-      expiration_date: moment().tz(CONFIG.timezone).add(1, 'days').format(),
+      init_date: moment().tz(CONFIG.APP_TZ).format(),
+      expiration_date: moment().tz(CONFIG.APP_TZ).add(1, 'days').format(),
       id_enum_export_state: 3,
       id_provider: 'provider123',
       download_link: 'http://example.com/download',
@@ -506,7 +506,7 @@ describe('storage.builder.getLatestStorage()', () => {
       .to.have.been.calledOnceWithExactly({
         where: {
           id_application: 1,
-          expiration_date: { [Op.gt]: moment().tz(CONFIG.timezone).format() },
+          expiration_date: { [Op.gt]: moment().tz(CONFIG.APP_TZ).format() },
         },
         order: [['init_date', 'DESC']],
       });
@@ -534,7 +534,7 @@ describe('storage.builder.getLatestStorage()', () => {
       .to.have.been.calledOnceWithExactly({
         where: {
           id_application: 1,
-          expiration_date: { [Op.gt]: moment().tz(CONFIG.timezone).format() },
+          expiration_date: { [Op.gt]: moment().tz(CONFIG.APP_TZ).format() },
         },
         order: [['init_date', 'DESC']],
       });
@@ -607,8 +607,8 @@ describe('storage.builder.deleteExport()', () => {
     const mockExport = {
       id_export: 1,
       id_application: 1,
-      init_date: moment().tz(CONFIG.timezone).format(),
-      expiration_date: moment().tz(CONFIG.timezone).add(1, 'days').format(),
+      init_date: moment().tz(CONFIG.APP_TZ).format(),
+      expiration_date: moment().tz(CONFIG.APP_TZ).add(1, 'days').format(),
       id_enum_export_state: 5, // Revoked state
     };
 
@@ -723,8 +723,8 @@ describe('storage.builder.setError()', () => {
     const mockExport = {
       id_export: 1,
       id_application: 1,
-      init_date: moment().tz(CONFIG.timezone).format(),
-      expiration_date: moment().tz(CONFIG.timezone).add(1, 'days').format(),
+      init_date: moment().tz(CONFIG.APP_TZ).format(),
+      expiration_date: moment().tz(CONFIG.APP_TZ).add(1, 'days').format(),
       id_enum_export_state: 6, // Error state
     };
 
@@ -844,8 +844,8 @@ describe('storage.builder.getNonErrorApplicationStorage()', () => {
       id_export: 1,
       id_application: 1,
       id_enum_export_state: 1, // Launched state
-      init_date: moment().tz(CONFIG.timezone).format(),
-      expiration_date: moment().tz(CONFIG.timezone).add(1, 'days').format(),
+      init_date: moment().tz(CONFIG.APP_TZ).format(),
+      expiration_date: moment().tz(CONFIG.APP_TZ).add(1, 'days').format(),
     };
 
     fakeEnumExportStateFindAll.resolves(mockEnumStates);
@@ -863,7 +863,7 @@ describe('storage.builder.getNonErrorApplicationStorage()', () => {
     chai.expect(fakeApplicationExportFindOne).to.have.been.calledWithExactly({
       where: {
         id_application: 1,
-        expiration_date: { [Op.gt]: moment().tz(CONFIG.timezone).format() },
+        expiration_date: { [Op.gt]: moment().tz(CONFIG.APP_TZ).format() },
       },
       order: [['init_date', 'DESC']],
     });
@@ -902,7 +902,7 @@ describe('storage.builder.getNonErrorApplicationStorage()', () => {
       .to.have.been.calledOnceWithExactly({
         where: {
           id_application: 1,
-          expiration_date: { [Op.gt]: moment().tz(CONFIG.timezone).format() },
+          expiration_date: { [Op.gt]: moment().tz(CONFIG.APP_TZ).format() },
         },
         order: [['init_date', 'DESC']],
       });
@@ -931,8 +931,8 @@ describe('storage.builder.getNonErrorApplicationStorage()', () => {
       id_export: 1,
       id_application: 1,
       id_enum_export_state: 5, // Error state
-      init_date: moment().tz(CONFIG.timezone).format(),
-      expiration_date: moment().tz(CONFIG.timezone).add(1, 'days').format(),
+      init_date: moment().tz(CONFIG.APP_TZ).format(),
+      expiration_date: moment().tz(CONFIG.APP_TZ).add(1, 'days').format(),
     };
 
     fakeEnumExportStateFindAll.resolves(mockEnumStates);
@@ -950,7 +950,7 @@ describe('storage.builder.getNonErrorApplicationStorage()', () => {
     chai.expect(fakeApplicationExportFindOne).to.have.been.calledWithExactly({
       where: {
         id_application: 1,
-        expiration_date: { [Op.gt]: moment().tz(CONFIG.timezone).format() },
+        expiration_date: { [Op.gt]: moment().tz(CONFIG.APP_TZ).format() },
       },
       order: [['init_date', 'DESC']],
     });

@@ -7,14 +7,14 @@ const server = app.listen(app.get('config').port, () => {
 });
 
 process.on('SIGTERM', () => {
-  app.locals.logger.info('SIGTERM : clean shutdown...');
+  app.locals.logger.info('[SYSTEM][200] SIGTERM : clean shutdown...');
   server.close(() => {
     process.exit(0);
   });
 });
 
 process.on('SIGINT', () => {
-  app.locals.logger.info('SIGINT : clean shutdown...');
+  app.locals.logger.info('[SYSTEM][200] SIGINT : clean shutdown...');
   server.close(() => {
     process.exit(0);
   });

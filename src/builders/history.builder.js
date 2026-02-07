@@ -39,7 +39,7 @@ export const create = async function (
     const options = {
       id_user: props.id_user,
       id_application: props.id_application,
-      datetime: moment.tz(CONFIG.timezone).utc().format(),
+      datetime: moment.tz(CONFIG.APP_TZ).utc().format(),
     };
     return await Promise.resolve(dbManager.models.HISTORY.create(options)).then(
       (r) => {
@@ -49,7 +49,7 @@ export const create = async function (
               id_user: r.id_user,
               id_application: r.lastname,
               id_history: r.id_history,
-              datetime: moment(r.datetime).tz(CONFIG.timezone),
+              datetime: moment(r.datetime).tz(CONFIG.APP_TZ),
             }),
           ],
         });
@@ -105,7 +105,7 @@ export const get_last_record = async function (
             id_user: r.id_user,
             id_application: r.id_application,
             id_history: r.id_history,
-            datetime: moment(r.datetime).tz(CONFIG.timezone),
+            datetime: moment(r.datetime).tz(CONFIG.APP_TZ),
           }),
         ],
       });

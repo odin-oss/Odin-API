@@ -80,7 +80,7 @@ export class Record {
   public_format() {
     return {
       id_user: this.#id_user,
-      datetime: moment(this.#datetime).tz(CONFIG.timezone),
+      datetime: moment(this.#datetime).tz(CONFIG.APP_TZ),
       id_application: this.#id_application,
       id_history: this.#id_history,
     };
@@ -89,7 +89,7 @@ export class Record {
   toJSON() {
     return {
       id_user: this.#id_user,
-      datetime: moment(this.#datetime).tz(CONFIG.timezone),
+      datetime: moment(this.#datetime).tz(CONFIG.APP_TZ),
       id_application: this.#id_application,
       id_history: this.#id_history,
     };

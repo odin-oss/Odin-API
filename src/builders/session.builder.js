@@ -169,8 +169,8 @@ export const create = async function (
     // We prepare the creation of the application
     const options = {
       label: props.label,
-      begin_date: moment(props.begin_date).tz(CONFIG.timezone).utc().format(),
-      end_date: moment(props.end_date).tz(CONFIG.timezone).utc().format(),
+      begin_date: moment(props.begin_date).tz(CONFIG.APP_TZ).utc().format(),
+      end_date: moment(props.end_date).tz(CONFIG.APP_TZ).utc().format(),
       id_environment: props.id_environment,
     };
     return await Promise.resolve(dbManager.models.SESSION.create(options)).then(
@@ -178,9 +178,9 @@ export const create = async function (
         return new Session({
           id_session: r.id_session,
           label: props.label,
-          begin_date: moment(props.begin_date).tz(CONFIG.timezone),
+          begin_date: moment(props.begin_date).tz(CONFIG.APP_TZ),
           id_environment: props.id_environment,
-          end_date: moment(props.end_date).tz(CONFIG.timezone),
+          end_date: moment(props.end_date).tz(CONFIG.APP_TZ),
         });
       }
     );
@@ -298,9 +298,9 @@ export const list = async function (
           result = {
             id_session: r[i].id_session,
             label: r[i].label,
-            begin_date: moment(r[i].begin_date).tz(CONFIG.timezone),
+            begin_date: moment(r[i].begin_date).tz(CONFIG.APP_TZ),
             id_environment: r[i].id_environment,
-            end_date: moment(r[i].end_date).tz(CONFIG.timezone),
+            end_date: moment(r[i].end_date).tz(CONFIG.APP_TZ),
             environment: new Environment(r[i].ENVIRONMENT),
             users: r[i].SESSION_HAS_USERs.map((user) => new User(user)),
             applications: r[i].SESSION_HAS_USERs.map(
@@ -322,9 +322,9 @@ export const list = async function (
           result = {
             id_session: r[i].id_session,
             label: r[i].SESSION.label,
-            begin_date: moment(r[i].SESSION.begin_date).tz(CONFIG.timezone),
+            begin_date: moment(r[i].SESSION.begin_date).tz(CONFIG.APP_TZ),
             id_environment: r[i].SESSION.id_environment,
-            end_date: moment(r[i].SESSION.end_date).tz(CONFIG.timezone),
+            end_date: moment(r[i].SESSION.end_date).tz(CONFIG.APP_TZ),
             environment: new Environment(r[i].SESSION.ENVIRONMENT),
             users: r[i].SESSION.SESSION_HAS_USERs.map((user) => new User(user)),
             applications: r[i].SESSION.SESSION_HAS_USERs.map(
@@ -433,9 +433,9 @@ export const get_on_professeur = async function (
     const session = new Session({
       id_session: result.id_session,
       label: result.SESSION.label,
-      begin_date: moment(result.SESSION.begin_date).tz(CONFIG.timezone),
+      begin_date: moment(result.SESSION.begin_date).tz(CONFIG.APP_TZ),
       id_environment: result.SESSION.id_environment,
-      end_date: moment(result.SESSION.end_date).tz(CONFIG.timezone),
+      end_date: moment(result.SESSION.end_date).tz(CONFIG.APP_TZ),
       environment: new Environment(result.SESSION.ENVIRONMENT),
       users: result.SESSION.SESSION_HAS_USERs.map((user) => new User(user)),
       applications: result.SESSION.SESSION_HAS_USERs.map(
@@ -515,9 +515,9 @@ export const get_on_administrateur = async function (
     const session = new Session({
       id_session: result.id_session,
       label: result.label,
-      begin_date: moment(result.begin_date).tz(CONFIG.timezone),
+      begin_date: moment(result.begin_date).tz(CONFIG.APP_TZ),
       id_environment: result.id_environment,
-      end_date: moment(result.end_date).tz(CONFIG.timezone),
+      end_date: moment(result.end_date).tz(CONFIG.APP_TZ),
       environment: new Environment(result.ENVIRONMENT),
       users: result.SESSION_HAS_USERs.map((user) => new User(user)),
       applications: result.SESSION_HAS_USERs.map(

@@ -234,3 +234,111 @@ export class NoImageReceived extends Error {
     this.name = 'NoImageReceived';
   }
 }
+/**
+ * Error that is sent whenever the hash argument is an empty string.
+ */
+export class EmptyStringHashError extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 400;
+    this.name = 'EmptyStringHashError';
+  }
+}
+/**
+ * Error that is sent whenever the kubernetes API is not responding.
+ */
+export class KubernetesAPINotResponding extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 500;
+    this.name = 'KubernetesAPINotResponding';
+  }
+}
+/**
+ * ObjectsAlreadyExistsError returned whenever the element you want to create already exists.
+ */
+export class ObjectsAlreadyExistsError extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 200;
+    this.name = 'ObjectsAlreadyExistsError';
+  }
+}
+/**
+ * Error that is sent whenever the kubernetes API is not responding.
+ */
+export class MDBNotResponding extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 500;
+    this.name = 'MDBNotResponding';
+  }
+}
+
+/**
+ * KAPI ERRORS CODES
+ */
+/**
+ * ConnetexKubernetesAPIError returned whenever a function receives a connetex error from kube.
+ */
+export class KubernetesErrorNotDefined extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 500;
+    this.name = 'KubernetesErrorNotDefined';
+  }
+}
+/**
+ * ConnetexKubernetesAPIError returned whenever a function receives a connetex error from kube.
+ */
+export class ConnetexKubernetesAPIError extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 500;
+    this.name = 'ConnetexKubernetesAPIError';
+  }
+}
+/**
+ * Error that is sent whenever the Kubernetes API receives an Invalid Url Error.
+ */
+export class KubernetesAPIInvalidURL extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 400;
+    this.name = 'KubernetesAPIInvalidURL';
+  }
+}
+/**
+ * Error x509: certificate Kubernetes with unknown authority.
+ */
+export class KubernetesAPIx509Certificate extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 500;
+    this.name = 'KubernetesAPIx509Certificate';
+  }
+}
+/**
+ * Error 504: Kubernetes timedout.
+ */
+export class KubernetesAPITimedOut extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 504;
+    this.name = 'KubernetesAPITimedOut';
+  }
+}
+
+/**
+ * APPS-INGRESS ERRORS CODES
+ */
+/**
+ * AppsIngressErrorNotDefined.
+ */
+export class AppsIngressErrorNotDefined extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 500;
+    this.name = 'AppsIngressErrorNotDefined';
+  }
+}

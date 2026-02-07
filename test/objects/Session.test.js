@@ -8,8 +8,8 @@ chai.use(sinonChai);
 
 describe('<object> Session', () => {
   it('creates and checks values of Session object.', () => {
-    const begin = moment('2020-01-01T00:00:00Z').tz(CONFIG.timezone);
-    const end = moment('2020-02-01T00:00:00Z').tz(CONFIG.timezone);
+    const begin = moment('2020-01-01T00:00:00Z').tz(CONFIG.APP_TZ);
+    const end = moment('2020-02-01T00:00:00Z').tz(CONFIG.APP_TZ);
 
     const env = {
       toJSON: () => ({ env: 'env_json' }),
@@ -60,8 +60,8 @@ describe('<object> Session', () => {
   });
 
   it('updates fields and returns proper toJSON and public_format structures.', () => {
-    const begin1 = moment('2021-03-01T00:00:00Z').tz(CONFIG.timezone);
-    const end1 = moment('2021-04-01T00:00:00Z').tz(CONFIG.timezone);
+    const begin1 = moment('2021-03-01T00:00:00Z').tz(CONFIG.APP_TZ);
+    const end1 = moment('2021-04-01T00:00:00Z').tz(CONFIG.APP_TZ);
 
     const env1 = {
       toJSON: () => ({ env: 'env1_json' }),

@@ -16,8 +16,6 @@ import {
   SmashAPIError,
 } from '../../utils/errors.service.js';
 import * as parametres from '../../utils/parametres.service.js';
-import * as password from '../../utils/password.service.js';
-
 /**
  * Service that gives the latest active storage.
  * @param {*} props {id_application}

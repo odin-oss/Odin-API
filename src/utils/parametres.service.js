@@ -116,11 +116,11 @@ export const check_id = function (id = 0) {
  * @returns
  */
 export const state_changed_date = function (
-  value = moment.tz(CONFIG.timezone)
+  value = moment.tz(CONFIG.APP_TZ)
 ) {
   return moment(value)
-    .tz(CONFIG.timezone)
-    .isSameOrBefore(moment.tz(CONFIG.timezone));
+    .tz(CONFIG.APP_TZ)
+    .isSameOrBefore(moment.tz(CONFIG.APP_TZ));
 };
 
 /**

@@ -25,8 +25,8 @@ export class Application_export {
   } = {}) {
     this.#id_export = id_export;
     this.#id_application = id_application;
-    this.#init_date = moment(init_date).tz(CONFIG.timezone);
-    this.#expiration_date = moment(expiration_date).tz(CONFIG.timezone);
+    this.#init_date = moment(init_date).tz(CONFIG.APP_TZ);
+    this.#expiration_date = moment(expiration_date).tz(CONFIG.APP_TZ);
     this.#id_provider = id_provider;
     this.#id_enum_export_state = id_enum_export_state;
     this.#status = status;

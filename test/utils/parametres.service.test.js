@@ -260,17 +260,17 @@ describe('parametres.service.check_email()', () => {
 });
 describe('parametres.service.state_changed_date()', () => {
   it('called with a correct moment date and should return true.', () => {
-    chai.expect(parametres.state_changed_date(moment.tz(CONFIG.timezone))).to.be
+    chai.expect(parametres.state_changed_date(moment.tz(CONFIG.APP_TZ))).to.be
       .true;
   });
   it('called with a future moment date and should return false.', () => {
     chai.expect(
-      parametres.state_changed_date(moment.tz(CONFIG.timezone).add(2, 'days'))
+      parametres.state_changed_date(moment.tz(CONFIG.APP_TZ).add(2, 'days'))
     ).to.be.false;
   });
   it('called with a not moment date and should return false.', () => {
     chai.expect(
-      parametres.state_changed_date("moment.tz(CONFIG.timezone).add(2, 'days')")
+      parametres.state_changed_date("moment.tz(CONFIG.APP_TZ).add(2, 'days')")
     ).to.be.false;
   });
 });

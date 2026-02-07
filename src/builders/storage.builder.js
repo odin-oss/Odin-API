@@ -1,14 +1,14 @@
 import { Op } from 'sequelize';
-import CONFIG from '../../config/config.js';
-import dbManager from '../../config/db.config.js';
+import dbManager from '../config/db.config.js';
 import moment from 'moment-timezone';
-import * as parametres from '../../utils/parametres.service.js';
+import * as parametres from '../utils/parametres.service.js';
 import {
   DBObjectNotFound,
   MissingArgumentError,
   ParameterMisformed,
-} from '../../utils/errors.service.js';
-import { Application_export } from '../../objects/application/Application_export.js';
+} from '../utils/errors.service.js';
+import { Application_export } from '../objects/application/Application_export.js';
+import CONFIG from '../config/config.js';
 
 /**
  * Create an application in the database
@@ -41,9 +41,9 @@ export const create = async function (
     // Create db entry
     const options = {
       id_application: props.id_application,
-      init_date: moment().tz(CONFIG.timezone).format(),
+      init_date: moment().tz(CONFIG.APP_TZ).format(),
       expiration_date: moment()
-        .tz(CONFIG.timezone)
+        .tz(CONFIG.APP_TZ)
         .add(props.availability_days, 'days')
         .format(),
       id_enum_export_state: id_enum_export_state,
@@ -133,7 +133,7 @@ export const getLatestStorage = async function (
       where: {
         id_application: props.id_application,
         expiration_date: {
-          [Op.gt]: moment().tz(CONFIG.timezone).format(),
+          [Op.gt]: moment().tz(CONFIG.APP_TZ).format(),
         },
       },
       order: [['init_date', 'DESC']],
@@ -198,7 +198,7 @@ export const getNonErrorApplicationStorage = async function (
       where: {
         id_application: props.id_application,
         expiration_date: {
-          [Op.gt]: moment().tz(CONFIG.timezone).format(),
+          [Op.gt]: moment().tz(CONFIG.APP_TZ).format(),
         },
       },
       order: [['init_date', 'DESC']],

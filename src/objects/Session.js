@@ -117,8 +117,8 @@ export class Session {
     return {
       id_session: this.#id_session,
       label: this.#label,
-      begin_date: moment(this.#begin_date).tz(CONFIG.timezone),
-      end_date: moment(this.#end_date).tz(CONFIG.timezone),
+      begin_date: moment(this.#begin_date).tz(CONFIG.APP_TZ),
+      end_date: moment(this.#end_date).tz(CONFIG.APP_TZ),
       environment: this.#environment.toJSON(),
       applications: this.#applications.map((app) => app.toJSON()),
       users: this.#users.map((user) => user.toJSON()),
@@ -132,8 +132,8 @@ export class Session {
     return {
       id_session: this.#id_session,
       label: this.#label,
-      begin_date: moment(this.#begin_date).tz(CONFIG.timezone),
-      end_date: moment(this.#end_date).tz(CONFIG.timezone),
+      begin_date: moment(this.#begin_date).tz(CONFIG.APP_TZ),
+      end_date: moment(this.#end_date).tz(CONFIG.APP_TZ),
       environment: this.#environment.public_format(),
       applications: this.#applications.map((app) => app.public_format()),
       users: this.#users.map((user) => user.public_format()),
