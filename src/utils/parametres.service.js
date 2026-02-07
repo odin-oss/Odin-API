@@ -218,3 +218,42 @@ export const check_date = function (value) {
 export const check_boolean = function (bool = false) {
   return typeof bool === 'boolean' || bool instanceof Boolean;
 };
+
+/**
+ * Check what arguments you have into the request's params & get list of missing ones.
+ * @param {*} req
+ * @param {*} expectedKeys
+ * @returns
+ */
+export const check_params = function (req, expectedKeys) {
+  if (
+    !Array.isArray(expectedKeys) ||
+    !expectedKeys.every((item) => typeof item === 'string')
+  )
+    throw new BadTypeArgumentError(
+      'The argument expectedKeys must be an array of string.'
+    );
+  try {
+    const keys = Object.keys(req.params);
+    const missing_keys = [];
+    expectedKeys.forEach((key) => {
+      if (!keys.includes(key)) {
+        missing_keys.push(key);
+      }
+    });
+    if (missing_keys.length !== 0) {
+      logs.error(
+        `[MissingArgumentError][${req.method}][400] ${req.originalUrl} : The params parameter (${missing_keys.join(',')}) is missing.`
+      );
+      throw new MissingArgumentError(
+        'The params parameter (' + missing_keys.join(',') + ') is missing.'
+      );
+    }
+    return true;
+  } catch (err) {
+    if (err instanceof MissingArgumentError) throw err;
+    throw new BadTypeArgumentError(
+      'The argument req must be a conventional request from http of string.'
+    );
+  }
+};
