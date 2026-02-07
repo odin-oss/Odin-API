@@ -5,7 +5,7 @@ import {
   health_client,
   counter,
   counter_get,
-} from '../utils/health.service.js';
+} from '../middlewares/prometheus.js';
 import CONFIG from '../config/config.js';
 
 const router = express.Router();

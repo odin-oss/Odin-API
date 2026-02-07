@@ -1,17 +1,18 @@
 {
-  "name": "odin-ms-api",
-  "version": "1.1.3",
-  "description": "Odin's main API.",
+  "name": "odin-api",
+  "version": "2.0.0",
+  "description": "Odin api.",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "preinstall": "npm i nodemon -g",
-    "prerequisites": "node prerequisites.js",
-    "prod": "node -r dotenv/config prerequisites.js dotenv_config_path=./.env.prod && node -r dotenv/config index.js dotenv_config_path=./.env.prod",
-    "local": "node -r dotenv/config prerequisites.js dotenv_config_path=./.env.local && npm run prettier && nodemon -r dotenv/config index.js dotenv_config_path=./.env.local",
-    "prettier": "prettier --single-quote --trailing-comma es5 --write \"./**/*.js\"  ",
+    "predev": "npm run prettier",
+    "prettier": "prettier --single-quote --trailing-comma es5 --write \"./**/*.js\"",
+    "prettier:check": "prettier --check 'src/**/*.js'",
+    "lint": "eslint 'src/**/*.js' --fix",
+    "dev": "nodemon -r dotenv/config ./src/server.js dotenv_config_path=./.env.local --ignore ./src/models",
     "test": "cross-env ENV=test mocha test/**/*.test.js test/**/**/*.test.js",
-    "test:coverage": "c8 --allowExternal npm run test"
+    "test:coverage": "c8 --allowExternal npm run test",
+    "prod": "node -r dotenv/config index.js dotenv_config_path=./.env.prod"
   },
   "prettier": {
     "singleQuote": true,
@@ -74,6 +75,7 @@
     "jsonwebtoken": "^9.0.2",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.46",
+    "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
     "npm": "^11.6.0",
     "openid-client": "^6.1.6",

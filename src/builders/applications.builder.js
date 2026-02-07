@@ -1,6 +1,6 @@
 import { Op } from 'sequelize';
 import CONFIG from '../config/config.js';
-import db from '../config/db.config.js';
+import dbManager from '../config/db.config.js';
 import moment from 'moment-timezone';
 import * as parametres from '../utils/parametres.service.js';
 import {
@@ -48,11 +48,11 @@ export const get = async function (
       where: {},
       include: [
         {
-          model: db.cirrus.ENUM_STATE_APPLICATION,
+          model: dbManager.models.ENUM_STATE_APPLICATION,
           required: true,
         },
         {
-          model: db.cirrus.ENVIRONMENT,
+          model: dbManager.models.ENVIRONMENT,
           required: true,
         },
       ],
@@ -61,39 +61,39 @@ export const get = async function (
       options.where.id_application = props.id_application;
     if (props.key !== undefined) options.where.generated_label = props.key;
     if (props.hash !== undefined) options.where.hash = props.hash;
-    return await Promise.resolve(db.cirrus.APPLICATION.findOne(options)).then(
-      (r) => {
-        if (r === null)
-          throw new DBObjectNotFound(
-            `The element id_application = '${props.id_application}' could not be found.`
-          );
-        return new Application({
-          id_application: r.id_application,
-          custom_label: r.custom_label,
-          generated_label: r.generated_label,
-          creation_date: moment(r.creation_date).tz(CONFIG.timezone),
-          hash: r.hash,
-          username: r.username,
-          password: r.password,
-          id_user: r.id_user,
-          id_environment: r.id_environment,
-          state_application: r.ENUM_STATE_APPLICATION.label,
-          state_changed_date: moment(r.state_changed_date).tz(CONFIG.timezone),
-          programming_shutdown_date:
-            r.programming_shutdown_date == null
-              ? null
-              : moment(r.programming_shutdown_date).tz(CONFIG.timezone),
-          datacenter: new Datacenter({ id_datacenter: r.id_datacenter }),
-          environment: new Environment({
-            id_environment: r.ENVIRONMENT.id_environment,
-            label: r.ENVIRONMENT.label,
-            icon: r.ENVIRONMENT.icon,
-          }),
-        });
-      }
-    );
+    return await Promise.resolve(
+      dbManager.models.APPLICATION.findOne(options)
+    ).then((r) => {
+      if (r === null)
+        throw new DBObjectNotFound(
+          `The element id_application = '${props.id_application}' could not be found.`
+        );
+      return new Application({
+        id_application: r.id_application,
+        custom_label: r.custom_label,
+        generated_label: r.generated_label,
+        creation_date: moment(r.creation_date).tz(CONFIG.timezone),
+        hash: r.hash,
+        username: r.username,
+        password: r.password,
+        id_user: r.id_user,
+        id_environment: r.id_environment,
+        state_application: r.ENUM_STATE_APPLICATION.label,
+        state_changed_date: moment(r.state_changed_date).tz(CONFIG.timezone),
+        programming_shutdown_date:
+          r.programming_shutdown_date == null
+            ? null
+            : moment(r.programming_shutdown_date).tz(CONFIG.timezone),
+        datacenter: new Datacenter({ id_datacenter: r.id_datacenter }),
+        environment: new Environment({
+          id_environment: r.ENVIRONMENT.id_environment,
+          label: r.ENVIRONMENT.label,
+          icon: r.ENVIRONMENT.icon,
+        }),
+      });
+    });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -122,55 +122,55 @@ export const list = async function (
       where: { id_user: props.id_user },
       include: [
         {
-          model: db.cirrus.ENUM_STATE_APPLICATION,
+          model: dbManager.models.ENUM_STATE_APPLICATION,
           required: true,
         },
         {
-          model: db.cirrus.ENVIRONMENT,
+          model: dbManager.models.ENVIRONMENT,
           required: true,
         },
       ],
     };
-    return await Promise.resolve(db.cirrus.APPLICATION.findAll(options)).then(
-      (r) => {
-        return r.map(
-          (app) =>
-            new Application({
-              id_application: app.id_application,
-              custom_label: app.custom_label,
-              generated_label: app.generated_label,
-              creation_date: moment(app.creation_date).tz(CONFIG.timezone),
-              hash: app.hash,
-              username: app.username,
-              password: app.password,
-              id_user: app.id_user,
-              id_environment: app.id_environment,
-              state_application: app.ENUM_STATE_APPLICATION.label,
-              state_changed_date: moment(app.state_changed_date).tz(
-                CONFIG.timezone
-              ),
-              programming_shutdown_date:
-                app.programming_shutdown_date == null
-                  ? null
-                  : moment(app.programming_shutdown_date).tz(CONFIG.timezone),
-              datacenter: new Datacenter({
-                id_datacenter: app.id_datacenter,
-                label: '',
-                city: '',
-                provider: '',
-              }),
-              environment: new Environment({
-                id_environment: app.ENVIRONMENT.id_environment,
-                label: app.ENVIRONMENT.label,
-                icon: app.ENVIRONMENT.icon,
-                interfaces: [],
-              }),
-            })
-        );
-      }
-    );
+    return await Promise.resolve(
+      dbManager.models.APPLICATION.findAll(options)
+    ).then((r) => {
+      return r.map(
+        (app) =>
+          new Application({
+            id_application: app.id_application,
+            custom_label: app.custom_label,
+            generated_label: app.generated_label,
+            creation_date: moment(app.creation_date).tz(CONFIG.timezone),
+            hash: app.hash,
+            username: app.username,
+            password: app.password,
+            id_user: app.id_user,
+            id_environment: app.id_environment,
+            state_application: app.ENUM_STATE_APPLICATION.label,
+            state_changed_date: moment(app.state_changed_date).tz(
+              CONFIG.timezone
+            ),
+            programming_shutdown_date:
+              app.programming_shutdown_date == null
+                ? null
+                : moment(app.programming_shutdown_date).tz(CONFIG.timezone),
+            datacenter: new Datacenter({
+              id_datacenter: app.id_datacenter,
+              label: '',
+              city: '',
+              provider: '',
+            }),
+            environment: new Environment({
+              id_environment: app.ENVIRONMENT.id_environment,
+              label: app.ENVIRONMENT.label,
+              icon: app.ENVIRONMENT.icon,
+              interfaces: [],
+            }),
+          })
+      );
+    });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -202,7 +202,7 @@ export const renew_expiration = async function (
       },
     };
     const application = await Promise.resolve(
-      db.cirrus.APPLICATION.findOne(options)
+      dbManager.models.APPLICATION.findOne(options)
     );
     if (application == null)
       throw new DBObjectNotFound('The application could not be found.');
@@ -222,12 +222,12 @@ export const renew_expiration = async function (
     };
 
     return await Promise.resolve(
-      db.cirrus.APPLICATION.update(opt_update, opt_condition)
+      dbManager.models.APPLICATION.update(opt_update, opt_condition)
     ).then((response) => {
       return 'The application expiration have been renewed.';
     });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -291,7 +291,7 @@ export const create = async function (
       where: { label: creation_state },
     };
     const id_enum_state_application = await Promise.resolve(
-      db.cirrus.ENUM_STATE_APPLICATION.findOne(esp_options)
+      dbManager.models.ENUM_STATE_APPLICATION.findOne(esp_options)
     ).then((r) => {
       if (r == null)
         throw new DBObjectNotFound('The state could not be found.');
@@ -325,35 +325,35 @@ export const create = async function (
               .utc()
               .format(),
     };
-    return await Promise.resolve(db.cirrus.APPLICATION.create(options)).then(
-      (r) => {
-        return new Application({
-          id_application: r.id_application,
-          custom_label: r.custom_label,
-          generated_label: r.generated_label,
-          creation_date: moment(r.creation_date).tz(CONFIG.timezone),
-          hash: r.hash,
-          username: r.username,
-          password: r.password,
-          id_user: r.id_user,
+    return await Promise.resolve(
+      dbManager.models.APPLICATION.create(options)
+    ).then((r) => {
+      return new Application({
+        id_application: r.id_application,
+        custom_label: r.custom_label,
+        generated_label: r.generated_label,
+        creation_date: moment(r.creation_date).tz(CONFIG.timezone),
+        hash: r.hash,
+        username: r.username,
+        password: r.password,
+        id_user: r.id_user,
+        id_environment: r.id_environment,
+        state_application: creation_state,
+        state_changed_date: moment(r.state_changed_date).tz(CONFIG.timezone),
+        programming_shutdown_date:
+          r.programming_shutdown_date == null
+            ? null
+            : moment(r.programming_shutdown_date).tz(CONFIG.timezone),
+        datacenter: undefined,
+        environment: new Environment({
           id_environment: r.id_environment,
-          state_application: creation_state,
-          state_changed_date: moment(r.state_changed_date).tz(CONFIG.timezone),
-          programming_shutdown_date:
-            r.programming_shutdown_date == null
-              ? null
-              : moment(r.programming_shutdown_date).tz(CONFIG.timezone),
-          datacenter: undefined,
-          environment: new Environment({
-            id_environment: r.id_environment,
-            label: '',
-            icon: '',
-          }),
-        });
-      }
-    );
+          label: '',
+          icon: '',
+        }),
+      });
+    });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -410,12 +410,12 @@ export const is_owner = async function (
           };
 
     return await Promise.resolve(
-      db.cirrus.APPLICATION.findOne({ where: whereOpt })
+      dbManager.models.APPLICATION.findOne({ where: whereOpt })
     ).then((r) => {
       return r != null;
     });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -445,12 +445,12 @@ export const nameExists = async (
       generated_label: props.name,
     },
   };
-  return await Promise.resolve(db.cirrus.APPLICATION.findOne(options))
+  return await Promise.resolve(dbManager.models.APPLICATION.findOne(options))
     .then((r) => {
       return r != null;
     })
     .catch((err) => {
-      throw db.sequelizeErrorManagement(err);
+      throw dbManager.sequelizeErrorManagement(err);
     });
 };
 
@@ -477,12 +477,12 @@ export const hashExists = async (
   const options = {
     where: { hash: props.hash },
   };
-  return await Promise.resolve(db.cirrus.APPLICATION.findOne(options))
+  return await Promise.resolve(dbManager.models.APPLICATION.findOne(options))
     .then((r) => {
       return r != null;
     })
     .catch((err) => {
-      throw db.sequelizeErrorManagement(err);
+      throw dbManager.sequelizeErrorManagement(err);
     });
 };
 
@@ -515,7 +515,7 @@ export const deletion = async function (
       where: { label: 'Deleted' },
     };
     const id_enum_state_application = await Promise.resolve(
-      db.cirrus.ENUM_STATE_APPLICATION.findOne(options)
+      dbManager.models.ENUM_STATE_APPLICATION.findOne(options)
     ).then((r) => {
       return r.id_enum_state_application;
     });
@@ -530,12 +530,12 @@ export const deletion = async function (
       },
     };
     return await Promise.resolve(
-      db.cirrus.APPLICATION.update(opt_update, options)
+      dbManager.models.APPLICATION.update(opt_update, options)
     ).then((r) => {
       return r > 0;
     });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 /**
@@ -571,7 +571,7 @@ export const download_deletion = async function (
       where: { label: 'DeletedLaunch' },
     };
     const id_enum_state_application = await Promise.resolve(
-      db.cirrus.ENUM_STATE_APPLICATION.findOne(options)
+      dbManager.models.ENUM_STATE_APPLICATION.findOne(options)
     ).then((r) => {
       return r.id_enum_state_application;
     });
@@ -586,12 +586,12 @@ export const download_deletion = async function (
       },
     };
     return await Promise.resolve(
-      db.cirrus.APPLICATION.update(opt_update, options)
+      dbManager.models.APPLICATION.update(opt_update, options)
     ).then((r) => {
       return r > 0;
     });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -630,7 +630,7 @@ export const update_state = async function (
       where: { label: props.state_application },
     };
     const id_enum_state_application = await Promise.resolve(
-      db.cirrus.ENUM_STATE_APPLICATION.findOne(options)
+      dbManager.models.ENUM_STATE_APPLICATION.findOne(options)
     ).then((r) => {
       return r.id_enum_state_application;
     });
@@ -655,7 +655,7 @@ export const update_state = async function (
     };
 
     return await Promise.resolve(
-      db.cirrus.APPLICATION.update(opt_update, opt_condition)
+      dbManager.models.APPLICATION.update(opt_update, opt_condition)
     ).then((r) => {
       if (r[0] === 0)
         throw new DBObjectNotFound('The application to update does not exist.');
@@ -663,6 +663,6 @@ export const update_state = async function (
     });
   } catch (err) {
     if (err instanceof DBObjectNotFound) throw err;
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };

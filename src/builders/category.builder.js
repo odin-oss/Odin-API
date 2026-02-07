@@ -1,4 +1,4 @@
-import db from '../config/db.config.js';
+import dbManager from '../config/db.config.js';
 import { Category } from '../objects/Category.js';
 import { Environment } from '../objects/Environment.js';
 
@@ -10,21 +10,21 @@ export const list = async function () {
   const options = {
     include: [
       {
-        model: db.cirrus.CATEGORY,
+        model: dbManager.models.CATEGORY,
         required: true,
       },
       {
-        model: db.cirrus.ENVIRONMENT,
+        model: dbManager.models.ENVIRONMENT,
         required: true,
       },
     ],
     order: [
-      [{ model: db.cirrus.CATEGORY }, 'label', 'ASC'],
-      [{ model: db.cirrus.ENVIRONMENT }, 'label', 'ASC'],
+      [{ model: dbManager.models.CATEGORY }, 'label', 'ASC'],
+      [{ model: dbManager.models.ENVIRONMENT }, 'label', 'ASC'],
     ],
   };
   return await Promise.resolve(
-    db.cirrus.ENVIRONMENT_HAS_CATEGORY.findAll(options)
+    dbManager.models.ENVIRONMENT_HAS_CATEGORY.findAll(options)
   )
     .then((r) => {
       const result = [];
@@ -66,6 +66,6 @@ export const list = async function () {
       return result;
     })
     .catch((err) => {
-      throw db.sequelizeErrorManagement(err);
+      throw dbManager.sequelizeErrorManagement(err);
     });
 };

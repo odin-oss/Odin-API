@@ -1,6 +1,6 @@
-import logs from '../config/winston.config.js';
+import logs from '../middlewares/winston.js';
 import * as user_service from '../services/user.service.js';
-import { counter_get, counter } from '../utils/health.service.js';
+import { counter_get, counter } from '../middlewares/prometheus.js';
 import * as token from '../utils/token.service.js';
 import * as parametres from '../utils/parametres.service.js';
 import { ParameterMisformed } from '../utils/errors.service.js';

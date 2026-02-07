@@ -1,9 +1,12 @@
-import logs from '../config/winston.config.js';
+import logs from '../middlewares/winston.js';
 import * as auth_service from '../services/auth.service.js';
 import * as parametres from '../utils/parametres.service.js';
 import CONFIG from '../config/config.js';
-import * as issuer from 'openid-client';
-import { counter, counter_post, counter_get } from '../utils/health.service.js';
+import {
+  counter,
+  counter_post,
+  counter_get,
+} from '../middlewares/prometheus.js';
 
 /**
  * Controller that give you general connexion configurations.

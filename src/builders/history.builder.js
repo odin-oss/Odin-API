@@ -1,4 +1,4 @@
-import db from '../config/db.config.js';
+import dbManager from '../config/db.config.js';
 import * as parametres from '../utils/parametres.service.js';
 import {
   MissingArgumentError,
@@ -41,7 +41,7 @@ export const create = async function (
       id_application: props.id_application,
       datetime: moment.tz(CONFIG.timezone).utc().format(),
     };
-    return await Promise.resolve(db.cirrus.HISTORY.create(options)).then(
+    return await Promise.resolve(dbManager.models.HISTORY.create(options)).then(
       (r) => {
         return new History({
           records: [
@@ -56,7 +56,7 @@ export const create = async function (
       }
     );
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 /**
@@ -95,22 +95,22 @@ export const get_last_record = async function (
       },
       order: [['datetime', 'DESC']],
     };
-    return await Promise.resolve(db.cirrus.HISTORY.findOne(options)).then(
-      (r) => {
-        if (r == null) return new History();
-        return new History({
-          records: [
-            new Record({
-              id_user: r.id_user,
-              id_application: r.id_application,
-              id_history: r.id_history,
-              datetime: moment(r.datetime).tz(CONFIG.timezone),
-            }),
-          ],
-        });
-      }
-    );
+    return await Promise.resolve(
+      dbManager.models.HISTORY.findOne(options)
+    ).then((r) => {
+      if (r == null) return new History();
+      return new History({
+        records: [
+          new Record({
+            id_user: r.id_user,
+            id_application: r.id_application,
+            id_history: r.id_history,
+            datetime: moment(r.datetime).tz(CONFIG.timezone),
+          }),
+        ],
+      });
+    });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };

@@ -1,4 +1,4 @@
-import logs from '../config/winston.config.js';
+import logs from '../middlewares/winston.js';
 import moment from 'moment-timezone';
 import * as applications_service from '../services/applications.service.js';
 import * as token from '../utils/token.service.js';
@@ -9,12 +9,13 @@ import {
   counter,
   counter_put,
   counter_post,
-} from '../utils/health.service.js';
+} from '../middlewares/prometheus.js';
 import CONFIG from '../config/config.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
 } from '../utils/errors.service.js';
+import UniformResponse from '../objects/UniformResponse.js';
 
 /**
  * Controllers that checks parameters and return the list of all applications in public format.
@@ -30,13 +31,9 @@ export const list = async (
     applications_list: applications_service.list,
   }
 ) => {
-  // Prometheus
-  counter_get.inc();
-  counter.inc();
-
-  //Request
   const id_user = token.getUserId({ token: req.headers['authorization'] });
-  return await Promise.resolve(fns.applications_list({ id_user }))
+  await fns
+    .applications_list({ id_user })
     .then((applications) => {
       logs.info(
         `[${req.method}][200] ${req.originalUrl} : List of applications transmitted.`

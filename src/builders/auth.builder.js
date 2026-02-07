@@ -1,4 +1,4 @@
-import db from '../config/db.config.js';
+import dbManager from '../config/db.config.js';
 import * as parametres from '../utils/parametres.service.js';
 import { User } from '../objects/User.js';
 import {
@@ -25,7 +25,7 @@ export const update = async function (
       where: { label: props.role },
     };
     const user_role = await Promise.resolve(
-      db.caelus.USER_ROLE.findOne(option)
+      dbManager.models.USER_ROLE.findOne(option)
     ).then((r) => {
       if (r == null) throw new DBObjectNotFound('The role could not be found.');
       return r;
@@ -37,7 +37,7 @@ export const update = async function (
       returning: true,
     };
     return await Promise.resolve(
-      db.caelus.USERS.update(values_update, options_update)
+      dbManager.models.USERS.update(values_update, options_update)
     ).then((r) => {
       if (r[0] === 0)
         throw new DBObjectNotFound('The user role could not be updated.');
@@ -51,7 +51,7 @@ export const update = async function (
       });
     });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -83,17 +83,17 @@ export const role_by_id = async function (
         id_role: props.id_role,
       },
     };
-    return await Promise.resolve(db.caelus.USER_ROLE.findOne(options)).then(
-      (r) => {
-        if (!r) throw new DBObjectNotFound('The user role could not be found.');
-        return new UserRole({
-          id_role: r.id_role,
-          label: r.label,
-        });
-      }
-    );
+    return await Promise.resolve(
+      dbManager.models.USER_ROLE.findOne(options)
+    ).then((r) => {
+      if (!r) throw new DBObjectNotFound('The user role could not be found.');
+      return new UserRole({
+        id_role: r.id_role,
+        label: r.label,
+      });
+    });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 /**
@@ -124,16 +124,16 @@ export const role_by_label = async function (
         label: props.label,
       },
     };
-    return await Promise.resolve(db.caelus.USER_ROLE.findOne(options)).then(
-      (r) => {
-        if (!r) throw new DBObjectNotFound('The user role could not be found.');
-        return new UserRole({
-          id_role: r.id_role,
-          label: r.label,
-        });
-      }
-    );
+    return await Promise.resolve(
+      dbManager.models.USER_ROLE.findOne(options)
+    ).then((r) => {
+      if (!r) throw new DBObjectNotFound('The user role could not be found.');
+      return new UserRole({
+        id_role: r.id_role,
+        label: r.label,
+      });
+    });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };

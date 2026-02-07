@@ -6,7 +6,7 @@
 import express from 'express';
 import * as auth_controller from '../controllers/auth.controller.js';
 import { app_access_granted } from '../utils/token.service.js';
-import { counter, counter_get } from '../utils/health.service.js';
+import { counter, counter_get } from '../middlewares/prometheus.js';
 
 const router = express.Router();
 

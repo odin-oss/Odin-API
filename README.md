@@ -77,8 +77,7 @@ All the deployment part is done and managed by ArgoCD.
 ### Database parameters
 - **DB_DIALECT** : `postgres`.
 - **DB_HOST** : the url to join the database.
-- **DB_CIRRUS_NAME** : the cirrus database name.
-- **DB_CAELUS_NAME** : the caelus database name.
+- **DB_NAME** : the cirrus database name.
 - **DB_PASSWORD** : password of the database.
 - **DB_PORT** : the port used by the database.
 - **DB_USER** : username of the database.
@@ -105,13 +104,3 @@ All the deployment part is done and managed by ArgoCD.
 - **PUBLIC_URL** : public url of this API
 - **FRONT_END_URL** : url of front-end. 
 - **APPS_CRRS_URL** : url of crrs application (the internal ingress)
-
----
-### OIDC (currently disabled)
-- **OIDC_ENABLED**
-- **CREDENTIALS_ENABLED**
-- **OIDC_DISCOVERY_LINK**
-- **OIDC_CLIENT_ID**
-- **OIDC_CLIENT_SECRET**
-- **OIDC_REDIRECT_URIS**
-- **OIDC_REDIRECT_LOGOUT_URIS**

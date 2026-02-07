@@ -1,6 +1,6 @@
 import { Op } from 'sequelize';
 import CONFIG from '../../config/config.js';
-import db from '../../config/db.config.js';
+import dbManager from '../../config/db.config.js';
 import moment from 'moment-timezone';
 import * as parametres from '../../utils/parametres.service.js';
 import {
@@ -49,7 +49,7 @@ export const create = async function (
       id_enum_export_state: id_enum_export_state,
     };
     return await Promise.resolve(
-      db.cirrus.APPLICATION_EXPORT.create(options)
+      dbManager.models.APPLICATION_EXPORT.create(options)
     ).then((r) => {
       return new Application_export({
         id_export: r.id_export,
@@ -61,7 +61,7 @@ export const create = async function (
       });
     });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -85,7 +85,7 @@ export const get = async function (
       where: { id_export: props.id_export },
     };
     return await Promise.resolve(
-      db.cirrus.APPLICATION_EXPORT.findOne(options)
+      dbManager.models.APPLICATION_EXPORT.findOne(options)
     ).then(async (r) => {
       if (r === null)
         throw new DBObjectNotFound(
@@ -107,7 +107,7 @@ export const get = async function (
     });
   } catch (err) {
     if (err instanceof DBObjectNotFound) throw err;
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -139,7 +139,7 @@ export const getLatestStorage = async function (
       order: [['init_date', 'DESC']],
     };
     return await Promise.resolve(
-      db.cirrus.APPLICATION_EXPORT.findOne(options)
+      dbManager.models.APPLICATION_EXPORT.findOne(options)
     ).then(async (r) => {
       if (r === null)
         return new Application_export({
@@ -168,7 +168,7 @@ export const getLatestStorage = async function (
     });
   } catch (err) {
     if (err instanceof DBObjectNotFound) throw err;
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -204,7 +204,7 @@ export const getNonErrorApplicationStorage = async function (
       order: [['init_date', 'DESC']],
     };
     return await Promise.resolve(
-      db.cirrus.APPLICATION_EXPORT.findOne(options)
+      dbManager.models.APPLICATION_EXPORT.findOne(options)
     ).then(async (r) => {
       if (
         r !== null &&
@@ -237,7 +237,7 @@ export const getNonErrorApplicationStorage = async function (
     });
   } catch (err) {
     if (err instanceof DBObjectNotFound) throw err;
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -271,7 +271,7 @@ export const deleteExport = async function (
       where: { id_export: props.id_export },
     };
     return await Promise.resolve(
-      db.cirrus.APPLICATION_EXPORT.update(opt_update, opt_condition)
+      dbManager.models.APPLICATION_EXPORT.update(opt_update, opt_condition)
     ).then((r) => {
       if (r[0] === 0)
         throw new DBObjectNotFound('The export to update does not exist.');
@@ -286,7 +286,7 @@ export const deleteExport = async function (
     });
   } catch (err) {
     if (err instanceof DBObjectNotFound) throw err;
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -317,7 +317,7 @@ export const setError = async function (
       where: { id_export: props.id_export },
     };
     return await Promise.resolve(
-      db.cirrus.APPLICATION_EXPORT.update(opt_update, opt_condition)
+      dbManager.models.APPLICATION_EXPORT.update(opt_update, opt_condition)
     ).then((r) => {
       if (r[0] === 0)
         throw new DBObjectNotFound('The export to update does not exist.');
@@ -332,7 +332,7 @@ export const setError = async function (
     });
   } catch (err) {
     if (err instanceof DBObjectNotFound) throw err;
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -368,7 +368,7 @@ export const getIdEnumState = async function (
     where: { status: props.status },
   };
   const id_enum_export_state = await Promise.resolve(
-    db.cirrus.ENUM_EXPORT_STATE.findOne(opt_state)
+    dbManager.models.ENUM_EXPORT_STATE.findOne(opt_state)
   ).then((r) => {
     if (r == null)
       throw new DBObjectNotFound(
@@ -419,7 +419,7 @@ export const getIdsEnumStates = async function (
   };
 
   const id_enum_export_states = await Promise.resolve(
-    db.cirrus.ENUM_EXPORT_STATE.findAll(opt_state)
+    dbManager.models.ENUM_EXPORT_STATE.findAll(opt_state)
   ).then((results) => {
     if (results.length !== props.statuses.length) {
       const foundStatuses = results.map((r) => r.status);
@@ -455,7 +455,7 @@ export const getStatusFromId = async function (
     where: { id_enum_export_state: props.id_enum_export_state },
   };
   const status = await Promise.resolve(
-    db.cirrus.ENUM_EXPORT_STATE.findOne(opt_state)
+    dbManager.models.ENUM_EXPORT_STATE.findOne(opt_state)
   ).then((result) => {
     if (!result) {
       throw new DBObjectNotFound(

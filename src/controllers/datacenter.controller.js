@@ -1,6 +1,6 @@
-import logs from '../config/winston.config.js';
+import logs from '../middlewares/winston.js';
 import * as datacenter_service from '../services/datacenter.service.js';
-import { counter_get, counter } from '../utils/health.service.js';
+import { counter_get, counter } from '../middlewares/prometheus.js';
 
 /**
  * Controller that checks requets content before fetching all the datacenters in db.

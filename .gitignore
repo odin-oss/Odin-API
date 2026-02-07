@@ -1,6 +1,6 @@
 node_modules/
 log/
-src/config/models-*/*.js
+src/config/models/*.js
 swagger.json
 .scannerwork/
 sonar-reports/
@@ -12,3 +12,5 @@ src/modules/mtls/client.crt
 src/modules/mtls/client.key
 .crush
 .env*
+!.env.template
+images/img-*.png

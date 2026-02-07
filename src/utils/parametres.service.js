@@ -1,5 +1,5 @@
 import CONFIG from '../config/config.js';
-import logs from '../config/winston.config.js';
+import logs from '../middlewares/winston.js';
 import {
   BadTypeArgumentError,
   MissingArgumentError,

@@ -1,4 +1,4 @@
-import db from '../config/db.config.js';
+import dbManager from '../config/db.config.js';
 import { Environment } from '../objects/Environment.js';
 import { Interface } from '../objects/Interface.js';
 import {
@@ -17,15 +17,15 @@ export const list = async function () {
     const queryOptions = {
       include: [
         {
-          model: db.cirrus.ENVIRONMENT,
+          model: dbManager.models.ENVIRONMENT,
           required: true,
         },
         {
-          model: db.cirrus.INTERFACE,
+          model: dbManager.models.INTERFACE,
           required: true,
           include: [
             {
-              model: db.cirrus.IMAGE_TYPE,
+              model: dbManager.models.IMAGE_TYPE,
               required: true,
             },
           ],
@@ -33,7 +33,7 @@ export const list = async function () {
       ],
     };
     return await Promise.resolve(
-      db.cirrus.ENVIRONMENT_HAS_INTERFACE.findAll(queryOptions)
+      dbManager.models.ENVIRONMENT_HAS_INTERFACE.findAll(queryOptions)
     ).then((r) => {
       let result = [];
       for (let env of r) {
@@ -86,7 +86,7 @@ export const list = async function () {
       return result;
     });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -118,47 +118,47 @@ export const get = async function (
       where: { id_environment: props.id_environment },
       include: [
         {
-          model: db.cirrus.ENVIRONMENT,
+          model: dbManager.models.ENVIRONMENT,
           required: true,
         },
         {
-          model: db.cirrus.INTERFACE,
+          model: dbManager.models.INTERFACE,
           required: true,
           include: [
             {
-              model: db.cirrus.IMAGE_TYPE,
+              model: dbManager.models.IMAGE_TYPE,
               required: true,
             },
             {
-              model: db.cirrus.INTERFACE_HAS_ARGUMENT,
+              model: dbManager.models.INTERFACE_HAS_ARGUMENT,
               include: [
                 {
-                  model: db.cirrus.ARGUMENT,
+                  model: dbManager.models.ARGUMENT,
                   order: [['id_argument', 'DESC']],
                 },
               ],
             },
             {
-              model: db.cirrus.INTERFACE_HAS_NODE_SELECTOR,
+              model: dbManager.models.INTERFACE_HAS_NODE_SELECTOR,
               include: [
                 {
-                  model: db.cirrus.NODE_SELECTOR,
+                  model: dbManager.models.NODE_SELECTOR,
                 },
               ],
             },
             {
-              model: db.cirrus.INTERFACE_HAS_PORT,
+              model: dbManager.models.INTERFACE_HAS_PORT,
               include: [
                 {
-                  model: db.cirrus.PORT_TYPE,
+                  model: dbManager.models.PORT_TYPE,
                 },
               ],
             },
             {
-              model: db.cirrus.INTERFACE_HAS_VARIABLE,
+              model: dbManager.models.INTERFACE_HAS_VARIABLE,
               include: [
                 {
-                  model: db.cirrus.VARIABLE_ENVIRONMENT,
+                  model: dbManager.models.VARIABLE_ENVIRONMENT,
                 },
               ],
             },
@@ -167,7 +167,7 @@ export const get = async function (
       ],
     };
     return await Promise.resolve(
-      db.cirrus.ENVIRONMENT_HAS_INTERFACE.findAll(queryOptions)
+      dbManager.models.ENVIRONMENT_HAS_INTERFACE.findAll(queryOptions)
     ).then((r) => {
       let result;
       for (let env of r) {
@@ -235,6 +235,6 @@ export const get = async function (
       return result;
     });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };

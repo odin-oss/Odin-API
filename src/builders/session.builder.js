@@ -1,5 +1,5 @@
 import CONFIG from '../config/config.js';
-import db from '../config/db.config.js';
+import dbManager from '../config/db.config.js';
 import * as parametres from '../utils/parametres.service.js';
 import {
   MissingArgumentError,
@@ -57,12 +57,12 @@ export const attribute_professor = async function (
       id_session: props.id_session,
     };
     return await Promise.resolve(
-      db.cirrus.SESSION_HAS_PROFESSOR.create(options)
+      dbManager.models.SESSION_HAS_PROFESSOR.create(options)
     ).then((r) => {
       return { id_session: r.id_session, user };
     });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -115,7 +115,7 @@ export const attribute_user_and_application = async function (
       id_application: props.id_application,
     };
     return await Promise.resolve(
-      db.cirrus.SESSION_HAS_USER.create(options)
+      dbManager.models.SESSION_HAS_USER.create(options)
     ).then((r) => {
       return {
         id_application: r.id_application,
@@ -124,7 +124,7 @@ export const attribute_user_and_application = async function (
       };
     });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -173,7 +173,7 @@ export const create = async function (
       end_date: moment(props.end_date).tz(CONFIG.timezone).utc().format(),
       id_environment: props.id_environment,
     };
-    return await Promise.resolve(db.cirrus.SESSION.create(options)).then(
+    return await Promise.resolve(dbManager.models.SESSION.create(options)).then(
       (r) => {
         return new Session({
           id_session: r.id_session,
@@ -185,7 +185,7 @@ export const create = async function (
       }
     );
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -223,26 +223,26 @@ export const list = async function (
       );
     let promise;
     if (user_role.role !== 'PROFESSEUR') {
-      promise = db.cirrus.SESSION.findAll({
+      promise = dbManager.models.SESSION.findAll({
         include: [
           {
-            model: db.cirrus.ENVIRONMENT,
+            model: dbManager.models.ENVIRONMENT,
             required: true,
           },
           {
-            model: db.cirrus.SESSION_HAS_PROFESSOR,
+            model: dbManager.models.SESSION_HAS_PROFESSOR,
             required: false,
           },
           {
-            model: db.cirrus.SESSION_HAS_USER,
+            model: dbManager.models.SESSION_HAS_USER,
             required: false,
             include: [
               {
-                model: db.cirrus.APPLICATION,
+                model: dbManager.models.APPLICATION,
                 required: true,
                 include: [
                   {
-                    model: db.cirrus.DATACENTER,
+                    model: dbManager.models.DATACENTER,
                     required: false,
                   },
                 ],
@@ -252,33 +252,33 @@ export const list = async function (
         ],
       });
     } else {
-      promise = db.cirrus.SESSION_HAS_PROFESSOR.findAll({
+      promise = dbManager.models.SESSION_HAS_PROFESSOR.findAll({
         where: {
           id_user: props.id_user,
         },
         include: [
           {
-            model: db.cirrus.SESSION,
+            model: dbManager.models.SESSION,
             required: true,
             include: [
               {
-                model: db.cirrus.ENVIRONMENT,
+                model: dbManager.models.ENVIRONMENT,
                 required: true,
               },
               {
-                model: db.cirrus.SESSION_HAS_PROFESSOR,
+                model: dbManager.models.SESSION_HAS_PROFESSOR,
                 required: false,
               },
               {
-                model: db.cirrus.SESSION_HAS_USER,
+                model: dbManager.models.SESSION_HAS_USER,
                 required: false,
                 include: [
                   {
-                    model: db.cirrus.APPLICATION,
+                    model: dbManager.models.APPLICATION,
                     required: true,
                     include: [
                       {
-                        model: db.cirrus.DATACENTER,
+                        model: dbManager.models.DATACENTER,
                         required: false,
                       },
                     ],
@@ -347,7 +347,7 @@ export const list = async function (
       return tmp;
     });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -379,7 +379,7 @@ export const get_on_professeur = async function (
 
   // Checking the attribution
   await Promise.resolve(
-    db.cirrus.SESSION_HAS_PROFESSOR.findOne({
+    dbManager.models.SESSION_HAS_PROFESSOR.findOne({
       where: {
         id_user: props.id_user,
         id_session: props.id_session,
@@ -392,33 +392,33 @@ export const get_on_professeur = async function (
       );
   });
 
-  const promise = db.cirrus.SESSION_HAS_PROFESSOR.findOne({
+  const promise = dbManager.models.SESSION_HAS_PROFESSOR.findOne({
     where: {
       id_session: props.id_session,
     },
     include: [
       {
-        model: db.cirrus.SESSION,
+        model: dbManager.models.SESSION,
         required: true,
         include: [
           {
-            model: db.cirrus.ENVIRONMENT,
+            model: dbManager.models.ENVIRONMENT,
             required: true,
           },
           {
-            model: db.cirrus.SESSION_HAS_PROFESSOR,
+            model: dbManager.models.SESSION_HAS_PROFESSOR,
             required: false,
           },
           {
-            model: db.cirrus.SESSION_HAS_USER,
+            model: dbManager.models.SESSION_HAS_USER,
             required: false,
             include: [
               {
-                model: db.cirrus.APPLICATION,
+                model: dbManager.models.APPLICATION,
                 required: true,
                 include: [
                   {
-                    model: db.cirrus.DATACENTER,
+                    model: dbManager.models.DATACENTER,
                     required: false,
                   },
                 ],
@@ -480,29 +480,29 @@ export const get_on_administrateur = async function (
       'The props.id_session parameter is misformed.'
     );
 
-  const promise = db.cirrus.SESSION.findOne({
+  const promise = dbManager.models.SESSION.findOne({
     where: {
       id_session: props.id_session,
     },
     include: [
       {
-        model: db.cirrus.ENVIRONMENT,
+        model: dbManager.models.ENVIRONMENT,
         required: true,
       },
       {
-        model: db.cirrus.SESSION_HAS_PROFESSOR,
+        model: dbManager.models.SESSION_HAS_PROFESSOR,
         required: false,
       },
       {
-        model: db.cirrus.SESSION_HAS_USER,
+        model: dbManager.models.SESSION_HAS_USER,
         required: false,
         include: [
           {
-            model: db.cirrus.APPLICATION,
+            model: dbManager.models.APPLICATION,
             required: true,
             include: [
               {
-                model: db.cirrus.DATACENTER,
+                model: dbManager.models.DATACENTER,
                 required: false,
               },
             ],
