@@ -1,16 +1,19 @@
 node_modules/
 log/
-src/config/models/*.js
-swagger.json
 .scannerwork/
 sonar-reports/
 coverage/
 .nyc_output/
 .vscode
-src/modules/mtls/ca.crt
-src/modules/mtls/client.crt
-src/modules/mtls/client.key
 .crush
 .env*
 !.env.template
+
+# IMAGES
 images/img-*.png
+
+# SOURCES
+src/modules/mtls/ca.crt
+src/modules/mtls/client.crt
+src/modules/mtls/client.key
+src/models/*.js
