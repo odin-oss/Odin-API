@@ -1,4 +1,4 @@
-import db from '../config/db.config.js';
+import dbManager from '../config/db.config.js';
 import {
   DBObjectNotFound,
   MissingArgumentError,
@@ -34,45 +34,45 @@ export const get = async function (
     where: { id_interface: props.id_interface },
     include: [
       {
-        model: db.cirrus.IMAGE_TYPE,
+        model: db.odin.IMAGE_TYPE,
         required: true,
       },
       {
-        model: db.cirrus.INTERFACE_HAS_ARGUMENT,
+        model: db.odin.INTERFACE_HAS_ARGUMENT,
         include: [
           {
-            model: db.cirrus.ARGUMENT,
+            model: db.odin.ARGUMENT,
             order: [['id_argument', 'DESC']],
           },
         ],
       },
       {
-        model: db.cirrus.INTERFACE_HAS_NODE_SELECTOR,
+        model: dbManager.models.INTERFACE_HAS_NODE_SELECTOR,
         include: [
           {
-            model: db.cirrus.NODE_SELECTOR,
+            model: dbManager.models.NODE_SELECTOR,
           },
         ],
       },
       {
-        model: db.cirrus.INTERFACE_HAS_PORT,
+        model: dbManager.models.INTERFACE_HAS_PORT,
         include: [
           {
-            model: db.cirrus.PORT_TYPE,
+            model: dbManager.models.PORT_TYPE,
           },
         ],
       },
       {
-        model: db.cirrus.INTERFACE_HAS_VARIABLE,
+        model: dbManager.models.INTERFACE_HAS_VARIABLE,
         include: [
           {
-            model: db.cirrus.VARIABLE_ENVIRONMENT,
+            model: dbManager.models.VARIABLE_ENVIRONMENT,
           },
         ],
       },
     ],
   };
-  return await Promise.resolve(db.cirrus.INTERFACE.findOne(options))
+  return await Promise.resolve(dbManager.models.INTERFACE.findOne(options))
     .then((r) => {
       if (r == null)
         throw new DBObjectNotFound('The interface could not be found.');
@@ -122,6 +122,6 @@ export const get = async function (
       });
     })
     .catch((err) => {
-      throw db.sequelizeErrorManagement(err);
+      throw dbManager.sequelizeErrorManagement(err);
     });
 };

@@ -204,3 +204,33 @@ export class ApplicationInvalidStateError extends Error {
     this.name = 'ApplicationInvalidStateError';
   }
 }
+/**
+ * ImageNotFound returned if the image is not found on local storage.
+ */
+export class ImageNotFound extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 404;
+    this.name = 'ImageNotFound';
+  }
+}
+/**
+ * ReadingImageError returned if the image could not be loaded.
+ */
+export class ReadingImageError extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 500;
+    this.name = 'ReadingImageError';
+  }
+}
+/**
+ * NoImageReceived returned if no image is sent in the req.
+ */
+export class NoImageReceived extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 500;
+    this.name = 'NoImageReceived';
+  }
+}

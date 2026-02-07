@@ -1,4 +1,4 @@
-import db from '../config/db.config.js';
+import dbManager from '../config/db.config.js';
 import { Datacenter } from '../objects/Datacenter.js';
 import {
   DBObjectNotFound,
@@ -14,19 +14,21 @@ import * as parametres from '../utils/parametres.service.js';
  */
 export const list = async function () {
   try {
-    return await Promise.resolve(db.cirrus.DATACENTER.findAll()).then((dcs) => {
-      return dcs.map(
-        (dc) =>
-          new Datacenter({
-            id_datacenter: dc.id_datacenter,
-            label: dc.label,
-            provider: dc.provider,
-            city: dc.city,
-          })
-      );
-    });
+    return await Promise.resolve(dbManager.models.DATACENTER.findAll()).then(
+      (dcs) => {
+        return dcs.map(
+          (dc) =>
+            new Datacenter({
+              id_datacenter: dc.id_datacenter,
+              label: dc.label,
+              provider: dc.provider,
+              city: dc.city,
+            })
+        );
+      }
+    );
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -59,7 +61,7 @@ export const get = async function (
       },
     };
     return await Promise.resolve(
-      db.cirrus.DATACENTER.findOne(datacenter_opt)
+      dbManager.models.DATACENTER.findOne(datacenter_opt)
     ).then((r) => {
       if (r == null)
         throw new DBObjectNotFound('The datacenter could not be found.');
@@ -71,6 +73,6 @@ export const get = async function (
       });
     });
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };

@@ -1,5 +1,4 @@
-import logs from '../../config/winston.config.js';
-import moment from 'moment-timezone';
+import logs from '../../middlewares/winston.js';
 import * as storage_service from '../../services/application/storage.service.js';
 import * as token from '../../utils/token.service.js';
 import * as parametres from '../../utils/parametres.service.js';
@@ -8,8 +7,7 @@ import {
   counter_get,
   counter,
   counter_put,
-} from '../../utils/health.service.js';
-import CONFIG from '../../config/config.js';
+} from '../../middlewares/prometheus.js';
 import { MissingArgumentError } from '../../utils/errors.service.js';
 
 /**

@@ -1,4 +1,4 @@
-import logs from '../config/winston.config.js';
+import logs from '../middlewares/winston.js';
 import * as application_builder from '../builders/applications.builder.js';
 import * as auth_service from '../services/auth.service.js';
 import * as history_builder from '../builders/history.builder.js';

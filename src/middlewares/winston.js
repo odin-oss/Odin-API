@@ -2,7 +2,7 @@ import { createLogger, format, transports } from 'winston';
 import { logger } from 'express-winston';
 import winston from 'winston';
 import moment from 'moment-timezone';
-import CONFIG from './config.js';
+import CONFIG from '../config/config.js';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
 const { combine, printf } = format;

@@ -1,4 +1,4 @@
-import db from '../config/db.config.js';
+import dbManager from '../config/db.config.js';
 import { User } from '../objects/User.js';
 import * as parametres from '../utils/parametres.service.js';
 import {
@@ -7,6 +7,7 @@ import {
   ParameterMisformed,
 } from '../utils/errors.service.js';
 import { Op } from 'sequelize';
+import Guard from '../utils/guard.service.js';
 
 /**
  * Builder that fetch the user informations from the database.
@@ -31,18 +32,18 @@ export const get = async function (
   const options = {
     include: [
       {
-        model: db.caelus.USER_ROLE,
+        model: dbManager.models.USER_ROLE,
         required: true,
       },
       {
-        model: db.caelus.PASSWORD,
+        model: dbManager.models.PASSWORD,
         required: true,
       },
     ],
   };
   if (props.id_user !== undefined) options.where = { id_user: props.id_user };
   else options.where = { mail: props.mail };
-  return await Promise.resolve(db.caelus.USERS.findOne(options))
+  return await Promise.resolve(dbManager.models.USERS.findOne(options))
     .then((r) => {
       if (r == null) throw new DBObjectNotFound('The user could not be found.');
       return new User({
@@ -55,7 +56,7 @@ export const get = async function (
       });
     })
     .catch((err) => {
-      throw db.sequelizeErrorManagement(err);
+      throw dbManager.sequelizeErrorManagement(err);
     });
 };
 
@@ -84,27 +85,29 @@ export const list = async function (
   try {
     const options = {
       include: {
-        model: db.caelus.USER_ROLE,
+        model: dbManager.models.USER_ROLE,
         required: true,
         where: { label: props.role },
       },
     };
-    return await Promise.resolve(db.caelus.USERS.findAll(options)).then((r) => {
-      const result = [];
-      for (const user of r)
-        result.push(
-          new User({
-            id_user: user.id_user,
-            lastname: user.lastname,
-            firstname: user.firstname,
-            mail: user.mail,
-            role: user.USER_ROLE.label,
-          })
-        );
-      return result;
-    });
+    return await Promise.resolve(dbManager.models.USERS.findAll(options)).then(
+      (r) => {
+        const result = [];
+        for (const user of r)
+          result.push(
+            new User({
+              id_user: user.id_user,
+              lastname: user.lastname,
+              firstname: user.firstname,
+              mail: user.mail,
+              role: user.USER_ROLE.label,
+            })
+          );
+        return result;
+      }
+    );
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -138,26 +141,28 @@ export const get_list = async function (
         },
       },
       include: {
-        model: db.caelus.USER_ROLE,
+        model: dbManager.models.USER_ROLE,
         required: true,
       },
     };
-    return await Promise.resolve(db.caelus.USERS.findAll(options)).then((r) => {
-      const result = [];
-      for (const user of r)
-        result.push(
-          new User({
-            id_user: user.id_user,
-            lastname: user.lastname,
-            firstname: user.firstname,
-            mail: user.mail,
-            role: user.USER_ROLE.label,
-          })
-        );
-      return result;
-    });
+    return await Promise.resolve(dbManager.models.USERS.findAll(options)).then(
+      (r) => {
+        const result = [];
+        for (const user of r)
+          result.push(
+            new User({
+              id_user: user.id_user,
+              lastname: user.lastname,
+              firstname: user.firstname,
+              mail: user.mail,
+              role: user.USER_ROLE.label,
+            })
+          );
+        return result;
+      }
+    );
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -190,7 +195,7 @@ export const update_password = async function (
       id_user: props.id_user,
     },
   };
-  const user = await Promise.resolve(db.caelus.USERS.findOne(options));
+  const user = await Promise.resolve(dbManager.models.USERS.findOne(options));
   if (user == null) throw new DBObjectNotFound('The user could not be found.');
 
   const opt_update = {
@@ -203,13 +208,13 @@ export const update_password = async function (
   };
 
   return await Promise.resolve(
-    db.caelus.PASSWORD.update(opt_update, opt_condition)
+    dbManager.models.PASSWORD.update(opt_update, opt_condition)
   )
     .then((response) => {
       return "The user's password has been changed.";
     })
     .catch((err) => {
-      throw db.sequelizeErrorManagement(err);
+      throw dbManager.sequelizeErrorManagement(err);
     });
 };
 
@@ -248,7 +253,7 @@ export const create = async function (
     const options_pwd = {
       pwd: props.hashed_password,
     };
-    const pwd_creation = db.caelus.PASSWORD.create(options_pwd);
+    const pwd_creation = dbManager.models.PASSWORD.create(options_pwd);
     const pwd = await Promise.resolve(pwd_creation);
 
     // creating the user
@@ -259,15 +264,17 @@ export const create = async function (
       id_role: props.id_role,
       id_password: pwd.id_password,
     };
-    return await Promise.resolve(db.caelus.USERS.create(options)).then((r) => {
-      return new User({
-        id_user: r.id_user,
-        lastname: r.lastname,
-        firstname: r.firstname,
-        mail: r.mail,
-      });
-    });
+    return await Promise.resolve(dbManager.models.USERS.create(options)).then(
+      (r) => {
+        return new User({
+          id_user: r.id_user,
+          lastname: r.lastname,
+          firstname: r.firstname,
+          mail: r.mail,
+        });
+      }
+    );
   } catch (err) {
-    throw db.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };

@@ -1,4 +1,4 @@
-import db from '../config/db.config.js';
+import dbManager from '../config/db.config.js';
 import { ImageType } from '../objects/Image_type.js';
 
 /**
@@ -7,7 +7,7 @@ import { ImageType } from '../objects/Image_type.js';
  * @returns
  */
 export const list = async function () {
-  return await Promise.resolve(db.cirrus.IMAGE_TYPE.findAll())
+  return await Promise.resolve(dbManager.models.IMAGE_TYPE.findAll())
     .then((r) => {
       const result = [];
       for (let image_type of r) {
@@ -21,6 +21,6 @@ export const list = async function () {
       return result;
     })
     .catch((err) => {
-      throw db.sequelizeErrorManagement(err);
+      throw dbManager.sequelizeErrorManagement(err);
     });
 };

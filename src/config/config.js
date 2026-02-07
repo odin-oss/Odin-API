@@ -17,8 +17,7 @@ function validateMandatoryEnvVariables() {
     'DB_PORT',
     'DB_USER',
     'DB_PASSWORD',
-    'DB_CIRRUS_NAME',
-    'DB_CAELUS_NAME',
+    'DB_NAME',
     'JWT_KEYPASS',
     'SMASH_STORAGE_CARRIER_IMAGE',
     'SMASH_STORAGE_CARRIER_IMAGE_TAG',
@@ -61,8 +60,7 @@ CONFIG.db_host = process.env.DB_HOST;
 CONFIG.db_port = process.env.DB_PORT;
 CONFIG.db_user = process.env.DB_USER;
 CONFIG.db_password = process.env.DB_PASSWORD;
-CONFIG.db_cirrus_name = process.env.DB_CIRRUS_NAME;
-CONFIG.db_caelus_name = process.env.DB_CAELUS_NAME;
+CONFIG.db_name = process.env.DB_CIRRUS_NAME;
 
 CONFIG.ms_deployment_activated =
   process.env.MS_DEPLOYMENT_ACTIVATED.toLocaleLowerCase() === 'true';

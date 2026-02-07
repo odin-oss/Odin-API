@@ -1,6 +1,6 @@
-import logs from '../config/winston.config.js';
+import logs from '../middlewares/winston.js';
 import * as category_service from '../services/category.service.js';
-import { counter_get, counter } from '../utils/health.service.js';
+import { counter_get, counter } from '../middlewares/prometheus.js';
 
 /**
  * Controller that checks parameters and return the list of categories.
