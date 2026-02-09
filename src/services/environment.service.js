@@ -2,8 +2,8 @@ import * as environment_builder from '../builders/environment.builder.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
-} from '../utils/errors.service.js';
-import * as parametres from '../utils/parametres.service.js';
+} from '../utils/errors.util.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Service that list all the Environments in an object array.
@@ -36,11 +36,11 @@ export const get = async function (
   const expected_props = {
     id_environment: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_environment))
+  if (!Guard.check_id(props.id_environment))
     throw new ParameterMisformed(
       'The props.id_environment parameter is misformed.'
     );

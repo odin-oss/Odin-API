@@ -1,12 +1,12 @@
 import dbManager from '../config/db.config.js';
-import * as parametres from '../utils/parametres.service.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 import { Record, History } from '../objects/History.js';
 import moment from 'moment-timezone';
 import CONFIG from '../config/config.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Add a record into the History when an user is accessing an application.
@@ -24,13 +24,13 @@ export const create = async function (
     id_user: undefined,
     id_application: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  if (!parametres.check_id(props.id_application))
+  if (!Guard.check_id(props.id_application))
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );
@@ -75,13 +75,13 @@ export const get_last_record = async function (
     id_user: undefined,
     id_application: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  if (!parametres.check_id(props.id_application))
+  if (!Guard.check_id(props.id_application))
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );

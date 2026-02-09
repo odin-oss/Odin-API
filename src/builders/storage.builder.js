@@ -1,14 +1,14 @@
 import { Op } from 'sequelize';
 import dbManager from '../config/db.config.js';
 import moment from 'moment-timezone';
-import * as parametres from '../utils/parametres.service.js';
 import {
   DBObjectNotFound,
   MissingArgumentError,
   ParameterMisformed,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 import { Application_export } from '../objects/Application_export.js';
 import CONFIG from '../config/config.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Create an application in the database
@@ -25,11 +25,11 @@ export const create = async function (
   const expected_props = {
     id_application: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_application)) {
+  if (!Guard.check_id(props.id_application)) {
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed'
     );
@@ -73,11 +73,11 @@ export const get = async function (
   const expected_props = {
     id_export: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_export)) {
+  if (!Guard.check_id(props.id_export)) {
     throw new ParameterMisformed('The props.id_export parameter is misformed');
   }
   try {
@@ -119,11 +119,11 @@ export const getLatestStorage = async function (
   const expected_props = {
     id_application: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_application)) {
+  if (!Guard.check_id(props.id_application)) {
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed'
     );
@@ -180,11 +180,11 @@ export const getNonErrorApplicationStorage = async function (
   const expected_props = {
     id_application: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_application)) {
+  if (!Guard.check_id(props.id_application)) {
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed'
     );
@@ -249,11 +249,11 @@ export const deleteExport = async function (
   const expected_props = {
     id_export: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_export)) {
+  if (!Guard.check_id(props.id_export)) {
     throw new ParameterMisformed('The props.id_export parameter is misformed');
   }
   try {
@@ -298,11 +298,11 @@ export const setError = async function (
   const expected_props = {
     id_export: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_export)) {
+  if (!Guard.check_id(props.id_export)) {
     throw new ParameterMisformed('The props.id_export parameter is misformed');
   }
   try {
@@ -347,9 +347,9 @@ export const getIdEnumState = async function (
   const expected_props = {
     status: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
   const available_states = [
     'Launched',
@@ -392,9 +392,9 @@ export const getIdsEnumStates = async function (
   const expected_props = {
     statuses: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
   const available_states = [
     'Launched',
@@ -447,9 +447,9 @@ export const getStatusFromId = async function (
   const expected_props = {
     id_enum_export_state: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
   const opt_state = {
     where: { id_enum_export_state: props.id_enum_export_state },

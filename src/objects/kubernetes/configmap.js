@@ -1,11 +1,11 @@
 import CONFIG from '../../config/config.js';
 import * as kapi from '../../modules/kapi.module.js';
 import * as fs from 'fs/promises';
-import * as parametres from '../../utils/parametres.service.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
 } from '../../utils/errors.service.js';
+import Guard from '../../utils/guard.service.js';
 
 /**
  * Function that will launch the creation of the ConfigMap into the Kubernets API.
@@ -35,17 +35,17 @@ export const create = async function (
     name: undefined,
     shutable: true,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!parametres.check_file_path(props.path))
+  if (!Guard.check_file_path(props.path))
     throw new ParameterMisformed('The props.path parameter is misformed.');
-  if (!parametres.check_namespace(props.namespace))
+  if (!Guard.check_namespace(props.namespace))
     throw new ParameterMisformed('The props.namespace parameter is misformed.');
-  if (!parametres.check_filename(props.filename))
+  if (!Guard.check_filename(props.filename))
     throw new ParameterMisformed('The props.filename parameter is misformed.');
 
   const data = await fns.readFile(props.path, 'utf8');
@@ -102,15 +102,15 @@ export const update = async function (
     name: undefined,
     shutable: true,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_file_path(props.path))
+  if (!Guard.check_file_path(props.path))
     throw new ParameterMisformed('The props.path parameter is misformed.');
-  if (!parametres.check_namespace(props.namespace))
+  if (!Guard.check_namespace(props.namespace))
     throw new ParameterMisformed('The props.namespace parameter is misformed.');
-  if (!parametres.check_filename(props.filename))
+  if (!Guard.check_filename(props.filename))
     throw new ParameterMisformed('The props.filename parameter is misformed.');
 
   const data = await fns.readFile(props.path, 'utf8');

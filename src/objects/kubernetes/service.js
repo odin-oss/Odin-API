@@ -3,8 +3,8 @@ import * as kapi from '../../modules/kapi.module.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
-} from '../../utils/errors.service.js';
-import * as parametres from '../../utils/parametres.service.js';
+} from '../../utils/errors.util.js';
+import Guard from '../../utils/guard.util.js';
 
 /**
  * Enum of Service Type (Loadbalancer or ClusterIP).
@@ -26,11 +26,11 @@ export const deletion = async function (
   const expected_props = {
     hash: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
   const list = await Promise.resolve(
@@ -70,25 +70,25 @@ export const create = async function (
     type: SVC_TYPE.CLUSTERIP,
     shutable: true,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!parametres.check_libelle(props.label, 3))
+  if (!Guard.check_libelle(props.label, 3))
     throw new ParameterMisformed('The props.label parameter is misformed.');
-  if (!parametres.check_port(props.port_externe))
+  if (!Guard.check_port(props.port_externe))
     throw new ParameterMisformed(
       'The props.port_externe parameter is misformed.'
     );
-  if (!parametres.check_port(props.port_interne))
+  if (!Guard.check_port(props.port_interne))
     throw new ParameterMisformed(
       'The props.port_interne parameter is misformed.'
     );
   if (props.type !== SVC_TYPE.CLUSTERIP && props.type !== SVC_TYPE.LOADBALANCER)
     throw new ParameterMisformed('The props.type parameter is misformed.');
-  if (!parametres.check_boolean(props.shutable))
+  if (!Guard.check_boolean(props.shutable))
     throw new ParameterMisformed('The props.shutable parameter is misformed.');
 
   const prefix = props.type === SVC_TYPE.CLUSTERIP ? 'ci' : 'lb';
@@ -147,13 +147,13 @@ const get = async function (
     hash: undefined,
     onlyShutable: true,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!parametres.check_boolean(props.onlyShutable))
+  if (!Guard.check_boolean(props.onlyShutable))
     throw new ParameterMisformed(
       'The props.onlyShutable parameter is misformed.'
     );
@@ -181,13 +181,13 @@ const del = async function (
     name: undefined,
     hash: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!parametres.check_libelle(props.name))
+  if (!Guard.check_libelle(props.name))
     throw new ParameterMisformed('The props.name parameter is misformed.');
 
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${props.hash}/services/${props.name}`;

@@ -1,8 +1,8 @@
 import { nameExists, hashExists } from '../builders/applications.builder.js';
 import * as random_dictionary_builder from '../builders/randomdictionary.builder.js';
 import * as crypto from 'crypto';
-import { MissingArgumentError, ParameterMisformed } from './errors.service.js';
-import * as parametres from '../utils/parametres.service.js';
+import { MissingArgumentError, ParameterMisformed } from '../utils/errors.util.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Method used to generate a label from the random_dictionary.
@@ -18,11 +18,11 @@ export const generate_label = async (
   const expected_props = {
     count: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.count))
+  if (!Guard.check_id(props.count))
     throw new ParameterMisformed('The props.count parameter is misformed.');
   return await Promise.resolve(fns.dictionary_list()).then((dictionary) => {
     let result = '';
@@ -57,11 +57,11 @@ export const generate_unique_label = async (
   const expected_props = {
     count: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.count))
+  if (!Guard.check_id(props.count))
     throw new ParameterMisformed('The props.count parameter is misformed.');
   let label = '';
   let exists = true;

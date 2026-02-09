@@ -3,8 +3,8 @@ import * as kapi from '../../modules/kapi.module.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
-} from '../../utils/errors.service.js';
-import * as parametres from '../../utils/parametres.service.js';
+} from '../../utils/errors.util.js';
+import Guard from '../../utils/guard.util.js';
 
 /**
  * Function that executes the deletion of all the externalname contained in the cirrus namespace and the match the hash.
@@ -20,11 +20,11 @@ export const deletion = async function (
   const expected_props = {
     hash: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
   const list = await Promise.resolve(fns.get({ hash: props.hash })).then(
@@ -59,15 +59,15 @@ export const create = async function (
     label: undefined,
     port_externe: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!parametres.check_libelle(props.label, 3))
+  if (!Guard.check_libelle(props.label, 3))
     throw new ParameterMisformed('The props.label parameter is misformed.');
-  if (!parametres.check_port(props.port_externe))
+  if (!Guard.check_port(props.port_externe))
     throw new ParameterMisformed(
       'The props.port_externe parameter is misformed.'
     );
@@ -121,11 +121,11 @@ const get = async function (
     hash: undefined,
     onlyShutable: true,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services?labelSelector=type=ExternalName,hash=${props.hash},shutable=${{ ...expected_props, ...props }.onlyShutable ? 'true' : 'false'}`;
@@ -148,11 +148,11 @@ const del = async function (props = { name: undefined }, fetch = kapi.fetch) {
   const expected_props = {
     name: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_libelle(props.name))
+  if (!Guard.check_libelle(props.name))
     throw new ParameterMisformed('The props.name parameter is misformed.');
 
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services/${props.name}`;

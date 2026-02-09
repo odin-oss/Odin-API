@@ -2,15 +2,15 @@ import { Op } from 'sequelize';
 import CONFIG from '../config/config.js';
 import dbManager from '../config/db.config.js';
 import moment from 'moment-timezone';
-import * as parametres from '../utils/parametres.service.js';
 import {
   DBObjectNotFound,
   MissingArgumentError,
   ParameterMisformed,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 import { Application } from '../objects/Application.js';
 import { Environment } from '../objects/Environment.js';
 import { Datacenter } from '../objects/Datacenter.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Get the application from id.
@@ -34,14 +34,14 @@ export const get = async function (
     );
   if (
     props.id_application !== undefined &&
-    !parametres.check_id(props.id_application)
+    !Guard.check_id(props.id_application)
   )
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );
-  if (props.key !== undefined && !parametres.check_key(props.key))
+  if (props.key !== undefined && !Guard.check_key(props.key))
     throw new ParameterMisformed('The props.key parameter is misformed.');
-  if (props.hash !== undefined && !parametres.check_hash(props.hash))
+  if (props.hash !== undefined && !Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
   try {
     const options = {
@@ -111,11 +111,11 @@ export const list = async function (
   const expected_props = {
     id_user: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
   try {
     const options = {
@@ -187,11 +187,11 @@ export const renew_expiration = async function (
   const expected_props = {
     id_application: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_application))
+  if (!Guard.check_id(props.id_application))
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );
@@ -262,25 +262,25 @@ export const create = async function (
     password: undefined,
     state_changed_date: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  if (!parametres.check_id(props.id_environment))
+  if (!Guard.check_id(props.id_environment))
     throw new ParameterMisformed(
       'The props.id_environment parameter is misformed.'
     );
-  if (!parametres.check_id(props.id_datacenter))
+  if (!Guard.check_id(props.id_datacenter))
     throw new ParameterMisformed(
       'The props.id_datacenter parameter is misformed.'
     );
-  if (!parametres.check_key(props.generated_label))
+  if (!Guard.check_key(props.generated_label))
     throw new ParameterMisformed(
       'The props.generated_label parameter is misformed.'
     );
-  if (!parametres.check_key(props.password))
+  if (!Guard.check_key(props.password))
     throw new ParameterMisformed('The props.password parameter is misformed.');
   try {
     // We find the state from different parameters.
@@ -373,11 +373,11 @@ export const is_owner = async function (
   const expected_props = {
     id_user: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
   if (props.key === undefined && props.id_application === undefined)
     throw new MissingArgumentError(
@@ -385,12 +385,12 @@ export const is_owner = async function (
     );
   if (
     props.id_application !== undefined &&
-    !parametres.check_id(props.id_application)
+    !Guard.check_id(props.id_application)
   )
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );
-  if (props.key !== undefined && !parametres.check_key(props.key))
+  if (props.key !== undefined && !Guard.check_key(props.key))
     throw new ParameterMisformed('The props.key parameter is misformed.');
 
   try {
@@ -434,11 +434,11 @@ export const nameExists = async (
   const expected_props = {
     name: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_key(props.name))
+  if (!Guard.check_key(props.name))
     throw new ParameterMisformed('The props.name parameter is misformed.');
   const options = {
     where: {
@@ -468,11 +468,11 @@ export const hashExists = async (
   const expected_props = {
     hash: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
   const options = {
     where: { hash: props.hash },
@@ -501,11 +501,11 @@ export const deletion = async function (
   const expected_props = {
     id_application: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_application))
+  if (!Guard.check_id(props.id_application))
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );
@@ -557,11 +557,11 @@ export const download_deletion = async function (
   const expected_props = {
     id_application: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_application))
+  if (!Guard.check_id(props.id_application))
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );
@@ -612,11 +612,11 @@ export const update_state = async function (
     id_application: undefined,
     state_application: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_application))
+  if (!Guard.check_id(props.id_application))
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );

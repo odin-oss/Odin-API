@@ -1,8 +1,6 @@
-import logs from '../middlewares/winston.js';
 import moment from 'moment-timezone';
 import * as applications_service from '../services/applications.service.js';
-import * as token from '../utils/token.service.js';
-import * as parametres from '../utils/parametres.service.js';
+import * as token from '../utils/token.util.js';
 import {
   counter_delete,
   counter_get,
@@ -14,8 +12,9 @@ import CONFIG from '../config/config.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 import { ApiResponse } from '../utils/response.util.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Controllers that checks parameters and return the list of all applications in public format.
@@ -96,7 +95,7 @@ export const start = async (
 
   //Request
   try {
-    parametres.check_query(req, ['id_application']);
+    Guard.check_query(req, ['id_application']);
     await fns.application_start({
       id_application: req.query.id_application,
       state_application: 'Ready',
@@ -155,7 +154,7 @@ export const deletion = async (
 
   //Request
   try {
-    parametres.check_query(req, ['id_application']);
+    Guard.check_query(req, ['id_application']);
 
     // Validate backup_storage parameter
     if (req.body.backup_storage !== undefined) {
@@ -198,7 +197,7 @@ export const create = async (
 
   //Request
   try {
-    parametres.check_body(req, ['id_environment', 'id_datacenter']);
+    Guard.check_body(req, ['id_environment', 'id_datacenter']);
     const id_user = token.getUserId({ token: req.headers['authorization'] });
     await fns.application_create({
       id_user,

@@ -1,5 +1,5 @@
-import * as parametres from '../../src/utils/parametres.service.js';
-import { MissingArgumentError, ParameterMisformed } from './errors.service.js';
+import { MissingArgumentError, ParameterMisformed } from './errors.util.js';
+import Guard from './guard.util.js';
 
 /**
  * Function that will replace the tag keyname with the real value for customing environment.
@@ -21,28 +21,28 @@ export const parsing_generic_tags = function (
     generated_label: undefined,
     web_title: undefined,
   };
-  if (parametres.check_props(expected_props, custom_values).length > 0)
+  if (Guard.check_props(expected_props, custom_values).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, custom_values)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, custom_values)}) are missing.`
     );
-  if (!parametres.check_hash(custom_values.hash))
+  if (!Guard.check_hash(custom_values.hash))
     throw new ParameterMisformed(
       'The custom_values.hash parameter is misformed.'
     );
-  if (!parametres.check_libelle(custom_values.label))
+  if (!Guard.check_libelle(custom_values.label))
     throw new ParameterMisformed(
       'The custom_values.label parameter is misformed.'
     );
-  if (!parametres.check_libelle(custom_values.generated_label))
+  if (!Guard.check_libelle(custom_values.generated_label))
     throw new ParameterMisformed(
       'The custom_values.generated_label parameter is misformed.'
     );
-  if (!parametres.check_libelle(custom_values.username))
+  if (!Guard.check_libelle(custom_values.username))
     throw new ParameterMisformed(
       'The custom_values.username parameter is misformed.'
     );
   if (
-    !parametres.check_libelle(custom_values.target) &&
+    !Guard.check_libelle(custom_values.target) &&
     custom_values.target !== ''
   )
     throw new ParameterMisformed(

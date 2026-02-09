@@ -2,7 +2,6 @@ import moment from 'moment-timezone';
 import * as application_builder from '../builders/applications.builder.js';
 import * as application_service from './applications.service.js';
 import * as storage_builder from '../builders/storage.builder.js';
-import * as datacenter_builder from '../builders/datacenter.builder.js';
 import * as environment_builder from '../builders/environment.builder.js';
 import * as user_builder from '../builders/user.builder.js';
 import CONFIG from '../config/config.js';
@@ -14,8 +13,8 @@ import {
   StorageAlreadyExists,
   StorageError,
   SmashAPIError,
-} from '../utils/errors.service.js';
-import * as parametres from '../utils/parametres.service.js';
+} from '../utils/errors.util.js';
+import Guard from '../utils/guard.util.js';
 /**
  * Service that gives the latest active storage.
  * @param {*} props {id_application}
@@ -33,11 +32,11 @@ export const getStorage = async function (
   const expected_props = {
     id_application: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_application))
+  if (!Guard.check_id(props.id_application))
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );
@@ -77,19 +76,19 @@ export const exportStorage = async function (
   };
   let previous_export_deleted = false;
 
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_application))
+  if (!Guard.check_id(props.id_application))
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );
-  if (!parametres.check_boolean(props.delete_existing_export))
+  if (!Guard.check_boolean(props.delete_existing_export))
     throw new ParameterMisformed(
       'The props.delete_existing_export parameter is not a boolean.'
     );
-  if (!parametres.check_boolean(props.app_deletion))
+  if (!Guard.check_boolean(props.app_deletion))
     throw new ParameterMisformed(
       'The props.app_deletion parameter is not a boolean.'
     );
@@ -213,13 +212,13 @@ export const deleteStorage = async function (
     id_application: undefined,
     id_export: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_export))
+  if (!Guard.check_id(props.id_export))
     throw new ParameterMisformed('The props.id_export parameter is misformed.');
-  if (!parametres.check_id(props.id_application))
+  if (!Guard.check_id(props.id_application))
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );

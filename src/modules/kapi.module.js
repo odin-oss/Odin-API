@@ -9,7 +9,7 @@ import {
   KubernetesAPIx509Certificate,
   KubernetesErrorNotDefined,
   ObjectsAlreadyExistsError,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 
 /**
  * Function used to communicate with the Kubernetes API.

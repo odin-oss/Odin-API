@@ -1,4 +1,3 @@
-import * as parametres from '../utils/parametres.service.js';
 import * as deployment from '../objects/kubernetes/deployment.js';
 import * as external_name from '../objects/kubernetes/external_name.js';
 import * as ingress from '../objects/kubernetes/ingress.js';
@@ -13,7 +12,8 @@ import {
   BadTypeArgumentError,
   MissingArgumentError,
   ParameterMisformed,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Function that will execute the deletion workflow.
@@ -40,11 +40,11 @@ export const exec_deletion = async function (
     hash: undefined,
   };
   try {
-    if (parametres.check_props(expected_props, props).length > 0)
+    if (Guard.check_props(expected_props, props).length > 0)
       throw new MissingArgumentError(
-        `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+        `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
       );
-    if (!parametres.check_hash(props.hash))
+    if (!Guard.check_hash(props.hash))
       throw new ParameterMisformed('The props.hash parameter is misformed.');
 
     const promises = [];
@@ -89,11 +89,11 @@ export const exec_start = async function (
     hash: undefined,
   };
   try {
-    if (parametres.check_props(expected_props, props).length > 0)
+    if (Guard.check_props(expected_props, props).length > 0)
       throw new MissingArgumentError(
-        `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+        `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
       );
-    if (!parametres.check_hash(props.hash))
+    if (!Guard.check_hash(props.hash))
       throw new ParameterMisformed('The props.hash parameter is misformed.');
 
     const promises = [
@@ -131,11 +131,11 @@ export const exec_shutdown = async function (
     hash: undefined,
   };
   try {
-    if (parametres.check_props(expected_props, props).length > 0)
+    if (Guard.check_props(expected_props, props).length > 0)
       throw new MissingArgumentError(
-        `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+        `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
       );
-    if (!parametres.check_hash(props.hash))
+    if (!Guard.check_hash(props.hash))
       throw new ParameterMisformed('The props.hash parameter is misformed.');
 
     const promises = [
@@ -193,23 +193,23 @@ export const create = async function (
     web_title: undefined,
   };
   try {
-    if (parametres.check_props(expected_props, props).length > 0)
+    if (Guard.check_props(expected_props, props).length > 0)
       throw new MissingArgumentError(
-        `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+        `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
       );
-    if (!parametres.check_hash(props.hash))
+    if (!Guard.check_hash(props.hash))
       throw new ParameterMisformed('The props.hash parameter is misformed.');
-    if (!parametres.check_libelle(props.generated_label))
+    if (!Guard.check_libelle(props.generated_label))
       throw new ParameterMisformed(
         'The props.generated_label parameter is misformed.'
       );
-    if (!parametres.check_libelle(props.username))
+    if (!Guard.check_libelle(props.username))
       throw new ParameterMisformed(
         'The props.username parameter is misformed.'
       );
     if (
       !Array.isArray(props.interfaces) ||
-      !props.interfaces.every((item) => parametres.check_JSON(item))
+      !props.interfaces.every((item) => Guard.check_JSON(item))
     )
       throw new BadTypeArgumentError(
         'The props.interfaces parameter is misformed.'

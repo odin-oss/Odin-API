@@ -5,7 +5,7 @@ import CONFIG from '../config/config.js';
 import z from 'zod';
 import { Application } from './Application.js';
 import { User } from './User.js';
-import Guard from '../utils/guard.service.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Session class representing a session entity.

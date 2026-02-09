@@ -6,7 +6,7 @@ import { RandomDictionary } from '../objects/RandomDictionary.js';
  * @returns
  */
 export const list = async function () {
-  return await Promise.resolve(dbManager.models.RANDOM_DICTIONARY.findAll())
+  return await dbManager.models.RANDOM_DICTIONARY.findAll()
     .then((r) => {
       const dictionary = new RandomDictionary();
       for (const word of r) dictionary.add(word.word);

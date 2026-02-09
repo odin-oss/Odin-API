@@ -1,14 +1,12 @@
 import * as user_builder from '../builders/user.builder.js';
 import { User } from '../objects/User.js';
 import {
-  BadCredentials,
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../utils/errors.service.js';
-import * as parametres from '../utils/parametres.service.js';
+  BadCredentials
+} from '../utils/errors.util.js';
 import bcrypt from 'bcrypt';
 import { role_by_label } from '../builders/auth.builder.js';
 import z from 'zod';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Service used to get the User object from the id_user.
@@ -69,7 +67,7 @@ export const update_password = async function (
   const user = await fns.user_get({ id_user: data.id_user });
   if (!fns.bcrypt.compareSync(data.old_password, user.pwd))
     throw new BadCredentials('The old password is not correct.');
-  parametres.check_password(data.password);
+  Guard.check_password(data.password);
 
   return await fns.user_update_password({
     id_user: data.id_user,

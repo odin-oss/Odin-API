@@ -10,11 +10,5 @@ export const list = async function (
     category_list: category_builder.list,
   }
 ) {
-  return await Promise.resolve(fns.category_list())
-    .then((category) => {
-      return category;
-    })
-    .catch((err) => {
-      throw err;
-    });
+  return await fns.category_list();
 };

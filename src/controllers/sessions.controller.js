@@ -1,13 +1,13 @@
 import * as session_service from '../services/session.service.js';
-import * as parametres from '../utils/parametres.service.js';
 import {
   counter,
   counter_get,
   counter_post,
 } from '../middlewares/prometheus.js';
-import { ParameterMisformed } from '../utils/errors.service.js';
-import * as token from '../utils/token.service.js';
+import { ParameterMisformed } from '../utils/errors.util.js';
+import * as token from '../utils/token.util.js';
 import { ApiResponse } from '../utils/response.util.js';
+import Guard from '../utils/guard.util.js';
 /**
  * Controller that checks parameters and create a new session.
  * @param {*} req HTTP request.
@@ -28,7 +28,7 @@ export const create = async (
 
   //Request
   try {
-    parametres.check_body(req, [
+    Guard.check_body(req, [
       'label_session',
       'label_application',
       'id_environment',
@@ -39,28 +39,28 @@ export const create = async (
       'users',
     ]);
 
-    if (!parametres.check_id(req.body.id_environment))
+    if (!Guard.check_id(req.body.id_environment))
       throw new ParameterMisformed(
         'The req.body.id_environment parameter is misformed.'
       );
-    if (!parametres.check_id(req.body.id_datacenter))
+    if (!Guard.check_id(req.body.id_datacenter))
       throw new ParameterMisformed(
         'The req.body.id_datacenter parameter is misformed.'
       );
 
-    if (!parametres.check_ids(JSON.parse(req.body.professors)))
+    if (!Guard.check_ids(JSON.parse(req.body.professors)))
       throw new ParameterMisformed(
         'The req.body.professors parameter is misformed.'
       );
-    if (!parametres.check_ids(JSON.parse(req.body.users)))
+    if (!Guard.check_ids(JSON.parse(req.body.users)))
       throw new ParameterMisformed(
         'The req.body.users parameter is misformed.'
       );
-    if (!parametres.check_date(req.body.begin_date))
+    if (!Guard.check_date(req.body.begin_date))
       throw new ParameterMisformed(
         'The req.body.begin_date parameter is misformed.'
       );
-    if (!parametres.check_date(req.body.end_date))
+    if (!Guard.check_date(req.body.end_date))
       throw new ParameterMisformed(
         'The req.body.end_date parameter is misformed.'
       );
@@ -137,9 +137,9 @@ export const get = async (
 
   //Request
   try {
-    parametres.check_query(req, ['id_session']);
+    Guard.check_query(req, ['id_session']);
 
-    if (!parametres.check_id(req.query.id_session))
+    if (!Guard.check_id(req.query.id_session))
       throw new ParameterMisformed(
         'The req.query.id_session parameter is misformed.'
       );

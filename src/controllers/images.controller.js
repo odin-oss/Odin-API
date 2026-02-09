@@ -1,14 +1,14 @@
 import fs from 'fs/promises';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import * as parameters_service from '../utils/parametres.service.js';
 import logs from '../middlewares/winston.js';
 import {
   ImageNotFound,
   NoImageReceived,
   ReadingImageError,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 import { ApiResponse } from '../utils/response.util.js';
+import Guard from '../utils/guard.util.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,7 +20,7 @@ const __dirname = dirname(__filename);
  */
 export const get = async function (req, res) {
   try {
-    parameters_service.check_params(req, ['key']);
+    Guard.check_params(req, ['key']);
     const imagePath = path.join(
       __dirname,
       '../../images/img-' + req.params.key + '.png'

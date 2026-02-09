@@ -1,12 +1,12 @@
 import dbManager from '../config/db.config.js';
-import * as parametres from '../utils/parametres.service.js';
 import { User } from '../objects/User.js';
 import {
   DBObjectNotFound,
   MissingArgumentError,
   ParameterMisformed,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 import { UserRole } from '../objects/UserRole.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Builder that change the role of user.
@@ -51,7 +51,7 @@ export const update = async function (
       });
     });
   } catch (err) {
-    throw dbManager.sequelizeErrorManagement(err);
+    throw dbManager.models.sequelizeErrorManagement(err);
   }
 };
 
@@ -70,11 +70,11 @@ export const role_by_id = async function (
   const expected_props = {
     id_role: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_role))
+  if (!Guard.check_id(props.id_role))
     throw new ParameterMisformed('The props.id_role parameter is misformed.');
 
   try {
@@ -93,7 +93,7 @@ export const role_by_id = async function (
       });
     });
   } catch (err) {
-    throw dbManager.sequelizeErrorManagement(err);
+    throw dbManager.models.sequelizeErrorManagement(err);
   }
 };
 /**
@@ -111,11 +111,11 @@ export const role_by_label = async function (
   const expected_props = {
     label: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_user_role(props.label))
+  if (!Guard.check_user_role(props.label))
     throw new ParameterMisformed('The props.label parameter is misformed.');
 
   try {
@@ -134,6 +134,6 @@ export const role_by_label = async function (
       });
     });
   } catch (err) {
-    throw dbManager.sequelizeErrorManagement(err);
+    throw dbManager.models.sequelizeErrorManagement(err);
   }
 };

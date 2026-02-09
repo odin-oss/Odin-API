@@ -7,7 +7,7 @@ import { ImageType } from '../objects/Image_type.js';
  * @returns
  */
 export const list = async function () {
-  return await Promise.resolve(dbManager.models.IMAGE_TYPE.findAll())
+  return await dbManager.models.IMAGE_TYPE.findAll()
     .then((r) => {
       const result = [];
       for (let image_type of r) {

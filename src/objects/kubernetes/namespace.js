@@ -4,7 +4,7 @@ import {
   EmptyStringHashError,
   KubernetesAPINotResponding,
   MissingArgumentError,
-} from '../../utils/errors.service.js';
+} from '../../utils/errors.util.js';
 
 export const deletion = async function (
   { hash = undefined } = {},

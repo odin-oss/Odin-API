@@ -1,9 +1,9 @@
 import * as user_service from '../services/user.service.js';
 import { counter_get, counter } from '../middlewares/prometheus.js';
-import * as token from '../utils/token.service.js';
-import * as parametres from '../utils/parametres.service.js';
-import { ParameterMisformed } from '../utils/errors.service.js';
+import * as token from '../utils/token.util.js';
+import { ParameterMisformed } from '../utils/errors.util.js';
 import { ApiResponse } from '../utils/response.util.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Controller that checks parameters and return current user's informations.
@@ -51,7 +51,7 @@ export const update_password = async function (
 
   //Request
   try {
-    parametres.check_body(req, ['old_password', 'password']);
+    Guard.check_body(req, ['old_password', 'password']);
     const id_user = token.getUserId({ token: req.headers['authorization'] });
     await fns.user_update_password({
       id_user,
@@ -84,8 +84,8 @@ export const list = async function (
 
   //Request
   try {
-    parametres.check_query(req, ['user_role']);
-    if (!parametres.check_user_role(req.query.user_role))
+    Guard.check_query(req, ['user_role']);
+    if (!Guard.check_user_role(req.query.user_role))
       throw new ParameterMisformed(
         'The req.query.user_role parameter is misformed.'
       );
@@ -114,7 +114,7 @@ export const create = async function (
   //Request
 
   try {
-    parametres.check_body(req, [
+    Guard.check_body(req, [
       'password',
       'mail',
       'lastname',

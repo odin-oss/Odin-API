@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-import logger from '../middlewares/winston.js';
 import https from 'https';
 import fs from 'fs/promises';
 import { z } from 'zod';

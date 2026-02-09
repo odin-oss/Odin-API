@@ -1,6 +1,6 @@
 import express from 'express';
 import * as datacenter_controller from '../controllers/datacenter.controller.js';
-import { isTokenValid } from '../utils/token.service.js';
+import { isTokenValid } from '../utils/token.util.js';
 
 const router = express.Router();
 

@@ -5,7 +5,7 @@ import {
   ParameterMisformed,
 } from '../utils/errors.service.js';
 import { Interface } from '../objects/Interface.js';
-import * as parametres from '../utils/parametres.service.js';
+import Guard from '../utils/guard.service.js';
 
 /**
  * Builder that fetchs the DB to get the interface.
@@ -22,11 +22,11 @@ export const get = async function (
   const expected_props = {
     id_interface: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_interface))
+  if (!Guard.check_id(props.id_interface))
     throw new ParameterMisformed(
       'The props.id_interface parameter is misformed.'
     );

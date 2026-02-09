@@ -1,12 +1,12 @@
 import * as user_builder from '../builders/user.builder.js';
 import bcrypt from 'bcrypt';
-import * as token from '../utils/token.service.js';
-import * as parametres from '../utils/parametres.service.js';
+import * as token from '../utils/token.util.js';
 import {
   BadCredentials,
   MissingArgumentError,
   ParameterMisformed,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Service used to test the connexion of the user to the API.
@@ -28,14 +28,14 @@ export const connect = async function (
     mail: undefined,
     password: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_email(props.mail))
+  if (!Guard.check_email(props.mail))
     throw new ParameterMisformed('The props.mail parameter is misformed.');
 
-  return await Promise.resolve(fns.user_get({ mail: props.mail })).then(
+  return await fns.user_get({ mail: props.mail }).then(
     (user) => {
       if (!bcrypt.compareSync(props.password, user.pwd))
         throw new BadCredentials('The credentials you entered are wrong.');
@@ -62,15 +62,11 @@ export const role = async function (
   const expected_props = {
     id_user: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  return await Promise.resolve(fns.user_get({ id_user: props.id_user })).then(
-    (user) => {
-      return user.role;
-    }
-  );
+  return await fns.user_get({ id_user: props.id_user }).then(user => user.role);
 };

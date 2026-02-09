@@ -1,14 +1,13 @@
-import logs from '../middlewares/winston.js';
 import * as storage_service from '../services/storage.service.js';
-import * as token from '../utils/token.service.js';
-import * as parametres from '../utils/parametres.service.js';
+import * as token from '../utils/token.util.js';
 import {
   counter_delete,
   counter_get,
   counter
 } from '../middlewares/prometheus.js';
-import { MissingArgumentError } from '../utils/errors.service.js';
+import { MissingArgumentError } from '../utils/errors.util.js';
 import { ApiResponse } from '../utils/response.util.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Controller that checks parameters and create the export.
@@ -30,8 +29,8 @@ export const exportStorage = async (
 
   //Request
   try {
-    parametres.check_query(req, ['id_application']);
-    parametres.check_body(req, ['export_platform']);
+    Guard.check_query(req, ['id_application']);
+    Guard.check_body(req, ['export_platform']);
     const id_user = token.getUserId({ token: req.headers['authorization'] });
     await fns.storage_export({
       id_user,
@@ -71,8 +70,8 @@ export const deleteStorage = async (
 
   //Request
   try {
-    parametres.check_query(req, ['id_application']);
-    parametres.check_body(req, ['id_export', 'export_platform']);
+    Guard.check_query(req, ['id_application']);
+    Guard.check_body(req, ['id_export', 'export_platform']);
     const id_user = token.getUserId({ token: req.headers['authorization'] });
     await fns.storage_delete({
       id_user,

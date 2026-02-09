@@ -1,7 +1,7 @@
 import z from 'zod';
 import CONFIG from '../config/config.js';
 import moment from 'moment-timezone';
-import Guard from '../utils/guard.service.js';
+import Guard from '../utils/guard.util.js';
 
 export class Record {
   #id_user;

@@ -1,10 +1,10 @@
 import CONFIG from '../../config/config.js';
 import * as kapi from '../../modules/kapi.module.js';
-import * as parametres from '../../utils/parametres.service.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
-} from '../../utils/errors.service.js';
+} from '../../utils/errors.util.js';
+import Guard from '../../utils/guard.util.js';
 
 /**
  * Function that will create an istio authorization policy for a given namespace in cirrus namespace.
@@ -22,11 +22,11 @@ export const create = async function (
   const expected_props = {
     hash: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
   // kapi request
@@ -92,11 +92,11 @@ export const deletion = async function (
   const expected_props = {
     hash: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
   // kapi request

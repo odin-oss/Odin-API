@@ -2,13 +2,13 @@ import * as application_service from '../services/applications.service.js';
 import * as session_builder from '../builders/session.builder.js';
 import * as user_service from '../services/user.service.js';
 import * as user_builder from '../builders/user.builder.js';
-import * as parametres from '../utils/parametres.service.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
   UserIsNeitherProfOrAdmin,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 import { Session } from '../objects/Session.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Service that execute the creation workflow of an application.
@@ -46,23 +46,23 @@ export const create = async function (
     users: undefined,
     professors: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_environment))
+  if (!Guard.check_id(props.id_environment))
     throw new ParameterMisformed(
       'The props.id_environment parameter is misformed.'
     );
-  if (!parametres.check_id(props.id_datacenter))
+  if (!Guard.check_id(props.id_datacenter))
     throw new ParameterMisformed(
       'The props.id_datacenter parameter is misformed.'
     );
-  if (!parametres.check_ids(props.professors))
+  if (!Guard.check_ids(props.professors))
     throw new ParameterMisformed(
       'The props.professors parameter is misformed.'
     );
-  if (!parametres.check_ids(props.users))
+  if (!Guard.check_ids(props.users))
     throw new ParameterMisformed('The props.users parameter is misformed.');
   if (typeof props.label_session !== 'string')
     throw new ParameterMisformed(
@@ -72,11 +72,11 @@ export const create = async function (
     throw new ParameterMisformed(
       'The props.label_application parameter is misformed.'
     );
-  if (!parametres.check_date(props.begin_date))
+  if (!Guard.check_date(props.begin_date))
     throw new ParameterMisformed(
       'The props.begin_date parameter is misformed.'
     );
-  if (!parametres.check_date(props.end_date))
+  if (!Guard.check_date(props.end_date))
     throw new ParameterMisformed('The props.end_date parameter is misformed.');
 
   // We schedule all applications for all users
@@ -155,11 +155,11 @@ export const list = async function (
   const expected_props = {
     id_user: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
 
   // we check the role of the user
@@ -225,13 +225,13 @@ export const get = async function (
     id_user: undefined,
     id_session: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  if (!parametres.check_id(props.id_session))
+  if (!Guard.check_id(props.id_session))
     throw new ParameterMisformed(
       'The props.id_session parameter is misformed.'
     );

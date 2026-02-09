@@ -1,13 +1,12 @@
 import dbManager from '../config/db.config.js';
 import { User } from '../objects/User.js';
-import * as parametres from '../utils/parametres.service.js';
 import {
   DBObjectNotFound,
   MissingArgumentError,
   ParameterMisformed,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 import { Op } from 'sequelize';
-import Guard from '../utils/guard.service.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Builder that fetch the user informations from the database.
@@ -25,9 +24,9 @@ export const get = async function (
     throw new MissingArgumentError(
       `One or multiple arguments (id_user,mail) are missing.`
     );
-  if (props.mail !== undefined && !parametres.check_email(props.mail))
+  if (props.mail !== undefined && !Guard.check_email(props.mail))
     throw new ParameterMisformed('The props.mail parameter is misformed.');
-  if (props.id_user !== undefined && !parametres.check_id(props.id_user))
+  if (props.id_user !== undefined && !Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
   const options = {
     include: [
@@ -75,11 +74,11 @@ export const list = async function (
   const expected_props = {
     role: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_user_role(props.role))
+  if (!Guard.check_user_role(props.role))
     throw new ParameterMisformed('The props.role parameter is misformed.');
 
   try {
@@ -126,11 +125,11 @@ export const get_list = async function (
   const expected_props = {
     ids: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_ids(props.ids))
+  if (!Guard.check_ids(props.ids))
     throw new ParameterMisformed('The props.ids parameter is misformed.');
 
   try {
@@ -183,11 +182,11 @@ export const update_password = async function (
     id_user: undefined,
     hashed_password: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
 
   const options = {
@@ -241,11 +240,11 @@ export const create = async function (
     id_role: undefined,
     hashed_password: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_role))
+  if (!Guard.check_id(props.id_role))
     throw new ParameterMisformed('The props.id_role parameter is misformed.');
 
   try {

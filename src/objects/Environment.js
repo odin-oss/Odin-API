@@ -1,6 +1,6 @@
 import z from 'zod';
 import * as environment_builder from '../builders/environment.builder.js';
-import Guard from '../utils/guard.service.js';
+import Guard from '../utils/guard.util.js';
 import { Interface } from './Interface.js';
 
 export class Environment {

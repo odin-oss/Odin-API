@@ -3,8 +3,8 @@ import * as kapi from '../../modules/kapi.module.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
-} from '../../utils/errors.service.js';
-import * as parametres from '../../utils/parametres.service.js';
+} from '../../utils/errors.util.js';
+import Guard from '../../utils/guard.util.js';
 
 /**
  * Function used to delete the registryhub from Kubernetes cluster.
@@ -19,11 +19,11 @@ export const deletion = async function (
   const expected_props = {
     hash: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${props.hash}/secrets/registryhub`;
@@ -49,11 +49,11 @@ export const create = async function (
   const expected_props = {
     hash: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
   const data = {

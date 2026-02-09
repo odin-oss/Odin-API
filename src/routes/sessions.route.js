@@ -4,7 +4,7 @@ import {
   isTokenValid,
   isAdmin,
   isProfOrAdmin,
-} from '../utils/token.service.js';
+} from '../utils/token.util.js';
 
 const router = express.Router();
 

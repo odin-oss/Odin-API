@@ -4,8 +4,8 @@ import {
   DBObjectNotFound,
   MissingArgumentError,
   ParameterMisformed,
-} from '../utils/errors.service.js';
-import * as parametres from '../utils/parametres.service.js';
+} from '../utils/errors.util.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Builder that fetchs all the dcs in the database.
@@ -28,7 +28,7 @@ export const list = async function () {
       }
     );
   } catch (err) {
-    throw dbManager.sequelizeErrorManagement(err);
+    throw dbManager.models.sequelizeErrorManagement(err);
   }
 };
 
@@ -46,11 +46,11 @@ export const get = async function (
   const expected_props = {
     id_datacenter: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_datacenter))
+  if (!Guard.check_id(props.id_datacenter))
     throw new ParameterMisformed(
       'The props.id_datacenter parameter is misformed.'
     );
@@ -73,6 +73,6 @@ export const get = async function (
       });
     });
   } catch (err) {
-    throw dbManager.sequelizeErrorManagement(err);
+    throw dbManager.models.sequelizeErrorManagement(err);
   }
 };

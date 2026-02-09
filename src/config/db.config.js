@@ -8,7 +8,7 @@ import {
   DBConnexionRefused,
   DBForeignKeyConstraintError,
   DBObjectNotFound,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 import logger from '../middlewares/winston.js';
 
 const __filename = fileURLToPath(import.meta.url);

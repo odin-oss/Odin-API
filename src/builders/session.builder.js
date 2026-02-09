@@ -1,12 +1,11 @@
 import CONFIG from '../config/config.js';
 import dbManager from '../config/db.config.js';
-import * as parametres from '../utils/parametres.service.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
   ProfessorIsNotAttributed,
   UserIsNeitherProfOrAdmin,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 import { Session } from '../objects/Session.js';
 import * as user_builder from './user.builder.js';
 import * as application_builder from './applications.builder.js';
@@ -15,6 +14,7 @@ import { Datacenter } from '../objects/Datacenter.js';
 import { User } from '../objects/User.js';
 import { Application } from '../objects/Application.js';
 import moment from 'moment-timezone';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Attribute the session to a professor in the database
@@ -36,13 +36,13 @@ export const attribute_professor = async function (
     id_user: undefined,
     id_session: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  if (!parametres.check_id(props.id_session))
+  if (!Guard.check_id(props.id_session))
     throw new ParameterMisformed(
       'The props.id_session parameter is misformed.'
     );
@@ -89,17 +89,17 @@ export const attribute_user_and_application = async function (
     id_session: undefined,
     id_application: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  if (!parametres.check_id(props.id_session))
+  if (!Guard.check_id(props.id_session))
     throw new ParameterMisformed(
       'The props.id_session parameter is misformed.'
     );
-  if (!parametres.check_id(props.id_application))
+  if (!Guard.check_id(props.id_application))
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );
@@ -149,21 +149,21 @@ export const create = async function (
     end_date: undefined,
     id_environment: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_environment))
+  if (!Guard.check_id(props.id_environment))
     throw new ParameterMisformed(
       'The props.id_environment parameter is misformed.'
     );
   if (typeof props.label !== 'string')
     throw new ParameterMisformed('The props.label parameter is misformed.');
-  if (!parametres.check_date(props.begin_date))
+  if (!Guard.check_date(props.begin_date))
     throw new ParameterMisformed(
       'The props.begin_date parameter is misformed.'
     );
-  if (!parametres.check_date(props.end_date))
+  if (!Guard.check_date(props.end_date))
     throw new ParameterMisformed('The props.end_date parameter is misformed.');
   try {
     // We prepare the creation of the application
@@ -207,11 +207,11 @@ export const list = async function (
   const expected_props = {
     id_user: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
 
   try {
@@ -366,13 +366,13 @@ export const get_on_professeur = async function (
     id_user: undefined,
     id_session: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  if (!parametres.check_id(props.id_session))
+  if (!Guard.check_id(props.id_session))
     throw new ParameterMisformed(
       'The props.id_session parameter is misformed.'
     );
@@ -471,11 +471,11 @@ export const get_on_administrateur = async function (
   const expected_props = {
     id_session: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_session))
+  if (!Guard.check_id(props.id_session))
     throw new ParameterMisformed(
       'The props.id_session parameter is misformed.'
     );

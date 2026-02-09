@@ -3,7 +3,6 @@ import * as application_builder from '../builders/applications.builder.js';
 import * as auth_service from '../services/auth.service.js';
 import * as history_builder from '../builders/history.builder.js';
 import jwt from 'jsonwebtoken';
-import * as parametres from '../utils/parametres.service.js';
 import CONFIG from '../config/config.js';
 import {
   BadContentTokenError,
@@ -13,8 +12,9 @@ import {
   UserIsNotAdmin,
   UserIsNotOwner,
   UserIsNotProfessor,
-} from './errors.service.js';
-const { sign, decode, verify, TokenExpiredError } = jwt;
+} from './errors.util.js';
+import Guard from './guard.util.js';
+const { sign, decode, verify } = jwt;
 
 /**
  * Method used to generate a new token for user.
@@ -34,11 +34,11 @@ export const generateToken = function (
   const expected_props = {
     id_user: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
   return fns.jwt_sign(
     {
@@ -69,9 +69,9 @@ export const decodeToken = function (
   const expected_props = {
     token: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
   if (props.token.slice(0, 7) !== 'Bearer ')
     throw new ParameterMisformed('The props.token parameter is misformed.');
@@ -96,9 +96,9 @@ export const getUserId = function (
   const expected_props = {
     token: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
   if (props.token.slice(0, 7) !== 'Bearer ')
     throw new ParameterMisformed('The props.token parameter is misformed.');

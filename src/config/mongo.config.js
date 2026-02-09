@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb';
 import CONFIG from './config.js';
-import { MDBNotResponding } from '../utils/errors.service.js';
+import { MDBNotResponding } from '../utils/errors.util.js';
 
 let client;
 let db;

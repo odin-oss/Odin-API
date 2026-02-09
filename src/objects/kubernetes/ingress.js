@@ -1,10 +1,10 @@
 import {
   MissingArgumentError,
   ParameterMisformed,
-} from '../../utils/errors.service.js';
-import * as parametres from '../../utils/parametres.service.js';
+} from '../../utils/errors.util.js';
 import { fetch } from '../../modules/kong-api.module.js';
 import CONFIG from '../../config/config.js';
+import Guard from '../../utils/guard.util.js';
 
 /**
  * Function that will add Routes and Services to Kong corresponding to one application.
@@ -27,17 +27,17 @@ export const addInKong = async function (
     ports: undefined,
     label: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_libelle(props.hash))
+  if (!Guard.check_libelle(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!parametres.check_libelle(props.label, 3))
+  if (!Guard.check_libelle(props.label, 3))
     throw new ParameterMisformed('The props.label parameter is misformed.');
 
   for (let port of props.ports) {
-    if (!parametres.check_port(port.port))
+    if (!Guard.check_port(port.port))
       throw new ParameterMisformed('The props.ports parameter is misformed.');
   }
   try {
@@ -124,11 +124,11 @@ export const deleteFromKong = async function (
   const expected_props = {
     hash: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
   try {

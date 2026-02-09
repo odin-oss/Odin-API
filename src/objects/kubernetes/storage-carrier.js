@@ -1,10 +1,10 @@
 import CONFIG from '../../config/config.js';
 import * as kapi from '../../modules/kapi.module.js';
-import * as parametres from '../../utils/parametres.service.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
 } from '../../utils/errors.service.js';
+import Guard from '../../utils/guard.service.js';
 
 /**
  * Function that will launch a Smash export for a given environment.
@@ -53,11 +53,11 @@ export const smashExport = async function (
     sender_email: undefined,
     receiver_email: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
   // kapi request

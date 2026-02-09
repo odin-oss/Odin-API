@@ -1,11 +1,11 @@
 import CONFIG from '../../config/config.js';
 import * as kapi from '../../modules/kapi.module.js';
-import * as parametres from '../../utils/parametres.service.js';
-import { parsing_generic_tags } from '../../utils/parsing.service.js';
+import { parsing_generic_tags } from '../../utils/parsing.util.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
-} from '../../utils/errors.service.js';
+} from '../../utils/errors.util.js';
+import Guard from '../../utils/guard.util.js';
 
 /**
  * Function that launch the deletion of the deployment.
@@ -23,12 +23,12 @@ export const deletion = async function (
   const expected_props = {
     hash: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
 
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
   const list = await Promise.resolve(
@@ -59,13 +59,13 @@ export const scale = async function (
     hash: undefined,
     replicas: 0,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!parametres.check_replica(props.replicas))
+  if (!Guard.check_replica(props.replicas))
     throw new ParameterMisformed('The props.replicas parameter is misformed.');
 
   const list = await Promise.resolve(
@@ -150,9 +150,9 @@ export const create = async function (
     cpu_limit: undefined,
     node_selectors: [],
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
 
   // La requête
@@ -301,9 +301,9 @@ const add_node_selectors = function (
     node_selectors: [],
     body: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
   if (props.body?.spec?.template?.spec === undefined)
     throw new ParameterMisformed('The props.body parameter is misformed.');
@@ -370,9 +370,9 @@ const add_service_commands = function (
     service_command: '',
     body: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
   if (props?.body?.spec?.template?.spec?.containers === undefined)
     throw new ParameterMisformed('The props.body parameter is misformed.');
@@ -414,20 +414,20 @@ const add_arguments = function (
     web_title: undefined,
     target: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
   if (props.args.length === 0) return props.body;
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!parametres.check_libelle(props.label, 3))
+  if (!Guard.check_libelle(props.label, 3))
     throw new ParameterMisformed('The props.label parameter is misformed.');
-  if (!parametres.check_libelle(props.generated_label))
+  if (!Guard.check_libelle(props.generated_label))
     throw new ParameterMisformed(
       'The props.generated_label parameter is misformed.'
     );
-  if (!parametres.check_libelle(props.username))
+  if (!Guard.check_libelle(props.username))
     throw new ParameterMisformed('The props.username parameter is misformed.');
   if (props?.body?.spec?.template?.spec?.containers === undefined)
     throw new ParameterMisformed('The props.body parameter is misformed.');
@@ -461,16 +461,16 @@ const add_ports = function (props = { ports: [], body: undefined }) {
     ports: [],
     body: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
   if (props?.body?.spec?.template?.spec?.containers === undefined)
     throw new ParameterMisformed('The props.body parameter is misformed.');
 
   if (props.ports.length === 0) return props.body;
   for (const element of props.ports) {
-    if (!parametres.check_port(element.port)) {
+    if (!Guard.check_port(element.port)) {
       throw new ParameterMisformed('One of the port is not a Number.');
     }
   }
@@ -513,20 +513,20 @@ const add_envs = function (
     generated_label: undefined,
     web_title: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
   if (props.envs.length === 0) return props.body;
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!parametres.check_libelle(props.label, 3))
+  if (!Guard.check_libelle(props.label, 3))
     throw new ParameterMisformed('The props.label parameter is misformed.');
-  if (!parametres.check_libelle(props.generated_label))
+  if (!Guard.check_libelle(props.generated_label))
     throw new ParameterMisformed(
       'The props.generated_label parameter is misformed.'
     );
-  if (!parametres.check_libelle(props.username))
+  if (!Guard.check_libelle(props.username))
     throw new ParameterMisformed('The props.username parameter is misformed.');
   if (props?.body?.spec?.template?.spec?.containers === undefined)
     throw new ParameterMisformed('The props.body parameter is misformed.');
@@ -587,17 +587,17 @@ const add_storage = function (
     hash: undefined,
     has_storage: false,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!parametres.check_libelle(props.label, 3))
+  if (!Guard.check_libelle(props.label, 3))
     throw new ParameterMisformed('The props.label parameter is misformed.');
-  if (!parametres.check_libelle(props.username))
+  if (!Guard.check_libelle(props.username))
     throw new ParameterMisformed('The props.username parameter is misformed.');
-  if (!parametres.check_boolean(props.has_storage))
+  if (!Guard.check_boolean(props.has_storage))
     throw new ParameterMisformed('The props.has_storage must be a boolean.');
   if (props?.body?.spec?.template?.spec?.containers === undefined)
     throw new ParameterMisformed('The props.body parameter is misformed.');
@@ -641,11 +641,11 @@ const get = async function (
     hash: undefined,
     onlyShutable: false,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
   const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${props.hash}/deployments?labelSelector=type=Deployment,hash=${props.hash},shutable=${props.onlyShutable ? 'true' : 'false'}`;
@@ -673,13 +673,13 @@ const del = async function (
     name: undefined,
     hash: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!parametres.check_libelle(props.name))
+  if (!Guard.check_libelle(props.name))
     throw new ParameterMisformed('The props.name parameter is misformed.');
 
   const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${props.hash}/deployments/${props.name}`;
@@ -707,13 +707,13 @@ const put = async function (
     hash: undefined,
     replicas: 1,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_hash(props.hash))
+  if (!Guard.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!parametres.check_libelle(props.name))
+  if (!Guard.check_libelle(props.name))
     throw new ParameterMisformed('The props.name parameter is misformed.');
 
   const body = {

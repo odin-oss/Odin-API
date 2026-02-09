@@ -10,15 +10,15 @@ import {
 } from './deployment.service.js';
 import * as storage_service from '../services/storage.service.js';
 import moment from 'moment-timezone';
-import * as password from '../utils/password.service.js';
 import CONFIG from '../config/config.js';
-import * as parametres from '../utils/parametres.service.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
   ApplicationInvalidStateError,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 import { History } from '../objects/History.js';
+import Guard from '../utils/guard.util.js';
+import { generate_label, generate_unique_hash, generate_unique_label } from './randomdictonary.service.js';
 
 /**
  * Service that will get all the informations about an application.
@@ -44,20 +44,20 @@ export const get = async (
     );
   if (
     props.id_application !== undefined &&
-    !parametres.check_id(props.id_application)
+    !Guard.check_id(props.id_application)
   )
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );
 
-  if (props.key !== undefined && !parametres.check_key(props.key))
+  if (props.key !== undefined && !Guard.check_key(props.key))
     throw new ParameterMisformed('The props.key parameter is misformed.');
 
   const options = {};
   if (props.key) options.key = props.key;
   if (props.id_application) options.id_application = props.id_application;
 
-  const application = await Promise.resolve(fns.application_get(options));
+  const application = await fns.application_get(options);
   return await Promise.all([
     fns.environment_get({ id_environment: application.id_environment }),
     fns.datacenter_get({ id_datacenter: application.datacenter.id_datacenter }),
@@ -94,11 +94,11 @@ export const list = async function (
   const expected_props = {
     id_user: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
 
   const applications = await Promise.resolve(
@@ -167,11 +167,11 @@ export const update_state = async function (
     id_application: undefined,
     state_application: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_application))
+  if (!Guard.check_id(props.id_application))
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );
@@ -180,22 +180,17 @@ export const update_state = async function (
       "The props.state_application must be in ['Off','Ready']."
     );
   // We get the app
-  const application = await Promise.resolve(
-    fns.application_get({ id_application: props.id_application })
-  );
+  const application = await fns.application_get({ id_application: props.id_application });
 
   // We get the corresponding datacenter
-  const datacenter = await Promise.resolve(
-    fns.datacenter_get({ id_datacenter: application.datacenter.id_datacenter })
-  );
+  const datacenter = await fns.datacenter_get({ id_datacenter: application.datacenter.id_datacenter });
 
   // we update the app in the db
-  await Promise.resolve(
-    fns.application_update({
+  await fns.application_update({
       id_application: props.id_application,
       state_application: props.state_application,
-    })
-  );
+    });
+
   const promises = [];
   // We get the updated database
   promises.push(fns.application_get({ id_application: props.id_application }));
@@ -238,15 +233,15 @@ export const deletion = async function (
   const expected_props = {
     id_application: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_application))
+  if (!Guard.check_id(props.id_application))
     throw new ParameterMisformed(
       'The props.id_application parameter is misformed.'
     );
-  if (!parametres.check_boolean(props.backup_storage))
+  if (!Guard.check_boolean(props.backup_storage))
     throw new ParameterMisformed(
       'The props.backup_storage parameter is misformed.'
     );
@@ -279,7 +274,6 @@ export const deletion = async function (
       })
     );
   } else {
-    console.log('oe');
     promises.push(
       fns.application_delete({ id_application: app.id_application })
     );
@@ -308,9 +302,9 @@ export const create = async function (
   },
   fns = {
     user_get: user_builder.get,
-    password_generate: password.generate_label,
-    generate_unique_label: password.generate_unique_label,
-    unique_hash_generate: password.generate_unique_hash,
+    password_generate: generate_label,
+    generate_unique_label: generate_unique_label,
+    unique_hash_generate: generate_unique_hash,
     environment_get: environment_builder.get,
     application_create: application_builder.create,
     datacenter_get: datacenter_builder.get,
@@ -323,17 +317,17 @@ export const create = async function (
     id_datacenter: undefined,
     label: undefined,
   };
-  if (parametres.check_props(expected_props, props).length > 0)
+  if (Guard.check_props(expected_props, props).length > 0)
     throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
+      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
     );
-  if (!parametres.check_id(props.id_user))
+  if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  if (!parametres.check_id(props.id_environment))
+  if (!Guard.check_id(props.id_environment))
     throw new ParameterMisformed(
       'The props.id_environment parameter is misformed.'
     );
-  if (!parametres.check_id(props.id_datacenter))
+  if (!Guard.check_id(props.id_datacenter))
     throw new ParameterMisformed(
       'The props.id_datacenter parameter is misformed.'
     );

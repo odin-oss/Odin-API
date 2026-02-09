@@ -9,6 +9,4 @@ export const list = async function (
   fns = {
     datacenter_list: datacenter_builder.list,
   }
-) {
-  return await Promise.resolve(fns.datacenter_list());
-};
+) { return await Promise.resolve(fns.datacenter_list())};

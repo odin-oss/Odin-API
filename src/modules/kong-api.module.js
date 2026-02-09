@@ -1,6 +1,6 @@
 import * as nf from 'node-fetch';
 import CONFIG from '../config/config.js';
-import { AppsIngressErrorNotDefined } from '../utils/errors.service.js';
+import { AppsIngressErrorNotDefined } from '../utils/errors.util.js';
 /**
  * Function used to communicate with the Kubernetes API.
  * @param {*} param0
