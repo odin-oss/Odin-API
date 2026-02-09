@@ -1,4 +1,3 @@
-import logs from '../middlewares/winston.js';
 import * as session_service from '../services/session.service.js';
 import * as parametres from '../utils/parametres.service.js';
 import {
@@ -8,6 +7,7 @@ import {
 } from '../middlewares/prometheus.js';
 import { ParameterMisformed } from '../utils/errors.service.js';
 import * as token from '../utils/token.service.js';
+import { ApiResponse } from '../utils/response.util.js';
 /**
  * Controller that checks parameters and create a new session.
  * @param {*} req HTTP request.
@@ -73,8 +73,7 @@ export const create = async (
         'The req.body.label_application parameter is misformed.'
       );
 
-    return await Promise.resolve(
-      fns.session_create({
+    await fns.session_create({
         label_session: req.body.label_session,
         label_application: req.body.label_application,
         begin_date: req.body.begin_date,
@@ -84,23 +83,9 @@ export const create = async (
         users: JSON.parse(req.body.users),
         professors: JSON.parse(req.body.professors),
       })
-    ).then((session) => {
-      logs.info(`[${req.method}][200] ${req.originalUrl} : Session started.`);
-      return res.status(200).json({
-        result: session.public_format(),
-      });
-    });
+      .then((session) => ApiResponse.success(req, res, session.public_format(), 200, 'Session started.'));
   } catch (err) {
-    const code = err.name === 'SyntaxError' ? 400 : err.code;
-    logs.error(
-      `[${req.method}][${code}][${err.name}] ${req.originalUrl} : ${err.message}`
-    );
-    return res.status(code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+    ApiResponse.error(req, res, err);
   }
 };
 
@@ -125,26 +110,10 @@ export const list = async (
   //Request
   try {
     const id_user = token.getUserId({ token: req.headers['authorization'] });
-    return await Promise.resolve(fns.session_list({ id_user })).then(
-      (sessions) => {
-        logs.info(
-          `[${req.method}][200] ${req.originalUrl} : List of sessions transmitted.`
-        );
-        return res.status(200).json({
-          result: sessions.map((session) => session.public_format()),
-        });
-      }
-    );
+    await fns.session_list({ id_user })
+    .then(sessions => ApiResponse.success(req, res, sessions.map((session) => session.public_format()), 200, 'List of sessions transmitted.'));
   } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
-    );
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+    ApiResponse.error(req, res, err);
   }
 };
 
@@ -175,25 +144,9 @@ export const get = async (
         'The req.query.id_session parameter is misformed.'
       );
     const id_user = token.getUserId({ token: req.headers['authorization'] });
-    return await Promise.resolve(
-      fns.session_get({ id_session: req.query.id_session, id_user })
-    ).then((session) => {
-      logs.info(
-        `[${req.method}][200] ${req.originalUrl} : Session transmitted.`
-      );
-      return res.status(200).json({
-        result: session.public_format(),
-      });
-    });
+    await fns.session_get({ id_session: req.query.id_session, id_user })
+    .then(session => ApiResponse.success(req, res, session.public_format(), 200, 'Session transmitted.'));
   } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
-    );
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+    ApiResponse.error(req, res, err);
   }
 };

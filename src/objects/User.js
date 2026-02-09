@@ -1,3 +1,6 @@
+import z from 'zod';
+import Guard from '../utils/guard.service.js';
+
 export class User {
   #id_user;
   #lastname;
@@ -6,21 +9,25 @@ export class User {
   #role;
   #pwd;
 
-  constructor({
-    id_user = undefined,
-    lastname = null,
-    firstname = null,
-    mail = null,
-    role = null,
-    pwd = null,
-  } = {}) {
-    this.#id_user = id_user;
-    this.#lastname = lastname;
-    this.#firstname = firstname;
-    this.#mail = mail;
-    this.#role = role;
-    this.#pwd = pwd;
+  constructor(props) {
+    const data = Guard.validateProps(User.schema, props);
+    this.#id_user = data.id_user;
+    this.#lastname = data.lastname;
+    this.#firstname = data.firstname;
+    this.#mail = data.mail;
+    this.#role = data.role;
+    this.#pwd = data.pwd;
   }
+
+  // Zod Schema for object validation
+  static schema = z.object({
+    id_user: z.number().int().optional(),
+    lastname: z.string().min(1),
+    firstname: z.string().min(1),
+    mail: z.string().email({ message: 'Invalid email address' }),
+    role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
+    pwd: z.string().min(8).optional(),
+  });
 
   // Getters
   get id_user() {
@@ -91,15 +98,4 @@ export class User {
       role: this.#role,
     };
   }
-
-  /**toJSON_with_password() {
-    return {
-      id_user: this.#id_user,
-      lastname: this.#lastname,
-      firstname: this.#firstname,
-      mail: this.#mail,
-      role: this.#role,
-      pwd: this.#pwd,
-    };
-  }**/
 }

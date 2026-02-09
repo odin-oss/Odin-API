@@ -95,7 +95,7 @@ export const create = async function (
       type: 'ExternalName',
     },
   };
-  const url = `${CONFIG.kubernetes_url}/api/v1/namespaces/cirrus/services`;
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services`;
   return await Promise.resolve(fetch({ url, method: 'POST', body })).then(
     (res) => {
       return {
@@ -128,7 +128,7 @@ const get = async function (
   if (!parametres.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
-  const url = `${CONFIG.kubernetes_url}/api/v1/namespaces/cirrus/services?labelSelector=type=ExternalName,hash=${props.hash},shutable=${{ ...expected_props, ...props }.onlyShutable ? 'true' : 'false'}`;
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services?labelSelector=type=ExternalName,hash=${props.hash},shutable=${{ ...expected_props, ...props }.onlyShutable ? 'true' : 'false'}`;
 
   return await Promise.resolve(fetch({ url, method: 'GET' })).then((res) => {
     if (res === 'Kubernetes is not activated.') return { result: res };
@@ -155,7 +155,7 @@ const del = async function (props = { name: undefined }, fetch = kapi.fetch) {
   if (!parametres.check_libelle(props.name))
     throw new ParameterMisformed('The props.name parameter is misformed.');
 
-  const url = `${CONFIG.kubernetes_url}/api/v1/namespaces/cirrus/services/${props.name}`;
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services/${props.name}`;
   return await Promise.resolve(fetch({ url, method: 'DELETE' })).then((res) => {
     return {
       result: res,
@@ -166,7 +166,7 @@ const del = async function (props = { name: undefined }, fetch = kapi.fetch) {
 };
 
 const test_exports = {};
-if (CONFIG.env === 'test') {
+if (CONFIG.APP_ENVIRONMENT === 'test') {
   test_exports.del = del;
   test_exports.get = get;
 }

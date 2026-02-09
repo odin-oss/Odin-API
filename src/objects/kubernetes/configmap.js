@@ -64,7 +64,7 @@ export const create = async function (
       },
     },
   };
-  const url = `${CONFIG.kubernetes_url}/api/v1/namespaces/${props.namespace}/configmaps`;
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/${props.namespace}/configmaps`;
   return await Promise.resolve(fns.fetch({ url, method: 'POST', body })).then(
     (res) => {
       return {
@@ -127,7 +127,7 @@ export const update = async function (
       },
     },
   };
-  const url = `${CONFIG.kubernetes_url}/api/v1/namespaces/${props.namespace}/configmaps/${props.name}`;
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/${props.namespace}/configmaps/${props.name}`;
   return await Promise.resolve(fns.fetch({ url, method: 'PUT', body })).then(
     (res) => {
       return res;

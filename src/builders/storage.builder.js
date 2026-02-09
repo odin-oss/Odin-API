@@ -7,7 +7,7 @@ import {
   MissingArgumentError,
   ParameterMisformed,
 } from '../utils/errors.service.js';
-import { Application_export } from '../objects/application/Application_export.js';
+import { Application_export } from '../objects/Application_export.js';
 import CONFIG from '../config/config.js';
 
 /**

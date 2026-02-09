@@ -5,66 +5,8 @@
  */
 import express from 'express';
 import * as auth_controller from '../controllers/auth.controller.js';
-import { app_access_granted } from '../utils/token.service.js';
-import { counter, counter_get } from '../middlewares/prometheus.js';
 
 const router = express.Router();
-
-/**
- * @swagger
- * /auth/app:
- *  get:
- *    description: Does the user have the access to the app ?
- *    security:
- *      - Bearer: []
- *    tags:
- *      - Authentication
- *    produces:
- *      - application/json
- *    parameters:
- *     - name: hash
- *       description: Application's hash.
- *       in: query
- *       required: true
- *       type: integer
- *     - name: token
- *       description: User's personal token.
- *       in: query
- *       required: true
- *       type: integer
- *    responses:
- *       200:
- *         description: true if access is authorized.
- *
- */
-router.get('/:hash/*', function (req, res) {
-  counter.inc();
-  counter_get.inc();
-  app_access_granted(req, res);
-});
-
-/**
- * @swagger
- * /auth/options:
- *  get:
- *    tags:
- *     - Authentication
- *    produces:
- *     - application/json
- *    description: Get all the different options of connexion.
- *    responses:
- *      200:
- *        description: Types of connexion available.
- *        schema:
- *          type: object
- *          properties:
- *            result:
- *              type: array
- *              items:
- *                type: string
- *                example: "credentials"
- */
-router.get('/options', auth_controller.login_options);
 
 /**
  * @swagger

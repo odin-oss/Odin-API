@@ -6,7 +6,7 @@
 import AUTH from '../routes/auth.route.js';
 import BASE from '../routes/base.route.js';
 import APPLICATION from '../routes/applications.route.js';
-import APPLICATION_STORAGE from '../routes/application/storage.route.js';
+import APPLICATION_STORAGE from '../routes/storage.route.js';
 import DATACENTER from '../routes/datacenter.route.js';
 import ENVIRONMENT from '../routes/environment.route.js';
 import CATEGORY from '../routes/category.route.js';
@@ -27,7 +27,7 @@ export default (app) => {
   app.use('/user', USER);
   app.use('/', BASE);
   app.use('/*', function (req, res) {
-    logs.error(`[404] : ${req.originalUrl} n'existe pas.`);
-    return res.status(404).json({ result: "L'adresse demandée n'existe pas." });
+    logs.error(`[404] : ${req.originalUrl} not found.`);
+    return res.status(404).json({ result: 'URL not found.' });
   });
 };

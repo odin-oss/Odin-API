@@ -38,9 +38,9 @@ const optionsJSdoc = {
       description: 'API backend Node.js/Express pour green IT cloud',
       contact: { name: 'Caelus Team', email: 'benlef99@getcaelus.cloud' },
     },
-    host: `${CONFIG.swagger_url}`, // Host (optional)
+    host: `${CONFIG.SWAGGER_URL}`, // Host (optional)
     basePath: '/', // Base path (optional)
-    schemes: [CONFIG.swagger_method],
+    schemes: [CONFIG.SWAGGER_METHOD],
     securityDefinitions: {
       Bearer: {
         type: 'apiKey',

@@ -15,13 +15,7 @@ export const list = async (
     environment_list: environment_builder.list,
   }
 ) => {
-  return await Promise.resolve(fns.environment_list())
-    .then((environments) => {
-      return environments;
-    })
-    .catch((err) => {
-      throw err;
-    });
+  return await fns.environment_list();
 };
 
 /**
@@ -50,9 +44,5 @@ export const get = async function (
     throw new ParameterMisformed(
       'The props.id_environment parameter is misformed.'
     );
-  return await Promise.resolve(
-    fns.environment_get({ id_environment: props.id_environment })
-  ).then((environment) => {
-    return environment;
-  });
+  return await fns.environment_get({ id_environment: props.id_environment });
 };

@@ -6,7 +6,7 @@ import CONFIG from '../config/config.js';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
 const { combine, printf } = format;
-const logPath = CONFIG.log_path;
+const logPath = CONFIG.LOG_PATH;
 let colorBoolean = false;
 
 const config = {
@@ -24,7 +24,7 @@ const config = {
   },
 };
 
-if (CONFIG.app === 'local') {
+if (CONFIG.APP_ENVIRONMENT === 'local') {
   colorBoolean = true;
   winston.addColors(config.colors);
 }
@@ -39,7 +39,7 @@ const appendTimestamp = format((info, opts) => {
 
 const rotateTransportExceptions = new DailyRotateFile({
   dirname: logPath,
-  level: CONFIG.log_level_exceptions,
+  level: CONFIG.LOG_LEVEL_EXCEPTIONS,
   filename: 'exceptions-pvc.log',
   frequency: '24h',
   datePattern: 'YYYY-MM-DD',
@@ -53,7 +53,7 @@ const rotateTransportExceptions = new DailyRotateFile({
 });
 
 const consoleTransport = new transports.Console({
-  level: CONFIG.log_level,
+  level: CONFIG.LOG_LEVEL,
   format: format.combine(
     format.colorize(),
     format.simple(),
@@ -66,7 +66,7 @@ const consoleTransport = new transports.Console({
 
 const rotateTransportAll = new transports.DailyRotateFile({
   dirname: logPath,
-  level: CONFIG.log_level,
+  level: CONFIG.LOG_LEVEL,
   filename: 'log-pvc.log',
   frequency: '24h',
   datePattern: 'YYYY-MM-DD',

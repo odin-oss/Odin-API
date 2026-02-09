@@ -26,7 +26,7 @@ export const deletion = async function (
   if (!parametres.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
-  const url = `${CONFIG.kubernetes_url}/api/v1/namespaces/n${props.hash}/secrets/registryhub`;
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${props.hash}/secrets/registryhub`;
   return await Promise.resolve(fetch({ url, method: 'DELETE' })).then((res) => {
     return {
       result: res,
@@ -58,9 +58,9 @@ export const create = async function (
 
   const data = {
     auths: {
-      [CONFIG.registry_url]: {
-        username: CONFIG.registry_username,
-        password: CONFIG.registry_password,
+      [CONFIG.REGISTRY_URL]: {
+        username: CONFIG.REGISTRY_USERNAME,
+        password: CONFIG.REGISTRY_PASSWORD,
       },
     },
   };
@@ -79,7 +79,7 @@ export const create = async function (
     },
     type: 'kubernetes.io/dockerconfigjson',
   };
-  const url = `${CONFIG.kubernetes_url}/api/v1/namespaces/n${props.hash}/secrets`;
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${props.hash}/secrets`;
   return await Promise.resolve(fetch({ url, method: 'POST', body })).then(
     (res) => {
       return {

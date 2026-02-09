@@ -262,8 +262,7 @@ describe('<object> Application', () => {
     });
     chai.expect(app.id_application).to.be.equal(1);
     chai.expect(app.custom_label).to.be.equal('custom');
-    chai.expect(app.creation_date.isSame(moment.tz(CONFIG.APP_TZ))).to.be
-      .true;
+    chai.expect(app.creation_date.isSame(moment.tz(CONFIG.APP_TZ))).to.be.true;
     chai.expect(app.hash).to.be.equal('hashha');
     chai.expect(app.id_user).to.be.equal(2);
     chai.expect(app.id_environment).to.be.equal(1);
@@ -307,10 +306,7 @@ describe('<object> Application', () => {
       id_environment: 1,
       state_application: 'Off',
       state_changed_date: moment.tz(CONFIG.APP_TZ).format(),
-      programming_shutdown_date: moment
-        .tz(CONFIG.APP_TZ)
-        .add(13, 'h')
-        .format(),
+      programming_shutdown_date: moment.tz(CONFIG.APP_TZ).add(13, 'h').format(),
       environment: {
         id_environment: 1,
         label: 'test',

@@ -75,6 +75,7 @@
     "jsonwebtoken": "^9.0.2",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.46",
+    "mongodb": "^7.1.0",
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
     "npm": "^11.6.0",

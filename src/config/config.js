@@ -1,5 +1,7 @@
 import dotenv from 'dotenv';
 import logger from '../middlewares/winston.js';
+import https from 'https';
+import fs from 'fs/promises';
 import { z } from 'zod';
 
 // ENVIRONMENT = local || dev || prod
@@ -16,10 +18,15 @@ const envSchema = z.object({
   APP_PORT: z.string().transform(Number).default(3000),
   APP_ENVIRONMENT: z.string().default('local'),
   APP_MODE: z.string().default('debug'),
-  APP_TOKEN_KEYPASS: z.string().default('YOJUSTTRYINGSOMETHINGTOKNOWIFITWORKS'),
+  APP_TOKEN_KEYPASS: z
+    .string()
+    .min(36)
+    .max(36)
+    .default('YOJUSTTRYINGSOMETHINGTOKNOWIFITWORKS'),
   APP_TOKEN_EXPIRATION_HOURS: z.string().transform(Number).default(24),
   APP_TZ: z.string().default('Europe/Paris'),
   USER_APPS_EXPIRATION_HOURS: z.string().transform(Number).default(6),
+  USER_APPS_HOSTNAME: z.string().default('localhost'),
 
   // ICON OF IMAGES
   MAX_CONTENT_SIZE: z.string().default('5mb'),
@@ -51,6 +58,13 @@ const envSchema = z.object({
   KUBERNETES_URL: z.string().default('http://127.0.0.1:8080'),
   KUBERNETES_TOKEN: z.string().default(''),
   KUBERNETES_MASTER_IP: z.string(),
+  KUBERNETES_TOKEN_PATH: z
+    .string()
+    .default('/var/run/secrets/kubernetes.io/serviceaccount/token'),
+  KUBERNETES_CA_CERT_PATH: z
+    .string()
+    .default('/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'),
+  KUBERNETES_AGENT: z.any().default(undefined),
 
   // WINSTON LOGGER CONFIGURATION
   LOG_PATH: z.string().default('log'),
@@ -62,6 +76,11 @@ const envSchema = z.object({
   MONGODB_USERNAME: z.string().default('odin'),
   MONGODB_PASSWORD: z.string().default('odin'),
   MONGODB_DB: z.string().default('odin_db'),
+
+  // REGISTRY
+  REGISTRY_URL: z.string().default('registry.gitlab.com'),
+  REGISTRY_USERNAME: z.string().default('odin'),
+  REGISTRY_PASSWORD: z.string().default('odin'),
 
   // SMASH STORAGE
   STORAGE_CARRIER_SENDER_EMAIL: z
@@ -80,12 +99,19 @@ const envSchema = z.object({
 });
 const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {
-  logger.error(
+  console.error(
     '[SYSTEM][ERROR] Zod found an issue in your environment :',
     JSON.stringify(parsed.error.format(), null, 2)
   );
   process.exit(1);
 }
-
 const CONFIG = parsed.data;
+
+if (!['local', 'test'].includes(CONFIG.APP_ENVIRONMENT)) {
+  const token = await fs.readFile(CONFIG.KUBERNETES_TOKEN_PATH, 'utf-8');
+  CONFIG.KUBERNETES_TOKEN = token;
+  const ca = await fs.readFile(CONFIG.KUBERNETES_CA_CERT_PATH, 'utf-8');
+  CONFIG.KUBERNETES_AGENT = new https.Agent({ ca });
+}
+
 export default CONFIG;

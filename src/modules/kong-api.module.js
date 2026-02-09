@@ -11,7 +11,7 @@ export const fetch = async function (
   { url = '', method = 'GET', body = undefined, headers = undefined } = {},
   fetch = nf.default
 ) {
-  if (!CONFIG.apps_ingress_activated)
+  if (!CONFIG.APPS_INGRESS_ACTIVATED)
     return 'Apps-Ingress (Kong) is not activated.';
   // convert body from JSON to string for fetch command
   let raw_body;

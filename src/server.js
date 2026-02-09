@@ -1,8 +1,8 @@
 import app from './app.js';
 
-const server = app.listen(app.get('config').port, () => {
+const server = app.listen(app.get('config').APP_PORT, () => {
   app.locals.logger.info(
-    `[SYSTEM][200] / : 1/5. ODIN launched. Waiting for the first request on port ${app.get('config').port} ...`
+    `[SYSTEM][200] / : 1/5. ODIN launched. Waiting for the first request on port ${app.get('config').APP_PORT} ...`
   );
 });
 

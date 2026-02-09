@@ -2,6 +2,10 @@ import moment from 'moment-timezone';
 import { Datacenter } from './Datacenter.js';
 import { Environment } from './Environment.js';
 import CONFIG from '../config/config.js';
+import z from 'zod';
+import { Application } from './Application.js';
+import { User } from './User.js';
+import Guard from '../utils/guard.service.js';
 
 /**
  * Session class representing a session entity.
@@ -17,27 +21,43 @@ export class Session {
   #professors;
   #datacenter;
 
-  constructor({
-    id_session = undefined,
-    label = '',
-    begin_date = moment(),
-    end_date = moment(),
-    environment = new Environment(),
-    applications = [],
-    users = [],
-    professors = [],
-    datacenter = new Datacenter(),
-  } = {}) {
-    this.#id_session = id_session;
-    this.#label = label;
-    this.#begin_date = begin_date;
-    this.#end_date = end_date;
-    this.#environment = environment;
-    this.#applications = applications;
-    this.#users = users;
-    this.#professors = professors;
-    this.#datacenter = datacenter;
+  constructor(props) {
+    const data = Guard.validateProps(Session.schema, props);
+    this.#id_session = data.id_session;
+    this.#label = data.label;
+    this.#begin_date = data.begin_date;
+    this.#end_date = data.end_date;
+    this.#environment = data.environment;
+    this.#applications = data.applications;
+    this.#users = data.users;
+    this.#professors = data.professors;
+    this.#datacenter = data.datacenter;
   }
+
+  // Zod Schema for object validation
+  static schema = z.object({
+    id_session: z.number().int().optional(),
+    label: z.string().min(1).trim(),
+    begin_date: z
+      .string()
+      .refine((val) => moment(val).isValid(), {
+        message: 'Invalid date format',
+      })
+      .transform((val) => moment(val).tz(CONFIG.APP_TZ))
+      .nullable(),
+    end_date: z
+      .string()
+      .refine((val) => moment(val).isValid(), {
+        message: 'Invalid date format',
+      })
+      .transform((val) => moment(val).tz(CONFIG.APP_TZ))
+      .nullable(),
+    environment: z.instanceof(Environment),
+    applications: z.array(z.instanceof(Application)).default([]),
+    users: z.array(z.instanceof(User)).default([]),
+    professors: z.array(z.instanceof(User)).default([]),
+    datacenter: z.instanceof(Datacenter),
+  });
 
   // Getters
   get id_session() {

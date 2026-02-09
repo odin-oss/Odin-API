@@ -38,9 +38,7 @@ describe('<object> Application_export', () => {
     chai.expect(appExport.init_date.isSame(moment.tz(CONFIG.APP_TZ))).to.be
       .true;
     chai.expect(
-      appExport.expiration_date.isSame(
-        moment.tz(CONFIG.APP_TZ).add(1, 'days')
-      )
+      appExport.expiration_date.isSame(moment.tz(CONFIG.APP_TZ).add(1, 'days'))
     ).to.be.true;
     chai.expect(appExport.id_enum_export_state).to.be.equal(1);
     chai.expect(appExport.download_link).to.be.null;
@@ -73,9 +71,7 @@ describe('<object> Application_export', () => {
 
     appExport.expiration_date = moment.tz(CONFIG.APP_TZ).add(2, 'days');
     chai.expect(
-      appExport.expiration_date.isSame(
-        moment.tz(CONFIG.APP_TZ).add(2, 'days')
-      )
+      appExport.expiration_date.isSame(moment.tz(CONFIG.APP_TZ).add(2, 'days'))
     ).to.be.true;
 
     appExport.id_enum_export_state = 2;

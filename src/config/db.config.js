@@ -25,13 +25,13 @@ class DBManager {
     if (this.sequelize) return this.sequelize;
 
     this.sequelize = new Sequelize(
-      CONFIG.db_name,
-      CONFIG.db_user,
-      CONFIG.db_password,
+      CONFIG.DB_NAME,
+      CONFIG.DB_USER,
+      CONFIG.DB_PASSWORD,
       {
-        host: CONFIG.db_host,
-        port: CONFIG.db_port,
-        dialect: CONFIG.db_dialect,
+        host: CONFIG.DB_HOST,
+        port: CONFIG.DB_PORT,
+        dialect: CONFIG.DB_DIALECT,
         pool: { max: 30, min: 0, idle: 30000, acquire: 200000 },
         define: {
           underscored: false,
@@ -85,13 +85,13 @@ class DBManager {
     }
 
     const auto = new SequelizeAuto(
-      CONFIG.db_name,
-      CONFIG.db_user,
-      CONFIG.db_password,
+      CONFIG.DB_NAME,
+      CONFIG.DB_USER,
+      CONFIG.DB_PASSWORD,
       {
-        host: CONFIG.db_host,
-        dialect: CONFIG.db_dialect,
-        port: CONFIG.db_port,
+        host: CONFIG.DB_HOST,
+        dialect: CONFIG.DB_DIALECT,
+        port: CONFIG.DB_PORT,
         logging: false,
         caseModel: 'u',
         caseFile: 'u',

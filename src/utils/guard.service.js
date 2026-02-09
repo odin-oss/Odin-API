@@ -8,6 +8,21 @@ import {
 import logs from '../middlewares/winston.js';
 
 export default class Guard {
+  static validateProps = function (schema, props) {
+    const result = schema.safeParse(props);
+    if (!result.success) {
+      const isMissing = result.error.issues.some(
+        (i) => i.code === 'invalid_type'
+      );
+      if (isMissing)
+        throw new MissingArgumentError(
+          `Missing arguments: ${result.error.issues.map((i) => i.path).join(', ')}`
+        );
+      throw new ParameterMisformed(result.error.errors[0].message);
+    }
+    return result.data;
+  };
+
   /**
    * Function that checks if the array of args is well formed.
    * @param {*} args

@@ -115,9 +115,7 @@ export const check_id = function (id = 0) {
  * @param {*} value
  * @returns
  */
-export const state_changed_date = function (
-  value = moment.tz(CONFIG.APP_TZ)
-) {
+export const state_changed_date = function (value = moment.tz(CONFIG.APP_TZ)) {
   return moment(value)
     .tz(CONFIG.APP_TZ)
     .isSameOrBefore(moment.tz(CONFIG.APP_TZ));

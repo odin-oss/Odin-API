@@ -197,9 +197,7 @@ describe('storage.service.exportStorage()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Off',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.APP_TZ
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
             .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
@@ -576,9 +574,7 @@ describe('storage.service.exportStorage()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Ready',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.APP_TZ
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
             .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
@@ -694,9 +690,7 @@ describe('storage.service.exportStorage()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Off',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.APP_TZ
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
             .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
@@ -870,9 +864,7 @@ describe('storage.service.exportStorage()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Off',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.APP_TZ
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
             .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
@@ -957,9 +949,7 @@ describe('storage.service.exportStorage()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Off',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.APP_TZ
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
             .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
@@ -1052,9 +1042,7 @@ describe('storage.service.exportStorage()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Off',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.APP_TZ
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
             .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
@@ -1180,9 +1168,7 @@ describe('storage.service.exportStorage()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Off',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.APP_TZ
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
             .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),

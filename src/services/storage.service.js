@@ -1,21 +1,21 @@
 import moment from 'moment-timezone';
-import * as application_builder from '../../builders/applications.builder.js';
-import * as application_service from '../../services/applications.service.js';
-import * as storage_builder from '../../builders/application/storage.builder.js';
-import * as datacenter_builder from '../../builders/datacenter.builder.js';
-import * as environment_builder from '../../builders/environment.builder.js';
-import * as user_builder from '../../builders/user.builder.js';
-import CONFIG from '../../config/config.js';
-import { exec_smash_export } from '../../modules/ms-deployment.module.js';
-import { exec_transfer_deletion } from '../../modules/smash-api.module.js';
+import * as application_builder from '../builders/applications.builder.js';
+import * as application_service from './applications.service.js';
+import * as storage_builder from '../builders/storage.builder.js';
+import * as datacenter_builder from '../builders/datacenter.builder.js';
+import * as environment_builder from '../builders/environment.builder.js';
+import * as user_builder from '../builders/user.builder.js';
+import CONFIG from '../config/config.js';
+import { exec_smash_export } from '../modules/ms-deployment.module.js';
+import { exec_transfer_deletion } from '../modules/smash-api.module.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
   StorageAlreadyExists,
   StorageError,
   SmashAPIError,
-} from '../../utils/errors.service.js';
-import * as parametres from '../../utils/parametres.service.js';
+} from '../utils/errors.service.js';
+import * as parametres from '../utils/parametres.service.js';
 /**
  * Service that gives the latest active storage.
  * @param {*} props {id_application}
@@ -162,17 +162,17 @@ export const exportStorage = async function (
             label: selectedInterface?.label?.toLowerCase(),
             app_deletion: props.app_deletion,
             folder_path: `/home/${application.username}/`,
-            storage_carrier_image: CONFIG.smash_storage_carrier_image,
-            storage_carrier_image_tag: CONFIG.smash_storage_carrier_image_tag,
-            smash_api_key: CONFIG.smash_storage_carrier_api_key,
-            smash_region: CONFIG.smash_storage_carrier_region,
-            smash_teamid: CONFIG.smash_storage_carrier_teamid,
+            storage_carrier_image: CONFIG.SMASH_STORAGE_CARRIER_IMAGE,
+            storage_carrier_image_tag: CONFIG.SMASH_STORAGE_CARRIER_IMAGE_TAG,
+            smash_api_key: CONFIG.SMASH_STORAGE_CARRIER_API_KEY,
+            smash_region: CONFIG.SMASH_STORAGE_CARRIER_REGION,
+            smash_teamid: CONFIG.SMASH_STORAGE_CARRIER_TEAMID,
             web_title: application.custom_label,
             upload_description: `${application.custom_label} Odin environment export from ${moment().format('YYYY-MM-DD HH:mm:ss')} (${moment.tz(moment.tz.guess()).format('z')})`,
             export_language: 'fr',
             availability: '30',
-            sender_name: CONFIG.storage_carrier_sender_name,
-            sender_email: CONFIG.storage_carrier_sender_email,
+            sender_name: CONFIG.STORAGE_CARRIER_SENDER_NAME,
+            sender_email: CONFIG.STORAGE_CARRIER_SENDER_EMAIL,
             receiver_email: user.mail,
             datacenter: application.datacenter,
           })

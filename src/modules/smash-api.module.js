@@ -23,7 +23,7 @@ const smash_module = async (
   }
 ) => {
   const smash_version = '01-2024';
-  const smash_region = CONFIG.smash_storage_carrier_region;
+  const smash_region = CONFIG.SMASH_STORAGE_CARRIER_REGION;
   const url = `https://transfer.${smash_region}.fromsmash.co${props.route}?version=${smash_version}`;
 
   // Options
@@ -32,7 +32,7 @@ const smash_module = async (
     body: JSON.stringify(props.body),
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${CONFIG.smash_storage_carrier_api_key}`,
+      Authorization: `Bearer ${CONFIG.SMASH_STORAGE_CARRIER_API_KEY}`,
     },
   };
 

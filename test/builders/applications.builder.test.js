@@ -690,9 +690,7 @@ describe('applications.builder.create()', () => {
   });
   it('called with the good arguments and ms_deployment_activated and schedule date in 11min and should create an application.', async () => {
     CONFIG.ms_deployment_activated = true;
-    const scheduled_creation_date = moment
-      .tz(CONFIG.APP_TZ)
-      .add(11, 'minutes');
+    const scheduled_creation_date = moment.tz(CONFIG.APP_TZ).add(11, 'minutes');
     const props = {
       id_user: 1,
       id_environment: 2,

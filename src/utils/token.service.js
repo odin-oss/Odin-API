@@ -44,9 +44,9 @@ export const generateToken = function (
     {
       id_user: props.id_user,
     },
-    CONFIG.jwt_token,
+    CONFIG.APP_TOKEN_KEYPASS,
     {
-      expiresIn: CONFIG.duration_token,
+      expiresIn: CONFIG.APP_TOKEN_EXPIRATION_HOURS,
     }
   );
 };
@@ -129,7 +129,7 @@ export const isTokenValid = async (
       throw new ParameterMisformed('The props.token parameter is misformed.');
 
     const token = req.headers['authorization'].slice(7);
-    const verifiedToken = fns.jwt_verify(token, CONFIG.jwt_token);
+    const verifiedToken = fns.jwt_verify(token, CONFIG.APP_TOKEN_KEYPASS);
     if (!verifiedToken.id_user)
       throw new BadContentTokenError(
         'The token does not have proper attribute.'
@@ -181,7 +181,7 @@ export const app_access_granted = async (
     const token = req.headers['authorization'].slice(7);
 
     // lets verify token
-    const verifiedToken = fns.jwt_verify(token, CONFIG.jwt_token);
+    const verifiedToken = fns.jwt_verify(token, CONFIG.APP_TOKEN_KEYPASS);
     if (!verifiedToken.id_user)
       throw new BadContentTokenError(
         'The token does not have proper attribute.'

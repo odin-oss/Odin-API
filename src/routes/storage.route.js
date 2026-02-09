@@ -1,6 +1,6 @@
 import express from 'express';
-import * as storage_controller from '../../controllers/application/storage.controller.js';
-import { isTokenValid, isOwner } from '../../utils/token.service.js';
+import * as storage_controller from '../controllers/storage.controller.js';
+import { isOwner } from '../utils/token.service.js';
 
 const router = express.Router();
 

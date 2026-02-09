@@ -23,7 +23,7 @@ export const fetch = async function (
   retries = 20, // Number of retry attempts
   retryDelay = 3000 // Delay between retries in ms
 ) {
-  if (!CONFIG.kubernetes_activated) return 'Kubernetes is not activated.';
+  if (!CONFIG.KUBERNETES_ACTIVATED) return 'Kubernetes is not activated.';
   // convert body from JSON to string for fetch command
   let raw_body;
   if (method !== 'GET' && method !== 'DELETE') {
@@ -33,7 +33,7 @@ export const fetch = async function (
   // headers to set authentication token
   const headers = {
     'Content-Type': 'application/json',
-    Authorization: 'Bearer ' + CONFIG.kubernetes_token,
+    Authorization: 'Bearer ' + CONFIG.KUBERNETES_TOKEN,
   };
 
   const options = {
@@ -42,8 +42,8 @@ export const fetch = async function (
   };
 
   // add agent only on production envs
-  if (CONFIG.env !== 'local' && CONFIG.env !== 'test') {
-    options.agent = CONFIG.agent;
+  if (CONFIG.APP_ENVIRONMENT !== 'local' && CONFIG.APP_ENVIRONMENT !== 'test') {
+    options.agent = CONFIG.KUBERNETES_AGENT;
   }
 
   // add body on nonGET and nonDELETE method request

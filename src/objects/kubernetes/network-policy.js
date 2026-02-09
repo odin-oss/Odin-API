@@ -1,5 +1,5 @@
 import CONFIG from '../../config/config.js';
-import * as kapi from '.././modules/kapi.module.js';
+import * as kapi from '../../modules/kapi.module.js';
 import * as parametres from '../../utils/parametres.service.js';
 import {
   MissingArgumentError,
@@ -57,7 +57,7 @@ export const create = async function (
       ],
     },
   };
-  const url = `${CONFIG.kubernetes_url}/apis/networking.k8s.io/v1/namespaces/cirrus/networkpolicies`;
+  const url = `${CONFIG.KUBERNETES_URL}/apis/networking.k8s.io/v1/namespaces/cirrus/networkpolicies`;
   return await Promise.resolve(fns.fetch({ url, method: 'POST', body })).then(
     (res) => {
       return {
@@ -92,7 +92,7 @@ export const deletion = async function (
   if (!parametres.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
-  const url = `${CONFIG.kubernetes_url}/apis/networking.k8s.io/v1/namespaces/cirrus/networkpolicies/kubec-np-cirrus-kafka-from-n${props.hash}`;
+  const url = `${CONFIG.KUBERNETES_URL}/apis/networking.k8s.io/v1/namespaces/cirrus/networkpolicies/kubec-np-cirrus-kafka-from-n${props.hash}`;
   return await Promise.resolve(fns.fetch({ url, method: 'DELETE' })).then(
     (res) => {
       return {

@@ -1,14 +1,14 @@
 import * as parametres from '../utils/parametres.service.js';
-import * as deployment from '../objects/deployment.js';
-import * as external_name from '../objects/external_name.js';
-import * as ingress from '../objects/ingress.js';
-import * as namespace from '../objects/namespace.js';
-import * as pvc from '../objects/pvc.js';
-import * as registry_hub from '../objects/registry.js';
-import * as service from '../objects/service.js';
-import * as authorization_policy from '../objects/authorization-policy.js';
-import * as network_policy from '../objects/network-policy.js';
-import * as mongodb from '../modules/mongo.module.js';
+import * as deployment from '../objects/kubernetes/deployment.js';
+import * as external_name from '../objects/kubernetes/external_name.js';
+import * as ingress from '../objects/kubernetes/ingress.js';
+import * as namespace from '../objects/kubernetes/namespace.js';
+import * as pvc from '../objects/kubernetes/pvc.js';
+import * as registry_hub from '../objects/kubernetes/registry.js';
+import * as service from '../objects/kubernetes/service.js';
+import * as authorization_policy from '../objects/kubernetes/authorization-policy.js';
+import * as network_policy from '../objects/kubernetes/network-policy.js';
+import * as mongodb from '../modules/mongodb.module.js';
 import {
   BadTypeArgumentError,
   MissingArgumentError,

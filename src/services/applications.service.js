@@ -8,7 +8,7 @@ import {
   exec_start,
   exec_deletion,
 } from './deployment.service.js';
-import * as storage_service from './application/storage.service.js';
+import * as storage_service from '../services/storage.service.js';
 import moment from 'moment-timezone';
 import * as password from '../utils/password.service.js';
 import CONFIG from '../config/config.js';

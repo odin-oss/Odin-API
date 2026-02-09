@@ -1,35 +1,7 @@
+import z from 'zod';
 import CONFIG from '../config/config.js';
 import moment from 'moment-timezone';
-
-export class History {
-  #records;
-
-  constructor({ records = [] } = {}) {
-    this.#records = records;
-  }
-
-  // Getters
-  get records() {
-    return this.#records;
-  }
-
-  // Setters
-  set records(value) {
-    this.#records = value;
-  }
-
-  public_format() {
-    return {
-      records: this.#records.map((r) => r.public_format()),
-    };
-  }
-
-  toJSON() {
-    return {
-      records: this.#records.map((r) => r.toJSON()),
-    };
-  }
-}
+import Guard from '../utils/guard.service.js';
 
 export class Record {
   #id_user;
@@ -37,17 +9,26 @@ export class Record {
   #id_history;
   #datetime;
 
-  constructor({
-    id_user = undefined,
-    id_application = undefined,
-    id_history = undefined,
-    datetime = undefined,
-  } = {}) {
-    this.#id_user = id_user;
-    this.#id_application = id_application;
-    this.#id_history = id_history;
-    this.#datetime = datetime;
+  constructor(props) {
+    const data = Guard.validateProps(Record.schema, props);
+    this.#id_user = data.id_user;
+    this.#id_application = data.id_application;
+    this.#id_history = data.id_history;
+    this.#datetime = data.datetime;
   }
+
+  // Zod Schema for object validation
+  static schema = z.object({
+    id_user: z.number().int().positive(),
+    id_application: z.number().int().positive(),
+    id_history: z.number().int().positive(),
+    datetime: z
+      .string()
+      .refine((val) => moment(val).isValid(), {
+        message: 'Invalid date format',
+      })
+      .transform((val) => moment(val).tz(CONFIG.APP_TZ)),
+  });
 
   // Getters
   get id_user() {
@@ -92,6 +73,42 @@ export class Record {
       datetime: moment(this.#datetime).tz(CONFIG.APP_TZ),
       id_application: this.#id_application,
       id_history: this.#id_history,
+    };
+  }
+}
+
+export class History {
+  #records;
+
+  constructor(props) {
+    const data = Guard.validateProps(History.schema, props);
+    this.#records = data.records;
+  }
+
+  // Zod Schema for object validation
+  static schema = z.object({
+    records: z.array(z.instanceof(Record)).default([]),
+  });
+
+  // Getters
+  get records() {
+    return this.#records;
+  }
+
+  // Setters
+  set records(value) {
+    this.#records = value;
+  }
+
+  public_format() {
+    return {
+      records: this.#records.map((r) => r.public_format()),
+    };
+  }
+
+  toJSON() {
+    return {
+      records: this.#records.map((r) => r.toJSON()),
     };
   }
 }

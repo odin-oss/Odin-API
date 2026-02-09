@@ -85,13 +85,13 @@ const execute_creation = async function (
         },
       },
       //storageClassName: 'csi-cinder-high-speed-gen2',
-      storageClassName: CONFIG.storage_classname,
+      storageClassName: CONFIG.KUBERNETES_STORAGE_CLASSNAME,
     },
   };
-  if (CONFIG.volume_type === 'Block') {
+  if (CONFIG.KUBERNETES_VOLUME_TYPE === 'Block') {
     body.spec.volumeMode = 'Block';
   }
-  const url = `${CONFIG.kubernetes_url}/api/v1/namespaces/n${props.hash}/persistentvolumeclaims`;
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${props.hash}/persistentvolumeclaims`;
   return await Promise.resolve(fetch({ url, method: 'POST', body })).then(
     (res) => {
       return {
@@ -104,7 +104,7 @@ const execute_creation = async function (
 };
 
 const test_exports = {};
-if (CONFIG.env === 'test') {
+if (CONFIG.APP_ENVIRONMENT === 'test') {
   test_exports.execute_creation = execute_creation;
 }
 export { test_exports };

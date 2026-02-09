@@ -1,9 +1,9 @@
-import logs from '../middlewares/winston.js';
 import * as user_service from '../services/user.service.js';
 import { counter_get, counter } from '../middlewares/prometheus.js';
 import * as token from '../utils/token.service.js';
 import * as parametres from '../utils/parametres.service.js';
 import { ParameterMisformed } from '../utils/errors.service.js';
+import { ApiResponse } from '../utils/response.util.js';
 
 /**
  * Controller that checks parameters and return current user's informations.
@@ -24,25 +24,11 @@ export const me = async function (
   counter.inc();
 
   //Request
-  const id_user = token.getUserId({ token: req.headers['authorization'] });
-  return await Promise.resolve(fns.user_get({ id_user }))
-    .then((user) => {
-      logs.info(
-        `[${req.method}][200] ${req.originalUrl} : Informations transmitted.`
-      );
-      return res.status(200).json({ result: user.public_format() });
-    })
-    .catch((err) => {
-      logs.error(
-        `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}.`
-      );
-      return res.status(err.code).json({
-        result: {
-          error: err.name,
-          message: err.message,
-        },
-      });
-    });
+  try {
+    const id_user = token.getUserId({ token: req.headers['authorization'] });
+    await fns.user_get({ id_user })
+      .then(user => ApiResponse.success(req, res, user.public_format(), 200, 'Informations transmitted.'))
+  } catch (err) { ApiResponse.error(req, res, err); }
 };
 
 /**
@@ -59,34 +45,22 @@ export const update_password = async function (
     user_update_password: user_service.update_password,
   }
 ) {
-  try {
-    // Prometheus
-    counter_get.inc();
-    counter.inc();
+  // Prometheus
+  counter_get.inc();
+  counter.inc();
 
-    //Request
+  //Request
+  try {
     parametres.check_body(req, ['old_password', 'password']);
     const id_user = token.getUserId({ token: req.headers['authorization'] });
-    return await Promise.resolve(
-      fns.user_update_password({
-        id_user,
-        old_password: req.body.old_password,
-        password: req.body.password,
-      })
-    ).then((user) => {
-      logs.info(`[${req.method}][200] ${req.originalUrl} : Password changed.`);
-      return res.status(200).json({ result: user.public_format() });
-    });
-  } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}.`
-    );
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+    await fns.user_update_password({
+      id_user,
+      old_password: req.body.old_password,
+      password: req.body.password,
+    })
+      .then(user => ApiResponse.success(req, res, user.public_format(), 200, 'Password changed.'))
+  } catch (err) { 
+    ApiResponse.error(req, res, err); 
   }
 };
 
@@ -115,27 +89,9 @@ export const list = async function (
       throw new ParameterMisformed(
         'The req.query.user_role parameter is misformed.'
       );
-    return await Promise.resolve(
-      fns.user_list({ user_role: req.query.user_role })
-    ).then((users) => {
-      logs.info(
-        `[${req.method}][200] ${req.originalUrl} : List of users transmitted.`
-      );
-      return res
-        .status(200)
-        .json({ result: users.map((user) => user.public_format()) });
-    });
-  } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}.`
-    );
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
-  }
+    await fns.user_list({ user_role: req.query.user_role })
+      .then(users => ApiResponse.success(req, res, users.map((user) => user.public_format()), 200, 'List of users transmitted.'));
+  } catch (err) { ApiResponse.error(req, res, err) }
 };
 
 /**
@@ -151,12 +107,13 @@ export const create = async function (
     create: user_service.create,
   }
 ) {
-  try {
-    // Prometheus
-    counter_get.inc();
-    counter.inc();
+  // Prometheus
+  counter_get.inc();
+  counter.inc();
 
-    //Request
+  //Request
+
+  try {
     parametres.check_body(req, [
       'password',
       'mail',
@@ -166,29 +123,13 @@ export const create = async function (
     ]);
     if (!['PROFESSEUR', 'ETUDIANT'].includes(req.body.role))
       throw new ParameterMisformed('The req.body.role parameter is misformed.');
-    return await Promise.resolve(
+    await
       fns.create({
         mail: req.body.mail,
         pwd: req.body.password,
         role: req.body.role,
         lastname: req.body.lastname,
         firstname: req.body.firstname,
-      })
-    ).then((u) => {
-      logs.info(
-        `[${req.method}][200] ${req.originalUrl} : Nouvel utilisateur créé.`
-      );
-      return res.status(200).json({ result: u.toJSON() });
-    });
-  } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}.`
-    );
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
-  }
+      }).then(u => ApiResponse.success(req, res, u.public_format(), 201, 'User created.'));
+  } catch (err) { ApiResponse.error(req, res, err); }
 };

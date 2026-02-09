@@ -121,7 +121,7 @@ export const create = async function (
       type: `${typeStr}`,
     },
   };
-  const url = `${CONFIG.kubernetes_url}/api/v1/namespaces/n${props.hash}/services`;
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${props.hash}/services`;
   return await Promise.resolve(fetch({ url, method: 'POST', body })).then(
     (res) => {
       return {
@@ -158,7 +158,7 @@ const get = async function (
       'The props.onlyShutable parameter is misformed.'
     );
 
-  const url = `${CONFIG.kubernetes_url}/api/v1/namespaces/n${props.hash}/services?labelSelector=hash=${props.hash},shutable=${props.onlyShutable ? 'true' : 'false'}`;
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${props.hash}/services?labelSelector=hash=${props.hash},shutable=${props.onlyShutable ? 'true' : 'false'}`;
   return await Promise.resolve(fetch({ url, method: 'GET' })).then((res) => {
     return {
       result: res.items.map((item) => item.metadata.name),
@@ -190,7 +190,7 @@ const del = async function (
   if (!parametres.check_libelle(props.name))
     throw new ParameterMisformed('The props.name parameter is misformed.');
 
-  const url = `${CONFIG.kubernetes_url}/api/v1/namespaces/n${props.hash}/services/${props.name}`;
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${props.hash}/services/${props.name}`;
   return await Promise.resolve(fetch({ url, method: 'DELETE' })).then((res) => {
     return {
       result: res,
@@ -201,7 +201,7 @@ const del = async function (
 };
 
 const test_exports = {};
-if (CONFIG.env === 'test') {
+if (CONFIG.APP_ENVIRONMENT === 'test') {
   test_exports.del = del;
   test_exports.get = get;
 }

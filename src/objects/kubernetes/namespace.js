@@ -17,7 +17,7 @@ export const deletion = async function (
   if (hash === '')
     throw new EmptyStringHashError('You must pass the hash argument.');
 
-  const url = `${CONFIG.kubernetes_url}/api/v1/namespaces/n${hash}`;
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${hash}`;
   return await Promise.resolve(fetch({ url, method: 'DELETE' }))
     .then((res) => {
       return {
@@ -58,7 +58,7 @@ export const create = async function (
       phase: 'Active', // This is typically managed by Kubernetes
     },
   };
-  const url = `${CONFIG.kubernetes_url}/api/v1/namespaces`;
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces`;
   return await Promise.resolve(fetch({ url, method: 'POST', body })).then(
     (res) => {
       return {

@@ -277,7 +277,7 @@ export const create = async function (
     has_storage: props.has_storage,
   });
 
-  const url = `${CONFIG.kubernetes_url}/apis/apps/v1/namespaces/n${props.hash}/deployments`;
+  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${props.hash}/deployments`;
   return await Promise.resolve(fetch({ url, method: 'POST', body })).then(
     (res) => {
       return {
@@ -604,7 +604,7 @@ const add_storage = function (
 
   if (!props.has_storage) return props.body;
 
-  if (CONFIG.volume_type === 'Block') {
+  if (CONFIG.KUBERNETES_VOLUME_TYPE === 'Block') {
     props.body.spec.template.spec.containers[0].volumeDevices = [];
     props.body.spec.template.spec.containers[0].volumeDevices.push({
       devicePath: `/home/${props.username}`,
@@ -648,7 +648,7 @@ const get = async function (
   if (!parametres.check_hash(props.hash))
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
-  const url = `${CONFIG.kubernetes_url}/apis/apps/v1/namespaces/n${props.hash}/deployments?labelSelector=type=Deployment,hash=${props.hash},shutable=${props.onlyShutable ? 'true' : 'false'}`;
+  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${props.hash}/deployments?labelSelector=type=Deployment,hash=${props.hash},shutable=${props.onlyShutable ? 'true' : 'false'}`;
   return await Promise.resolve(fetch({ url, method: 'GET' })).then((res) => {
     if (res === 'Kubernetes is not activated.') return { result: res };
     return {
@@ -682,7 +682,7 @@ const del = async function (
   if (!parametres.check_libelle(props.name))
     throw new ParameterMisformed('The props.name parameter is misformed.');
 
-  const url = `${CONFIG.kubernetes_url}/apis/apps/v1/namespaces/n${props.hash}/deployments/${props.name}`;
+  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${props.hash}/deployments/${props.name}`;
   return await Promise.resolve(fetch({ url, method: 'DELETE' })).then((res) => {
     return {
       result: res,
@@ -727,7 +727,7 @@ const put = async function (
       replicas: props.replicas,
     },
   };
-  const url = `${CONFIG.kubernetes_url}/apis/apps/v1/namespaces/n${props.hash}/deployments/${props.name}/scale`;
+  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${props.hash}/deployments/${props.name}/scale`;
   return await Promise.resolve(fetch({ url, body, method: 'PUT' })).then(
     (res) => {
       return {
@@ -740,7 +740,7 @@ const put = async function (
 };
 
 const test_exports = {};
-if (CONFIG.env === 'test') {
+if (CONFIG.APP_ENVIRONMENT === 'test') {
   test_exports.add_node_selectors = add_node_selectors;
   test_exports.add_service_commands = add_service_commands;
   test_exports.add_arguments = add_arguments;

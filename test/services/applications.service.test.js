@@ -775,9 +775,7 @@ describe('applications.service.update_state()', () => {
           id_user: 1,
           id_environment: 2,
           state_application: 'Off',
-          state_changed_date: moment('1999-08-23T12:00:00Z').tz(
-            CONFIG.APP_TZ
-          ),
+          state_changed_date: moment('1999-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: null,
           environment: new Environment({
             id_environment: 2,
@@ -865,9 +863,7 @@ describe('applications.service.update_state()', () => {
           id_user: 1,
           id_environment: 2,
           state_application: 'Ready',
-          state_changed_date: moment('1999-08-23T12:00:01Z').tz(
-            CONFIG.APP_TZ
-          ),
+          state_changed_date: moment('1999-08-23T12:00:01Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('1999-08-23T12:00:01Z')
             .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
@@ -985,9 +981,7 @@ describe('applications.service.update_state()', () => {
           id_user: 1,
           id_environment: 2,
           state_application: 'Ready',
-          state_changed_date: moment('1999-08-23T12:00:01Z').tz(
-            CONFIG.APP_TZ
-          ),
+          state_changed_date: moment('1999-08-23T12:00:01Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('1999-08-23T12:00:01Z')
             .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
@@ -1027,9 +1021,7 @@ describe('applications.service.update_state()', () => {
           id_user: 1,
           id_environment: 2,
           state_application: 'Off',
-          state_changed_date: moment('1999-08-23T12:00:02Z').tz(
-            CONFIG.APP_TZ
-          ),
+          state_changed_date: moment('1999-08-23T12:00:02Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: null,
           environment: new Environment({
             id_environment: 2,
@@ -1798,9 +1790,7 @@ describe('applications.service.create()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Ready',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.APP_TZ
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
             .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),

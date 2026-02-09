@@ -64,7 +64,7 @@ export const create = async function (
       ],
     },
   };
-  const url = `${CONFIG.kubernetes_url}/apis/security.istio.io/v1/namespaces/cirrus/authorizationpolicies`;
+  const url = `${CONFIG.KUBERNETES_URL}/apis/security.istio.io/v1/namespaces/cirrus/authorizationpolicies`;
   return await Promise.resolve(fns.fetch({ url, method: 'POST', body })).then(
     (res) => {
       return {
@@ -100,7 +100,7 @@ export const deletion = async function (
     throw new ParameterMisformed('The props.hash parameter is misformed.');
 
   // kapi request
-  const url = `${CONFIG.kubernetes_url}/apis/security.istio.io/v1/namespaces/cirrus/authorizationpolicies/istio-ap-cirrus-kafka-n${props.hash}`;
+  const url = `${CONFIG.KUBERNETES_URL}/apis/security.istio.io/v1/namespaces/cirrus/authorizationpolicies/istio-ap-cirrus-kafka-n${props.hash}`;
   return await Promise.resolve(fns.fetch({ url, method: 'DELETE' })).then(
     (res) => {
       return {

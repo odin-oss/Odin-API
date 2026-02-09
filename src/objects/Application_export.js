@@ -1,5 +1,7 @@
-import CONFIG from '../../config/config.js';
+import z from 'zod';
+import CONFIG from '../config/config.js';
 import moment from 'moment-timezone';
+import Guard from '../utils/guard.service.js';
 
 export class Application_export {
   #id_export;
@@ -12,27 +14,43 @@ export class Application_export {
   #download_link;
   #previous_export_deleted;
 
-  constructor({
-    id_export = null,
-    id_application = null,
-    init_date = null,
-    expiration_date = null,
-    id_provider = null,
-    id_enum_export_state = null,
-    status = null,
-    download_link = null,
-    previous_export_deleted = false,
-  } = {}) {
-    this.#id_export = id_export;
-    this.#id_application = id_application;
-    this.#init_date = moment(init_date).tz(CONFIG.APP_TZ);
-    this.#expiration_date = moment(expiration_date).tz(CONFIG.APP_TZ);
-    this.#id_provider = id_provider;
-    this.#id_enum_export_state = id_enum_export_state;
-    this.#status = status;
-    this.#download_link = download_link;
-    this.#previous_export_deleted = previous_export_deleted;
+  constructor(props) {
+    const data = Guard.validateProps(Application_export.schema, props);
+    this.#id_export = data.id_export;
+    this.#id_application = data.id_application;
+    this.#init_date = data.init_date;
+    this.#expiration_date = data.expiration_date;
+    this.#id_provider = data.id_provider;
+    this.#id_enum_export_state = data.id_enum_export_state;
+    this.#status = data.status;
+    this.#download_link = data.download_link;
+    this.#previous_export_deleted = data.previous_export_deleted;
   }
+
+  // Zod Schema for object validation
+  static schema = z.object({
+    id_export: z.number().int().optional(),
+    id_application: z.number().int().optional(),
+    init_date: z
+      .string()
+      .refine((val) => moment(val).isValid(), {
+        message: 'Invalid date format',
+      })
+      .transform((val) => moment(val).tz(CONFIG.APP_TZ))
+      .nullable(),
+    expiration_date: z
+      .string()
+      .refine((val) => moment(val).isValid(), {
+        message: 'Invalid date format',
+      })
+      .transform((val) => moment(val).tz(CONFIG.APP_TZ))
+      .nullable(),
+    id_provider: z.number().int().optional(),
+    id_enum_export_state: z.number().int().optional(),
+    status: z.string().min(1).nullable(),
+    download_link: z.string().min(1).nullable(),
+    previous_export_deleted: z.boolean().optional(),
+  });
 
   // Getters
   get id_export() {

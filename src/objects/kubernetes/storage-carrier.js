@@ -124,8 +124,8 @@ export const smashExport = async function (
                   name: 'SMASH_UPLOAD_RECEIVER_EMAIL',
                   value: props.receiver_email,
                 },
-                { name: 'KAFKA_BROKERS', value: CONFIG.kafka_broker },
-                { name: 'KAFKA_TOPIC', value: CONFIG.kafka_topic },
+                { name: 'KAFKA_BROKERS', value: CONFIG.KAFKA_BROKER },
+                { name: 'KAFKA_TOPIC', value: CONFIG.KAFKA_TOPIC },
                 { name: 'KAFKA_CLIENT_ID', value: 'storage-carrier' },
               ],
               ressources: {
@@ -146,7 +146,7 @@ export const smashExport = async function (
       },
     },
   };
-  const url = `${CONFIG.kubernetes_url}/apis/batch/v1/namespaces/n${props.hash}/jobs`;
+  const url = `${CONFIG.KUBERNETES_URL}/apis/batch/v1/namespaces/n${props.hash}/jobs`;
   return await Promise.resolve(fetch({ url, method: 'POST', body })).then(
     (res) => {
       console.log(res);
