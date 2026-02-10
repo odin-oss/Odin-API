@@ -9,24 +9,23 @@ import {
 } from '../utils/errors.util.js';
 import { Session } from '../objects/Session.js';
 import Guard from '../utils/guard.util.js';
+import z from 'zod';
 
 /**
  * Service that execute the creation workflow of an application.
- * @param {*} props {label,begin_date,end_date,id_environment,id_datacenter,users,professors}
- * @param {*} fns overwriting functions for tests
- * @returns Application {}
+ * @param {Number} id_environment id of environment to attach to this session.
+ * @param {Number} id_datacenter id of datacenter that will host this session.
+ * @param {String} label_session label of the session.
+ * @param {String} label_application label of the application.
+ * @param {String || moment} begin_date date when the session will be starting.
+ * @param {String || moment} end_date date when the session will be ending.
+ * @param {Array<Number>} users ids of users that will owned an application in this session.
+ * @param {Array<Number>} professors ids of users that will act as professor in the session.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Session}
  */
 export const create = async function (
-  props = {
-    label_session: undefined,
-    label_application: undefined,
-    begin_date: undefined,
-    end_date: undefined,
-    id_environment: undefined,
-    id_datacenter: undefined,
-    users: undefined,
-    professors: undefined,
-  },
+  props,
   fns = {
     application_create: application_service.create,
     session_create: session_builder.create,
@@ -35,68 +34,42 @@ export const create = async function (
       session_builder.attribute_user_and_application,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    label_session: undefined,
-    label_application: undefined,
-    begin_date: undefined,
-    end_date: undefined,
-    id_environment: undefined,
-    id_datacenter: undefined,
-    users: undefined,
-    professors: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_id(props.id_environment))
-    throw new ParameterMisformed(
-      'The props.id_environment parameter is misformed.'
-    );
-  if (!Guard.check_id(props.id_datacenter))
-    throw new ParameterMisformed(
-      'The props.id_datacenter parameter is misformed.'
-    );
-  if (!Guard.check_ids(props.professors))
-    throw new ParameterMisformed(
-      'The props.professors parameter is misformed.'
-    );
-  if (!Guard.check_ids(props.users))
-    throw new ParameterMisformed('The props.users parameter is misformed.');
-  if (typeof props.label_session !== 'string')
-    throw new ParameterMisformed(
-      'The props.label_session parameter is misformed.'
-    );
-  if (typeof props.label_application !== 'string')
-    throw new ParameterMisformed(
-      'The props.label_application parameter is misformed.'
-    );
-  if (!Guard.check_date(props.begin_date))
-    throw new ParameterMisformed(
-      'The props.begin_date parameter is misformed.'
-    );
-  if (!Guard.check_date(props.end_date))
-    throw new ParameterMisformed('The props.end_date parameter is misformed.');
+  const schema = z.object({
+    id_environment: z.number().positive(),
+    id_datacenter: z.number().positive(),
+    label_session: z.string(),
+    label_application: z.string(),
+    begin_date: z
+      .string()
+      .refine((val) => moment(val).isValid(), {
+        message: 'Invalid date format',
+      })
+      .transform((val) => moment(val).tz(CONFIG.APP_TZ)),
+    end_date: z
+      .string()
+      .refine((val) => moment(val).isValid(), {
+        message: 'Invalid date format',
+      })
+      .transform((val) => moment(val).tz(CONFIG.APP_TZ)),
+    users: z.array(Number).default([]),
+    professors: z.array(Number).default([])
+  });
+  const data = Guard.validateProps(schema, props);
 
-  // We schedule all applications for all users
   let promises = [];
   promises.push(
     fns.session_create({
-      label: props.label_session,
-      begin_date: props.begin_date,
-      end_date: props.end_date,
-      id_environment: props.id_environment,
+      ...data,
+      label: data.label_session,
     })
   );
   props.users.forEach((id_user) => {
     promises.push(
       fns.application_create({
+        ...data,
         id_user,
-        id_environment: props.id_environment,
-        id_datacenter: props.id_datacenter,
-        label: props.label_application,
-        state_changed_date: props.begin_date,
+        label: data.label_application,
+        state_changed_date: data.begin_date,
       })
     );
   });
@@ -121,9 +94,8 @@ export const create = async function (
   session.applications.forEach((app) => {
     promises.push(
       fns.session_attribute_user_and_application({
+        ...app,
         id_session: session.id_session,
-        id_user: app.id_user,
-        id_application: app.id_application,
       })
     );
   });
@@ -139,38 +111,31 @@ export const create = async function (
 
 /**
  * Service that checks role of the user and then give the list of attributed sessions.
- * @param {*} props
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Array<Session>}
  */
 export const list = async function (
-  props = {
-    id_user: undefined,
-  },
+  props,
   fns = {
     user_get: user_service.get,
     session_list: session_builder.list,
     user_list: user_builder.get_list,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_user: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_id(props.id_user))
-    throw new ParameterMisformed('The props.id_user parameter is misformed.');
+  const schema = z.object({
+    id_user: z.number().positive()
+  });
+  const data = Guard.validateProps(schema, props);
 
   // we check the role of the user
-  const user_role = await fns.user_get({ id_user: props.id_user });
+  const user_role = await fns.user_get({ ...data });
   if (!['PROFESSEUR', 'ADMINISTRATEUR'].includes(user_role.role))
     throw new UserIsNeitherProfOrAdmin(
       'The user is neither PROFESSEUR or ADMINISTRATEUR.'
     );
 
   const sessions = await Promise.resolve(
-    fns.session_list({ id_user: props.id_user })
+    fns.session_list({ ...data })
   );
   const unique_ids = [
     ...new Set([
@@ -182,36 +147,37 @@ export const list = async function (
       ),
     ]),
   ];
-  return await Promise.resolve(fns.user_list({ ids: unique_ids })).then(
-    (result) => {
-      for (const session of sessions) {
-        for (let idx = 0; idx < session.users.length; idx++) {
-          const user_id = session.users[idx].id_user;
-          const corresponding_user = result.find((u) => u.id_user === user_id);
-          if (corresponding_user) session.users[idx] = corresponding_user;
+  return await fns.user_list({ ids: unique_ids })
+    .then(
+      (result) => {
+        for (const session of sessions) {
+          for (let idx = 0; idx < session.users.length; idx++) {
+            const user_id = session.users[idx].id_user;
+            const corresponding_user = result.find((u) => u.id_user === user_id);
+            if (corresponding_user) session.users[idx] = corresponding_user;
+          }
         }
-      }
-      for (const session of sessions) {
-        for (let idx = 0; idx < session.professors.length; idx++) {
-          const user_id = session.professors[idx].id_user;
-          const corresponding_user = result.find((u) => u.id_user === user_id);
-          if (corresponding_user) session.professors[idx] = corresponding_user;
+        for (const session of sessions) {
+          for (let idx = 0; idx < session.professors.length; idx++) {
+            const user_id = session.professors[idx].id_user;
+            const corresponding_user = result.find((u) => u.id_user === user_id);
+            if (corresponding_user) session.professors[idx] = corresponding_user;
+          }
         }
+        return sessions;
       }
-      return sessions;
-    }
-  );
+    );
 };
 
 /**
  * Service that checks role of the user - and attribution for professeur- and then give informations about the session.
- * @param {*} props
+ * @param {Number} id_application id of the application to get
+ * @param {Number} id_session id of the session in which to get the application.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {}
  */
 export const get = async function (
-  props = {
-    id_user: undefined,
-    id_session: undefined,
-  },
+  props,
   fns = {
     user_get: user_service.get,
     session_get_on_professeur: session_builder.get_on_professeur,
@@ -220,24 +186,12 @@ export const get = async function (
     application_get: application_service.get,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_user: undefined,
-    id_session: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_id(props.id_user))
-    throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  if (!Guard.check_id(props.id_session))
-    throw new ParameterMisformed(
-      'The props.id_session parameter is misformed.'
-    );
-
-  // we check the role of the user
-  const user_role = await fns.user_get({ id_user: props.id_user });
+  const schema = z.object({
+    id_application: z.number().positive(),
+    id_session: z.number().positive()
+  });
+  const data = Guard.validateProps(schema, props);
+  const user_role = await fns.user_get({ ...data });
   if (!['PROFESSEUR', 'ADMINISTRATEUR'].includes(user_role.role))
     throw new UserIsNeitherProfOrAdmin(
       'The user is neither PROFESSEUR or ADMINISTRATEUR.'
@@ -245,17 +199,12 @@ export const get = async function (
 
   let promise;
   if (user_role.role === 'PROFESSEUR') {
-    promise = fns.session_get_on_professeur({
-      id_user: props.id_user,
-      id_session: props.id_session,
-    });
+    promise = fns.session_get_on_professeur({ ...data });
   } else {
-    promise = fns.session_get_on_administrateur({
-      id_session: props.id_session,
-    });
+    promise = fns.session_get_on_administrateur({ ...data });
   }
 
-  const session = await Promise.resolve(promise);
+  const session = await promise;
   // Fetching users
   const unique_ids = [
     ...new Set([
@@ -264,7 +213,8 @@ export const get = async function (
     ]),
   ];
 
-  await Promise.resolve(fns.user_list({ ids: unique_ids })).then((result) => {
+  await fns.user_list({ ids: unique_ids })
+  .then((result) => {
     for (let idx = 0; idx < session.users.length; idx++) {
       const user_id = session.users[idx].id_user;
       const corresponding_user = result.find((u) => u.id_user === user_id);
@@ -282,7 +232,7 @@ export const get = async function (
     ...new Set([...session.applications.map((app) => app.id_application)]),
   ];
   const promises = unique_ids_applications.map((id) =>
-    Promise.resolve(fns.application_get({ id_application: id }))
+    fns.application_get({ id_application: id })
   );
   return await Promise.all(promises).then((apps) => {
     for (let idx = 0; idx < session.applications.length; idx++) {

@@ -1,9 +1,10 @@
 import * as category_builder from '../builders/category.builder.js';
+import { Category } from '../objects/Category.js';
 
 /**
  * Service that is used to get the full list of categories.
- * @param {*} fns overwriting tests functions for test
- * @returns
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Array<Category>}
  */
 export const list = async function (
   fns = {

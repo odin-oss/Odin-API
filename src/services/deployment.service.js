@@ -8,21 +8,19 @@ import * as service from '../objects/kubernetes/service.js';
 import * as authorization_policy from '../objects/kubernetes/authorization-policy.js';
 import * as network_policy from '../objects/kubernetes/network-policy.js';
 import * as mongodb from '../modules/mongodb.module.js';
-import {
-  BadTypeArgumentError,
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../utils/errors.util.js';
 import Guard from '../utils/guard.util.js';
+import { Application } from '../objects/Application.js';
+import z from 'zod';
+import { Interface } from '../objects/Interface.js';
 
 /**
  * Function that will execute the deletion workflow.
- * @param {*} props {hash}
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {String} hash inique hash of the application to delete.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Application}
  */
 export const exec_deletion = async function (
-  props = { hash: undefined },
+  props,
   fns = {
     external_name_deletion: external_name.deletion,
     namespace_deletion: namespace.deletion,
@@ -36,140 +34,91 @@ export const exec_deletion = async function (
     delete_authorization_policy: authorization_policy.deletion,
   }
 ) {
-  const expected_props = {
-    hash: undefined,
-  };
-  try {
-    if (Guard.check_props(expected_props, props).length > 0)
-      throw new MissingArgumentError(
-        `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-      );
-    if (!Guard.check_hash(props.hash))
-      throw new ParameterMisformed('The props.hash parameter is misformed.');
+  const schema = z.object({
+    hash: z.string().min(8).max(8)
+  });
+  const data = Guard.validateProps(schema, props);
+  const promises = [];
+  promises.push(fns.delete_network_policy({ ...data }));
+  promises.push(fns.delete_authorization_policy({ ...data }));
+  promises.push(fns.external_name_deletion({ ...data }));
+  promises.push(fns.namespace_deletion({ ...data }));
+  promises.push(fns.delete_application({ ...data }));
+  promises.push(fns.registry_hub_deletion({ ...data }));
+  promises.push(fns.deployment_deletion({ ...data }));
+  promises.push(fns.service_deletion({ ...data }));
+  promises.push(fns.deleteFromKong({ ...data }));
 
-    const promises = [];
-    promises.push(fns.delete_network_policy({ hash: props.hash }));
-    promises.push(fns.delete_authorization_policy({ hash: props.hash }));
-    promises.push(fns.external_name_deletion({ hash: props.hash }));
-    promises.push(fns.namespace_deletion({ hash: props.hash }));
-    promises.push(
-      fns.delete_application({
-        hash: props.hash,
-      })
-    );
-    promises.push(fns.registry_hub_deletion({ hash: props.hash }));
-    promises.push(fns.deployment_deletion({ hash: props.hash }));
-    promises.push(fns.service_deletion({ hash: props.hash }));
-    promises.push(fns.deleteFromKong({ hash: props.hash }));
-
-    return await Promise.all(promises).then((r) => {
-      return {
-        hash: props.hash,
-      };
-    });
-  } catch (err) {
-    throw err;
-  }
+  return await Promise.all(promises).then(r => ({ ...data }));
 };
 
 /**
  * Function that will execute the starting workflow.
- * @param {*} props {hash}
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {String} hash inique hash of the application to delete.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Application}
  */
 export const exec_start = async function (
-  props = { hash: undefined },
+  props,
   fns = {
     scale: deployment.scale,
     update_application: mongodb.updateApplication,
   }
 ) {
-  const expected_props = {
-    hash: undefined,
-  };
-  try {
-    if (Guard.check_props(expected_props, props).length > 0)
-      throw new MissingArgumentError(
-        `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-      );
-    if (!Guard.check_hash(props.hash))
-      throw new ParameterMisformed('The props.hash parameter is misformed.');
-
-    const promises = [
-      fns.scale({ hash: props.hash, replicas: 1 }),
-      fns.update_application({
-        hash: props.hash,
-        state: 'started',
-      }),
-    ];
-    return await Promise.all(promises).then((r) => {
-      return {
-        hash: props.hash,
-      };
-    });
-  } catch (err) {
-    throw err;
-  }
+  const schema = z.object({
+    hash: z.string().min(8).max(8)
+  });
+  const data = Guard.validateProps(schema, props);
+  const promises = [
+    fns.scale({ ...data, replicas: 1 }),
+    fns.update_application({
+      ...data,
+      state: 'started',
+    }),
+  ];
+  return await Promise.all(promises).then((r) => ({ ...data }));
 };
 
 /**
  * Function that will execute the extinction workflow.
- * @param {*} props {hash}
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {String} hash inique hash of the application to delete.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Application}
  */
 export const exec_shutdown = async function (
-  props = { hash: undefined },
+  props,
   fns = {
     update_application: mongodb.updateApplication,
     scale: deployment.scale,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-  };
-  try {
-    if (Guard.check_props(expected_props, props).length > 0)
-      throw new MissingArgumentError(
-        `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-      );
-    if (!Guard.check_hash(props.hash))
-      throw new ParameterMisformed('The props.hash parameter is misformed.');
-
-    const promises = [
-      fns.scale({ hash: props.hash, replicas: 0 }),
-      fns.update_application({
-        hash: props.hash,
-        state: 'shutted',
-      }),
-    ];
-    return await Promise.all(promises).then((r) => {
-      return {
-        hash: props.hash,
-      };
-    });
-  } catch (err) {
-    throw err;
-  }
+  const schema = z.object({
+    hash: z.string().min(8).max(8)
+  });
+  const data = Guard.validateProps(schema, props);
+  const promises = [
+    fns.scale({ hash: data.hash, replicas: 0 }),
+    fns.update_application({
+      hash: data.hash,
+      state: 'shutted',
+    }),
+  ];
+  return await Promise.all(promises).then(() => ({ ...data }));
 };
 
 /**
  * Service that execute the whole application creation workflow.
- * @param {*} props {hash}
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {String} hash inique hash of the application to delete.
+ * @param {Array<Interface>} interfaces array of interfaces to create.
+ * @param {String} generated_label automaticaly generated label.
+ * @param {String} username username to admin access to this application.
+ * @param {String} password password to admin access to this application.
+ * @param {String} web_title web_title to display on UI.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {String}
  */
 export const create = async function (
-  props = {
-    hash: undefined,
-    interfaces: [],
-    generated_label: undefined,
-    username: undefined,
-    password: undefined,
-    web_title: undefined,
-  },
+  props,
   fns = {
     save_app: mongodb.saveApplication,
     create_namespace: namespace.create,
@@ -183,177 +132,110 @@ export const create = async function (
     addInKong: ingress.addInKong,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-    interfaces: [],
-    generated_label: undefined,
-    username: undefined,
-    password: undefined,
-    web_title: undefined,
-  };
-  try {
-    if (Guard.check_props(expected_props, props).length > 0)
-      throw new MissingArgumentError(
-        `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-      );
-    if (!Guard.check_hash(props.hash))
-      throw new ParameterMisformed('The props.hash parameter is misformed.');
-    if (!Guard.check_libelle(props.generated_label))
-      throw new ParameterMisformed(
-        'The props.generated_label parameter is misformed.'
-      );
-    if (!Guard.check_libelle(props.username))
-      throw new ParameterMisformed(
-        'The props.username parameter is misformed.'
-      );
-    if (
-      !Array.isArray(props.interfaces) ||
-      !props.interfaces.every((item) => Guard.check_JSON(item))
-    )
-      throw new BadTypeArgumentError(
-        'The props.interfaces parameter is misformed.'
-      );
-    await fns.save_app({
-      application: {
-        hash: props.hash,
-        interfaces: props.interfaces,
-        generated_label: props.generated_label,
-        web_title: props.web_title,
-        username: props.username,
-        password: props.password,
-        state: 'created',
-      },
-    });
-    await fns.create_namespace({ hash: props.hash });
-    await fns.create_registry_hub({ hash: props.hash });
-    await fns.create_authorization_policy({ hash: props.hash });
-    await fns.create_network_policy({ hash: props.hash });
-    // On détecte les stockages à activer.
-    const promises = [];
-    const storage = props.interfaces.flatMap((app) =>
-      app.envs
-        .filter((env) => env.key === 'HSTORAGE')
-        .map(() => app.label.toLowerCase().replace(' ', ''))
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    interfaces: z.array(z.instanceof(Interface)).default([]),
+    generated_label: z.string(),
+    username: z.string(),
+    password: z.string(),
+    web_title: z.string()
+
+  });
+  const data = Guard.validateProps(schema, props);
+  await fns.save_app({
+    application: {
+      ...data,
+      state: 'created',
+    },
+  });
+  await fns.create_namespace({ hash: data.hash });
+  await fns.create_registry_hub({ hash: data.hash });
+  await fns.create_authorization_policy({ hash: data.hash });
+  await fns.create_network_policy({ hash: data.hash });
+  // On détecte les stockages à activer.
+  const promises = [];
+  const storage = data.interfaces.flatMap((app) =>
+    app.envs
+      .filter((env) => env.key === 'HSTORAGE')
+      .map(() => app.label.toLowerCase().replace(' ', ''))
+  );
+  for (let app of data.interfaces) {
+    const label = app.label.toLocaleLowerCase().replace(' ', '');
+    // On génère le clusterip ssh
+    promises.push(
+      fns.create_service({
+        label,
+        hash: data.hash,
+        port_externe: 22,
+        port_interne: 22,
+        type: service.SVC_TYPE.CLUSTERIP,
+      })
     );
-    for (let app of props.interfaces) {
-      const label = app.label.toLocaleLowerCase().replace(' ', '');
-      // On génère le clusterip ssh
+    // On génère les services et ingress controller.
+    promises.push(
+      fns.addInKong({
+        hash: data.hash,
+        ports: app.ports,
+        label,
+      })
+    );
+    for (let port of app.ports) {
       promises.push(
         fns.create_service({
-          label,
-          hash: props.hash,
-          port_externe: 22,
-          port_interne: 22,
           type: service.SVC_TYPE.CLUSTERIP,
-        })
-      );
-      // On génère les services et ingress controller.
-      promises.push(
-        fns.addInKong({
-          hash: props.hash,
-          ports: app.ports,
+          port_externe: port.port,
+          port_interne: port.port,
+          hash: data.hash,
           label,
         })
       );
-      for (let port of app.ports) {
-        promises.push(
-          fns.create_service({
-            type: service.SVC_TYPE.CLUSTERIP,
-            port_externe: port.port,
-            port_interne: port.port,
-            hash: props.hash,
-            label,
-          })
-        );
-        promises.push(
-          fns.create_externalname({
-            hash: props.hash,
-            label,
-            port_externe: port.port,
-          })
-        );
-      }
-      // On ajoute le stockage
-      if (storage.includes(label)) {
-        promises.push(
-          fns.create_pvc({
-            hash: props.hash,
-            label,
-          })
-        );
-      }
-      // On génère les depploy
-      if (!label.includes('ssh-')) {
-        promises.push(
-          fns.create_deployment({
-            hash: props.hash,
-            image: app.image,
-            image_tag: app.image_tag,
-            username: props.username,
-            password: props.password,
-            service_command: app.service_command,
-            label,
-            web_title: props.web_title,
-            ports: app.ports,
-            envs: app.envs,
-            args: app.args,
-            privileged: app.privileged,
-            generated_label: props.generated_label,
-            has_storage: storage.includes(label),
-            readiness_probe_initial_delay: app.readiness_probe_initial_delay,
-            readiness_probe_period: app.readiness_probe_period,
-            liveness_probe_initial_delay: app.liveness_probe_initial_delay,
-            liveness_probe_period: app.liveness_probe_period,
-            need_compute_gpu: app.need_compute_gpu,
-            need_graphical_rendering_gpu: app.need_graphical_rendering_gpu,
-            ram_limit: app.ram_limit,
-            ram_request: app.ram_request,
-            cpu_request: app.cpu_request,
-            cpu_limit: app.cpu_limit,
-            node_selectors: app.node_selectors,
-            target: '',
-          })
-        );
-      } else {
-        promises.push(
-          fns.create_deployment({
-            hash: props.hash,
-            image: app.image,
-            image_tag: app.image_tag,
-            username: props.username,
-            password: props.password,
-            service_command: app.service_command,
-            label,
-            web_title: props.web_title,
-            ports: app.ports,
-            envs: app.envs,
-            args: app.args,
-            privileged: app.privileged,
-            generated_label: props.generated_label,
-            has_storage: storage.includes(label),
-            readiness_probe_initial_delay: app.readiness_probe_initial_delay,
-            readiness_probe_period: app.readiness_probe_period,
-            liveness_probe_initial_delay: app.liveness_probe_initial_delay,
-            liveness_probe_period: app.liveness_probe_period,
-            need_compute_gpu: app.need_compute_gpu,
-            need_graphical_rendering_gpu: app.need_graphical_rendering_gpu,
-            ram_limit: app.ram_limit,
-            ram_request: app.ram_request,
-            cpu_request: app.cpu_request,
-            cpu_limit: app.cpu_limit,
-            node_selectors: app.node_selectors,
-            target: label.split('ssh-')[1],
-          })
-        );
-      }
+      promises.push(
+        fns.create_externalname({
+          hash: data.hash,
+          label,
+          port_externe: port.port,
+        })
+      );
     }
-    return await Promise.all(promises).then((r) => {
-      return {
-        hash: props.hash,
-      };
-    });
-  } catch (err) {
-    throw err;
+    // On ajoute le stockage
+    if (storage.includes(label)) {
+      promises.push(
+        fns.create_pvc({
+          hash: data.hash,
+          label,
+        })
+      );
+    }
+    if (label.includes('ssh-')) {
+      promises.push(
+        fns.create_deployment({
+          ...app,
+          hash: props.hash,
+          username: props.username,
+          password: props.password,
+          label,
+          web_title: props.web_title,
+          generated_label: props.generated_label,
+          has_storage: storage.includes(label),
+          target: label.split('ssh-')[1],
+        })
+      );
+    } else {
+      promises.push(
+        fns.create_deployment({
+          ...app,
+          hash: props.hash,
+          username: props.username,
+          password: props.password,
+          label,
+          web_title: props.web_title,
+          generated_label: props.generated_label,
+          has_storage: storage.includes(label),
+          target: '',
+        })
+      );
+
+    }
   }
+  return await Promise.all(promises).then(r => ({ hash: data.hash }));
 };

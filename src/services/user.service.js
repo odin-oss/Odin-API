@@ -8,9 +8,9 @@ import Guard from '../utils/guard.util.js';
 
 /**
  * Service used to get the User object from the id_user.
- * @param {*} props {id_user}
- * @param {*} fns overwriting functions for test
- * @returns User
+ * @param {Number} id_user id of the user we want to get the infos.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {User}
  */
 export const get = async function (
   props,
@@ -18,15 +18,18 @@ export const get = async function (
     user_get: user_builder.get,
   }
 ) {
-  const data = User.validateProps(User.schema.pick({ id_user: true }), props);
-  return await fns.user_get({ id_user: data.id_user });
+  const schema = z.object({
+    id_user: z.number().positive(),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns.user_get({ ...data });
 };
 
 /**
  * Service used to get the list of all User on a specific user_role.
- * @param {*} props {role}
- * @param {*} fns overwriting functions for test
- * @returns [User {}, ...]
+ * @param {String} role role we want the list of Users.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Array<User>}
  */
 export const list_by_role = async function (
   props,
@@ -34,14 +37,17 @@ export const list_by_role = async function (
     user_list: user_builder.list,
   }
 ) {
-  const data = User.validateProps(User.schema.pick({ role: true }), props);
-  return await fns.user_list({ role: data.role });
+  const schema = z.object({ role: z.enum(["ETUDIANT", "PROFESSEUR", "ADMINISTRATEUR"]) });
+  const data = Guard.validateProps(schema, props);
+  return await fns.user_list({ ...data });
 };
 
 /**
  * Service used to get the User object from the id_user.
- * @param {*} props {id_user}
- * @param {*} fns overwriting functions for test
+ * @param {Number} id_user id of the user to update the password to.
+ * @param {String} password new password to set to the user.
+ * @param {String} old_password old password of the user.
+ * @param {Function} fns functions to overwrite for unit testing.
  * @returns User
  */
 export const update_password = async function (
@@ -52,21 +58,20 @@ export const update_password = async function (
     bcrypt: bcrypt,
   }
 ) {
-  const data = User.validateProps(
-    z
-      .object({
-        id_user: User.schema.shape.id_user,
-        password: User.schema.shape.pwd,
-        old_password: User.schema.shape.pwd,
+  const schema = z.object({
+    id_user: z.number().positive(),
+    password: z.string()
+      .min(8, { message: 'The password must contains at least 8 characters.' })
+      .refine((val) => /[0-9]/.test(val), {
+        message: 'The password must contains at least 1 number.'
       })
-      .required(),
-    props
-  );
-  const user = await fns.user_get({ id_user: data.id_user });
+      .refine((val) => /[!@#$%^&*(),.?":{}|<>]/.test(val), { message: 'The password must contains at least 1 special char.' }),
+    old_password: z.string()
+  });
+  const data = Guard.validateProps(schema, props);
+  const user = await fns.user_get({ ...data });
   if (!fns.bcrypt.compareSync(data.old_password, user.pwd))
     throw new BadCredentials('The old password is not correct.');
-  Guard.check_password(data.password);
-
   return await fns.user_update_password({
     id_user: data.id_user,
     hashed_password: fns.bcrypt.hashSync(data.password, 11),
@@ -74,9 +79,13 @@ export const update_password = async function (
 };
 /**
  * Service used to create a new User object.
- * @param {*} props {User}
- * @param {*} fns overwriting functions for test
- * @returns User
+ * @param {String} pwd password of the new User.
+ * @param {String} mail mail of the new User.
+ * @param {String} role role of the new User.
+ * @param {String} lastname lastname of the new User.
+ * @param {String} firstname firstname of the new User.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {User}
  */
 export const create = async function (
   props,
@@ -86,26 +95,24 @@ export const create = async function (
     role_by_label: role_by_label,
   }
 ) {
-  const data = User.validateProps(
-    User.schema
-      .pick({
-        mail: true,
-        pwd: true,
-        role: true,
-        lastname: true,
-        firstname: true,
+  const schema = z.object({
+    pwd: z.string()
+      .min(8, { message: 'The password must contains at least 8 characters.' })
+      .refine((val) => /[0-9]/.test(val), {
+        message: 'The password must contains at least 1 number.'
       })
-      .required(),
-    props
-  );
+      .refine((val) => /[!@#$%^&*(),.?":{}|<>]/.test(val), { message: 'The password must contains at least 1 special char.' }),
+    mail: z.email(),
+    role: z.enum(["ETUDIANT", "PROFESSEUR", "ADMINISTRATEUR"]),
+    lastname: z.string().min(1),
+    firstname: z.string().min(1)
+  });
+  const data = Guard.validateProps(schema, props);
   const hashed_password = fns.bcrypt.hashSync(data.pwd, 11);
   const role = await fns.role_by_label({ label: data.role });
   return await fns
     .create({
-      firstname: data.firstname,
-      lastname: data.lastname,
-      mail: data.mail,
-      id_role: role.id_role,
+      ...data,
       hashed_password: hashed_password,
     })
     .then((user) => {
