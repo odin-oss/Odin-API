@@ -1,63 +1,40 @@
-import { MissingArgumentError, ParameterMisformed } from './errors.util.js';
+import z from 'zod';
 import Guard from './guard.util.js';
 
 /**
  * Function that will replace the tag keyname with the real value for customing environment.
- * @param {*} value
- * @param {*} custom_values
- * @returns
+ * @param {String} value value to search in.
+ * @param {Object} custom_values custom values to put when a value is parsed.
+ * @returns {String}
  */
 export const parsing_generic_tags = function (
   value = '',
   custom_values = undefined
 ) {
   if (custom_values === undefined) return value;
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    username: undefined,
-    label: undefined,
-    password: undefined,
-    hash: undefined,
-    generated_label: undefined,
-    web_title: undefined,
-  };
-  if (Guard.check_props(expected_props, custom_values).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, custom_values)}) are missing.`
-    );
-  if (!Guard.check_hash(custom_values.hash))
-    throw new ParameterMisformed(
-      'The custom_values.hash parameter is misformed.'
-    );
-  if (!Guard.check_libelle(custom_values.label))
-    throw new ParameterMisformed(
-      'The custom_values.label parameter is misformed.'
-    );
-  if (!Guard.check_libelle(custom_values.generated_label))
-    throw new ParameterMisformed(
-      'The custom_values.generated_label parameter is misformed.'
-    );
-  if (!Guard.check_libelle(custom_values.username))
-    throw new ParameterMisformed(
-      'The custom_values.username parameter is misformed.'
-    );
-  if (!Guard.check_libelle(custom_values.target) && custom_values.target !== '')
-    throw new ParameterMisformed(
-      'The custom_values.target parameter is misformed.'
-    );
 
-  let result = value.replace('<hash>', `${custom_values.hash}`);
-  result = result.replace('<username>', `${custom_values.username}`);
-  result = result.replace('<password>', `${custom_values.password}`);
+  const schema = z.object({
+    username: z.string().min(2),
+    label: z.string().min(2),
+    password: z.string().min(2),
+    hash: z.string().min(2),
+    generated_label: z.string().min(2),
+    web_title: z.string().min(2),
+    target: z.string().default('')
+  });
+  const data = Guard.validateProps(schema, custom_values);
+  let result = value.replace('<hash>', `${data.hash}`);
+  result = result.replace('<username>', `${data.username}`);
+  result = result.replace('<password>', `${data.password}`);
   result = result.replace(
     '<generated_label>',
-    `${custom_values.generated_label}`
+    `${data.generated_label}`
   );
-  result = result.replace('<target>', `${custom_values.target}`);
+  result = result.replace('<target>', `${data.target}`);
   result = result.replace(
     '<subpath>',
-    `/${custom_values.hash}/${custom_values.label}${custom_values.target ? '-terminal' : ''}`
+    `/${data.hash}/${data.label}${data.target ? '-terminal' : ''}`
   );
-  result = result.replace('<vm_name>', `${custom_values.web_title}`);
+  result = result.replace('<vm_name>', `${data.web_title}`);
   return result;
 };

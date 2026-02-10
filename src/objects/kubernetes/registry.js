@@ -1,61 +1,45 @@
+import z from 'zod';
 import CONFIG from '../../config/config.js';
 import * as kapi from '../../modules/kapi.module.js';
-import {
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../../utils/errors.util.js';
 import Guard from '../../utils/guard.util.js';
 
 /**
  * Function used to delete the registryhub from Kubernetes cluster.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify specific registryhub resources.
+ * @param {Function} fetch functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const deletion = async function (
-  props = { hash: undefined },
+  props,
   fetch = kapi.fetch
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${props.hash}/secrets/registryhub`;
-  return await Promise.resolve(fetch({ url, method: 'DELETE' })).then((res) => {
-    return {
+  const schema = z.object({
+    hash: z.string().min(8).max(8)
+  });
+  const data = Guard.validateProps(schema, props);
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/secrets/registryhub`;
+  return await fetch({ url, method: 'DELETE' })
+    .then((res) => ({
       result: res,
       type: 'RegistryHub',
       name: `registryhub`,
-    };
-  });
+    }));
 };
 
 /**
  * Function used to create RegistryHub into the Kubernetes cluster.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify specific external name resources.
+ * @param {Function} fetch functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const create = async function (
-  props = { hash: undefined },
+  props,
   fetch = kapi.fetch
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+  });
+  const data_checks = Guard.validateProps(schema, props);
   const data = {
     auths: {
       [CONFIG.REGISTRY_URL]: {
@@ -71,22 +55,21 @@ export const create = async function (
     },
     metadata: {
       name: 'registryhub',
-      namespace: `n${props.hash}`,
+      namespace: `n${data_checks.hash}`,
       labels: {
         type: 'RegistryHub',
-        hash: `${props.hash}`,
+        hash: `${data_checks.hash}`,
       },
     },
     type: 'kubernetes.io/dockerconfigjson',
   };
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${props.hash}/secrets`;
-  return await Promise.resolve(fetch({ url, method: 'POST', body })).then(
-    (res) => {
-      return {
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data_checks.hash}/secrets`;
+  return await fetch({ url, method: 'POST', body })
+    .then(
+      (res) => ({
         result: res,
         type: 'RegistryHub',
         name: `registryhub`,
-      };
-    }
-  );
+      })
+    );
 };

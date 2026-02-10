@@ -14,35 +14,29 @@ import {
   UserIsNotProfessor,
 } from './errors.util.js';
 import Guard from './guard.util.js';
+import z from 'zod';
+import { ApiResponse } from './response.util.js';
 const { sign, decode, verify } = jwt;
 
 /**
  * Method used to generate a new token for user.
- * @param {*} props {id_user}
- * @param {*} fns overwriting functions for tests.
- * @returns token
+ * @param {Number} id_user id of the user we need to generate a token for.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {String}
  */
 export const generateToken = function (
-  props = {
-    id_user: undefined,
-  },
+  props,
   fns = {
     jwt_sign: sign,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_user: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_id(props.id_user))
-    throw new ParameterMisformed('The props.id_user parameter is misformed.');
+  const schema = z.object({
+    id_user: z.number().positive()
+  });
+  const data = Guard.validateProps(schema, props);
   return fns.jwt_sign(
     {
-      id_user: props.id_user,
+      ...data,
     },
     CONFIG.APP_TOKEN_KEYPASS,
     {
@@ -53,65 +47,54 @@ export const generateToken = function (
 
 /**
  * Method used to decode the user's token.
- * @param {*} props {token}
- * @param {*} fns overwriting function for tests.
- * @returns {id_user}
+ * @param {String} token token to decode.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Number}
  */
 export const decodeToken = function (
-  props = {
-    token: undefined,
-  },
+  props,
   fns = {
     jwt_decode: decode,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    token: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (props.token.slice(0, 7) !== 'Bearer ')
-    throw new ParameterMisformed('The props.token parameter is misformed.');
-  return fns.jwt_decode(props.token.slice(7));
+  const schema = z.object({
+    token: z.string()
+      .startsWith('Bearer ',
+        { message: "The token should begin with Bearer." })
+      .transform(val => val.slice(7))
+  });
+  const data = Guard.validateProps(schema, props);
+  return fns.jwt_decode(data.token);
 };
 
 /**
  * Get id_user from the token.
- * @param {*} props {token}
- * @param {*} fns overwriting functions for tests.
- * @returns id_user
+ * @param {String} token token to decode.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Number}
  */
 export const getUserId = function (
-  props = {
-    token: undefined,
-  },
+  props,
   fns = {
     decode_token: decodeToken,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    token: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (props.token.slice(0, 7) !== 'Bearer ')
-    throw new ParameterMisformed('The props.token parameter is misformed.');
-  return fns.decode_token({ token: props.token }).id_user;
+  const schema = z.object({
+    token: z.string()
+      .startsWith('Bearer ',
+        { message: "The token should begin with Bearer." })
+  });
+  const data = Guard.validateProps(schema, props);
+  return fns.decode_token({ ...data }).id_user;
 };
 
 /**
  * Method that checks if the token is valid.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} next HTTP next method.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {NextFunction} next HTTP next method.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Boolean}
  */
 export const isTokenValid = async (
   req,
@@ -141,25 +124,17 @@ export const isTokenValid = async (
     res.set('authorization', 'Bearer ' + regeneratedToken);
     next();
   } catch (error) {
-    logs.error(
-      `[${req.method}][401][${error.name}] ${req.originalUrl} : ${error.message}`
-    );
-    return res.status(401).json({
-      result: {
-        error: error.name,
-        message: error.message,
-      },
-    });
+    ApiResponse.error(req,res,new BadContentTokenError(error.message));
   }
 };
 
 /**
  * Checks if the User's application.
  * First, it looks for token in headers[OdinToken] and if nothing is found, it goes on token parameters.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Boolean}
  */
 export const app_access_granted = async (
   req,
@@ -200,8 +175,7 @@ export const app_access_granted = async (
     // save record in history
     if (role === 'ADMINISTRATEUR' || app.id_user === verifiedToken.id_user) {
       logs.info(
-        `[${req.method}][200] ${
-          regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
+        `[${req.method}][200] ${regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
         } : Authentication succeeded.`
       );
       history_builder.create({
@@ -219,8 +193,7 @@ export const app_access_granted = async (
     else return res.status(403).json({ result: false });
   } catch (error) {
     logs.error(
-      `[${req.method}][${error.code}][${error.name}] ${
-        regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
+      `[${req.method}][${error.code}][${error.name}] ${regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
       } : ${error.message}.`
     );
     return res.status(error.code).json({ result: false });
@@ -229,11 +202,11 @@ export const app_access_granted = async (
 
 /**
  * Check is the User is an admin or a prof.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} next HTTP next.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {NextFunction} next HTTP next.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Boolean}
  */
 export const isProfOrAdmin = async function (
   req,
@@ -248,30 +221,26 @@ export const isProfOrAdmin = async function (
     const id_user = fns.getUserId({
       token: req.headers['authorization'],
     });
-    return await Promise.resolve(fns.getRole({ id_user })).then((role) => {
-      if (role !== 'ADMINISTRATEUR' && role !== 'PROFESSEUR')
+    return await fns.getRole({ id_user })
+    .then((role) => {
+      if (!['ADMINISTRATEUR','PROFESSEUR'].includes(role))
         throw new UserIsNeitherProfOrAdmin(
           'The user is neither PROFESSEUR or ADMINISTRATEUR.'
         );
       else next();
     });
   } catch (error) {
-    return res.status(error.code).json({
-      result: {
-        error: error.name,
-        message: error.message,
-      },
-    });
+    ApiResponse.error(req,res,error);
   }
 };
 
 /**
  * Check is the User is an admin or not.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} next HTTP next.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {NextFunction} next HTTP next.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Boolean}
  */
 export const isAdmin = async function (
   req,
@@ -292,22 +261,17 @@ export const isAdmin = async function (
       else next();
     });
   } catch (error) {
-    return res.status(error.code).json({
-      result: {
-        error: error.name,
-        message: error.message,
-      },
-    });
+    ApiResponse.error(req,res,error);
   }
 };
 
 /**
  * Check is the User is a prof or not.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} next HTTP next.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {NextFunction} next HTTP next.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Boolean}
  */
 export const isProf = async function (
   req,
@@ -328,22 +292,17 @@ export const isProf = async function (
       else next();
     });
   } catch (error) {
-    return res.status(error.code).json({
-      result: {
-        error: error.name,
-        message: error.message,
-      },
-    });
+    ApiResponse.error(req,res,error);
   }
 };
 
 /**
  * Method to check if the application is owned by the user.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} next HTTP next.
- * @param {*} fns overwriting function for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {NextFunction} next HTTP next.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Boolean}
  */
 export const isOwner = async (
   req,
@@ -366,12 +325,12 @@ export const isOwner = async (
     });
     const promises = [
       fns.isOwner(
-        req.query.key !== undefined
-          ? { id_user: id_user, key: req.query.key }
-          : {
-              id_user: id_user,
-              id_application: req.query.id_application,
-            }
+        req.query.key === undefined
+          ? {
+            id_user: id_user,
+            id_application: req.query.id_application,
+          }
+          : { id_user: id_user, key: req.query.key }
       ),
       fns.getRole({ id_user }),
     ];
@@ -383,11 +342,6 @@ export const isOwner = async (
         );
     });
   } catch (err) {
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+    ApiResponse.error(req,res,err);
   }
 };

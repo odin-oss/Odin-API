@@ -6,131 +6,99 @@ import {
   ParameterMisformed,
 } from '../../utils/errors.service.js';
 import Guard from '../../utils/guard.service.js';
+import z from 'zod';
 
 /**
  * Function that will launch the creation of the ConfigMap into the Kubernets API.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify the configmap in the cluster.
+ * @param {String} path path of the file to read.
+ * @param {String} namespace namespace in which we need to create the ConfigMap.
+ * @param {String} name name of the ConfigMap.
+ * @param {String} filename name of the file inside the ConfigMap.
+ * @param {Boolean} shutable is it safe to delete.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const create = async function (
-  props = {
-    path: undefined,
-    hash: undefined,
-    namespace: undefined,
-    filename: undefined,
-    name: undefined,
-    shutable: true,
-  },
+  props,
   fns = {
     fetch: kapi.fetch,
     readFile: fs.readFile,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    path: undefined,
-    hash: undefined,
-    namespace: undefined,
-    filename: undefined,
-    name: undefined,
-    shutable: true,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!Guard.check_file_path(props.path))
-    throw new ParameterMisformed('The props.path parameter is misformed.');
-  if (!Guard.check_namespace(props.namespace))
-    throw new ParameterMisformed('The props.namespace parameter is misformed.');
-  if (!Guard.check_filename(props.filename))
-    throw new ParameterMisformed('The props.filename parameter is misformed.');
-
-  const data = await fns.readFile(props.path, 'utf8');
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    path: z.string(),
+    namespace: z.string().min(1),
+    name: z.string().min(1),
+    filename: z.string().min(1),
+    shutable: z.boolean().default(true)
+  });
+  const data_checks = Guard.validateProps(schema, props);
+  const data = await fns.readFile(data_checks.path, 'utf8');
   const body = {
     apiVersion: 'v1',
     data: {
-      [props.filename]: data,
+      [data_checks.filename]: data,
     },
     metadata: {
-      name: `${props.name}`,
-      namespace: `${props.namespace}`,
+      name: `${data_checks.name}`,
+      namespace: `${data_checks.namespace}`,
       labels: {
         type: 'ConfigMap',
-        hash: `${props.hash}`,
-        shutable: props.shutable ? 'true' : 'false',
+        hash: `${data_checks.hash}`,
+        shutable: data_checks.shutable ? 'true' : 'false',
       },
     },
   };
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/${props.namespace}/configmaps`;
-  return await Promise.resolve(fns.fetch({ url, method: 'POST', body })).then(
-    (res) => {
-      return {
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/${data_checks.namespace}/configmaps`;
+  return await fns.fetch({ url, method: 'POST', body }).then(
+    (res) => ({
         result: res,
         type: 'ConfigMap',
-        name: `${props.name}`,
-      };
-    }
+        name: `${data_checks.name}`,
+      })
   );
 };
 /**
  * Function that will update the configmap in the kubernetes cluster.
- * @param {*} props
- * @param {*} fetch
- * @returns
+ * @param {String} path path of the file to read.
+ * @param {String} namespace namespace in which we need to create the ConfigMap.
+ * @param {String} name name of the ConfigMap.
+ * @param {String} filename name of the file inside the ConfigMap.
+ * @param {Boolean} shutable is it safe to delete.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const update = async function (
-  props = {
-    path: undefined,
-    shutable: true,
-    namespace: undefined,
-    filename: undefined,
-    name: undefined,
-  },
+  props,
   fns = {
     fetch: kapi.fetch,
     readFile: fs.readFile,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    path: undefined,
-    namespace: undefined,
-    filename: undefined,
-    name: undefined,
-    shutable: true,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_file_path(props.path))
-    throw new ParameterMisformed('The props.path parameter is misformed.');
-  if (!Guard.check_namespace(props.namespace))
-    throw new ParameterMisformed('The props.namespace parameter is misformed.');
-  if (!Guard.check_filename(props.filename))
-    throw new ParameterMisformed('The props.filename parameter is misformed.');
-
-  const data = await fns.readFile(props.path, 'utf8');
+  const schema = z.object({
+    path: z.string(),
+    namespace: z.string().min(1),
+    name: z.string().min(1),
+    filename: z.string().min(1),
+    shutable: z.boolean().default(true)
+  });
+  const data_checks = Guard.validateProps(schema, props);
+  const data = await fns.readFile(data_checks.path, 'utf8');
   const body = {
     data: {
-      [props.filename]: data,
+      [data_checks.filename]: data,
     },
     metadata: {
-      name: `${props.name}`,
-      namespace: `${props.namespace}`,
+      name: `${data_checks.name}`,
+      namespace: `${data_checks.namespace}`,
       labels: {
         type: 'ConfigMap',
-        shutable: props.shutable ? 'true' : 'false',
+        shutable: data_checks.shutable ? 'true' : 'false',
       },
     },
   };
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/${props.namespace}/configmaps/${props.name}`;
-  return await Promise.resolve(fns.fetch({ url, method: 'PUT', body })).then(
-    (res) => {
-      return res;
-    }
-  );
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/${data_checks.namespace}/configmaps/${data_checks.name}`;
+  return await fns.fetch({ url, method: 'PUT', body }).then((res) =>  res);
 };

@@ -1,112 +1,76 @@
+import z from 'zod';
 import * as mongodb from '../config/mongo.config.js';
-import {
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../utils/errors.util.js';
 import Guard from '../utils/guard.util.js';
 
-// Applications
 /**
  * Function that will save a new application into the MDB collection.
- * @param {*} param0
- * @returns
+ * @param {JSON} application application to save into the MDB collection.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {}
  */
 export const saveApplication = async function (
-  props = { application: undefined },
+  props,
   fns = {
-    mdb_pkg: mongodb,
+    mongodb
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    application: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_JSON(props.application))
-    throw new ParameterMisformed(
-      `The props.application argument is not a JSON object.`
-    );
-  if (props.application.hash === undefined)
-    throw new MissingArgumentError(
-      `One or multiple arguments (props.application.hash) are missing.`
-    );
-  if (!Guard.check_hash(props.application.hash))
-    throw new ParameterMisformed(
-      `The props.application.hash parameter is misformed.`
-    );
-
-  const mdb = await fns.mdb_pkg.getInstance();
+  const schema = z.object({
+    application: z.array(Object)
+  });
+  const data = Guard.validateProps(schema, props);
+  const schema_app = z.object({
+    hash: z.string().min(8).max(8)
+  });
+  const data_app = Guard.validateProps(schema_app, props);
+  const mdb = await fns.mongodb.getInstance();
   const collection = mdb.collection('Applications');
   return await collection.insertOne({
-    name: props.application.hash,
-    value: props.application,
+    name: data_app.application.hash,
+    value: data.application,
   });
 };
 /**
  * Function that will update the application from the MDB collection.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify the application to update.
+ * @param {String} state new state to put on the application.
+ * @returns {}
  */
 export const updateApplication = async function (
-  props = { hash: undefined, state: undefined },
+  props,
   fns = {
-    mdb_pkg: mongodb,
+    mongodb,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-    state: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!['started', 'shutted', 'Getting Ready'].includes(props.state))
-    throw new ParameterMisformed(
-      'The props.state should be in [started,shutted,created]'
-    );
-
-  const mdb = await fns.mdb_pkg.getInstance();
+  const schema = z.object({
+    hash: z.string().min(8),
+    state: z.enum(['started', 'shutted', 'Getting Ready'])
+  });
+  const data = Guard.validateProps(schema, props);
+  const mdb = await fns.mongodb.getInstance();
   const collection = mdb.collection('Applications');
-
-  const filter = { name: props.hash };
-  const update = { $set: { state: props.state } };
-
+  const filter = { name: data.hash };
+  const update = { $set: { state: data.state } };
   return await collection.updateOne(filter, update);
 };
 /**
  * Function that will delete the statefile from the MDB collection.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify the application to delete. 
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {String}
  */
 export const deleteApplication = async function (
-  props = { hash: undefined },
+  props,
   fns = {
-    mdb_pkg: mongodb,
+    mongodb,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-
-  const mdb = await fns.mdb_pkg.getInstance();
+  const schema = z.object({
+    hash: z.string().min(8)
+  });
+  const data = Guard.validateProps(schema, props);
+  const mdb = await fns.mongodb.getInstance();
   const collection = mdb.collection('Applications');
-
-  const filter = { name: props.hash };
-
+  const filter = { name: data.hash };
   return await collection.deleteOne(filter).then((r) => {
     return r.deletedCount === 1
       ? 'The entry has been deleted from the mdb collection.'

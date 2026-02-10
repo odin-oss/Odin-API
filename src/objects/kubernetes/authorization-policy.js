@@ -1,40 +1,28 @@
 import CONFIG from '../../config/config.js';
 import * as kapi from '../../modules/kapi.module.js';
-import {
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../../utils/errors.util.js';
 import Guard from '../../utils/guard.util.js';
 
 /**
  * Function that will create an istio authorization policy for a given namespace in cirrus namespace.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify the authorization policy in the cluster.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const create = async function (
-  props = {
-    hash: undefined,
-  },
+  props,
   fns = {
     fetch: kapi.fetch,
   }
 ) {
-  const expected_props = {
-    hash: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-
-  // kapi request
+  const schema = z.object({
+    hash: z.string().min(8).max(8)
+  });
+  const data = Guard.validateProps(schema, props);
   const body = {
     kind: 'AuthorizationPolicy',
     apiVersion: 'security.istio.io/v1',
     metadata: {
-      name: `istio-ap-cirrus-kafka-n${props.hash}`,
+      name: `istio-ap-cirrus-kafka-n${data.hash}`,
       namespace: 'cirrus',
     },
     spec: {
@@ -49,7 +37,7 @@ export const create = async function (
           from: [
             {
               source: {
-                namespaces: [`n${props.hash}`],
+                namespaces: [`n${data.hash}`],
               },
             },
           ],
@@ -65,49 +53,40 @@ export const create = async function (
     },
   };
   const url = `${CONFIG.KUBERNETES_URL}/apis/security.istio.io/v1/namespaces/cirrus/authorizationpolicies`;
-  return await Promise.resolve(fns.fetch({ url, method: 'POST', body })).then(
-    (res) => {
-      return {
+  return await fns.fetch({ url, method: 'POST', body })
+    .then(
+      (res) => ({
         result: res,
         type: 'AuthorizationPolicy',
-        name: `authorization-policy-${props.hash}`,
-      };
-    }
-  );
+        name: `authorization-policy-${data.hash}`,
+      }
+      )
+    );
 };
 
 /**
  * Function that will delete an istio authorization policy for a given namespace in cirrus namespace.
- * @param {*} param0
- * @returns
+ * @param {String} hash hash to identify the authorization policy in the cluster.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const deletion = async function (
-  props = {
-    hash: undefined,
-  },
+  props,
   fns = {
     fetch: kapi.fetch,
   }
 ) {
-  const expected_props = {
-    hash: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-
-  // kapi request
-  const url = `${CONFIG.KUBERNETES_URL}/apis/security.istio.io/v1/namespaces/cirrus/authorizationpolicies/istio-ap-cirrus-kafka-n${props.hash}`;
-  return await Promise.resolve(fns.fetch({ url, method: 'DELETE' })).then(
-    (res) => {
-      return {
+  const schema = z.object({
+    hash: z.string().min(8).max(8)
+  });
+  const data = Guard.validateProps(schema, props);
+  const url = `${CONFIG.KUBERNETES_URL}/apis/security.istio.io/v1/namespaces/cirrus/authorizationpolicies/istio-ap-cirrus-kafka-n${data.hash}`;
+  return await fns.fetch({ url, method: 'DELETE' })
+    .then(
+      (res) => ({
         result: res,
         type: 'AuthorizationPolicy',
-        name: `authorization-policy-${props.hash}`,
-      };
-    }
-  );
+        name: `authorization-policy-${data.hash}`,
+      })
+    );
 };

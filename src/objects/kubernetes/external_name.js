@@ -1,94 +1,63 @@
+import z from 'zod';
 import CONFIG from '../../config/config.js';
 import * as kapi from '../../modules/kapi.module.js';
-import {
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../../utils/errors.util.js';
 import Guard from '../../utils/guard.util.js';
 
 /**
  * Function that executes the deletion of all the externalname contained in the cirrus namespace and the match the hash.
- * @param {*} props
- * @param {*} fns Functions that can be overwrote during tests execution.
- * @returns
+ * @param {String} hash unique hash to identify specific external name resources.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const deletion = async function (
-  props = { hash: undefined },
+  props,
   fns = { get: get, delete: del }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-
-  const list = await Promise.resolve(fns.get({ hash: props.hash })).then(
-    (r) => {
-      return r.result;
-    }
-  );
+  const schema = z.object({
+    hash: z.string().min(8).max(8)
+  });
+  const data = Guard.validateProps(schema, props);
+  const list = await fns.get({ ...data }).then(r => r.result);
   if (list === 'Kubernetes is not activated.') return;
   const promises = list.map((name) => fns.delete({ name }));
-  return await Promise.all(promises).then((r) => {
-    return r;
-  });
+  return await Promise.all(promises);
 };
 
 /**
  * Function that executes the creation of an externalname in the cirrus namespace on Kubernetes.
- * @param {*} props
- * @param {*} fetch Spy on test execution, else it will execute the kapi.fetch.
- * @returns
+ * @param {String} hash unique hash to identify specific external name resources.
+ * @param {String} label label of the application.
+ * @param {Number} port_externe port to point from this external name.
+ * @param {Function} fetch functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const create = async function (
-  props = {
-    hash: undefined,
-    label: undefined,
-    port_externe: undefined,
-  },
+  props,
   fetch = kapi.fetch
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-    label: undefined,
-    port_externe: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!Guard.check_libelle(props.label, 3))
-    throw new ParameterMisformed('The props.label parameter is misformed.');
-  if (!Guard.check_port(props.port_externe))
-    throw new ParameterMisformed(
-      'The props.port_externe parameter is misformed.'
-    );
-
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    label: z.string(),
+    port_externe: z.number().positive()
+  });
+  const data = Guard.validateProps(schema, props);
   const body = {
     apiVersion: 'v1',
     kind: 'Service',
     metadata: {
-      name: `ci${props.label}${props.hash}${props.port_externe}-proxy`,
+      name: `ci${data.label}${data.hash}${data.port_externe}-proxy`,
       namespace: 'cirrus',
       labels: {
         type: 'ExternalName',
-        hash: `${props.hash}`,
+        hash: `${data.hash}`,
         shutable: 'true',
       },
     },
     spec: {
-      externalName: `ci${props.label}${props.hash}${props.port_externe}.n${props.hash}.svc.cluster.local`,
+      externalName: `ci${data.label}${data.hash}${data.port_externe}.n${data.hash}.svc.cluster.local`,
       ports: [
         {
-          port: props.port_externe,
+          port: data.port_externe,
           protocol: 'TCP',
         },
       ],
@@ -96,41 +65,35 @@ export const create = async function (
     },
   };
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services`;
-  return await Promise.resolve(fetch({ url, method: 'POST', body })).then(
-    (res) => {
-      return {
+  return await fetch({ url, method: 'POST', body }).then(
+    (res) => ({
         result: res,
         type: 'ExternalName',
-        name: `ci${props.label}${props.hash}${props.port_externe}-proxy`,
-      };
-    }
+        name: `ci${data.label}${data.hash}${data.port_externe}-proxy`,
+      }
+    )
   );
 };
 
 /**
  * Private function that will fetch the KAPI.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique has the application.
+ * @param {Boolean} onlyShutable filter the result only of shutable resources if set to true - default true.
+ * @param {Function} fetch functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 const get = async function (
-  props = { hash: undefined, onlyShutable: true },
+  props,
   fetch = kapi.fetch
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-    onlyShutable: true,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services?labelSelector=type=ExternalName,hash=${props.hash},shutable=${{ ...expected_props, ...props }.onlyShutable ? 'true' : 'false'}`;
-
-  return await Promise.resolve(fetch({ url, method: 'GET' })).then((res) => {
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    onlyShutable: z.boolean().default(true)
+  });
+  const data = Guard.validateProps(schema, props);
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services?labelSelector=type=ExternalName,hash=${data.hash},shutable=${{ ...expected_props, ...props }.onlyShutable ? 'true' : 'false'}`;
+  return await fetch({ url, method: 'GET' })
+  .then((res) => {
     if (res === 'Kubernetes is not activated.') return { result: res };
     return {
       result: res?.items.map((item) => item.metadata.name),
@@ -140,29 +103,23 @@ const get = async function (
 };
 /**
  * Private function that will fetch the KAPI to delete an external name from cluster.
- * @param {*} param0
- * @returns
+ * @param {String} name name of the application to delete.
+ * @param {Function} fetch functions to overwrite for unit testing.
+ * @returns {JSON}
  */
-const del = async function (props = { name: undefined }, fetch = kapi.fetch) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    name: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_libelle(props.name))
-    throw new ParameterMisformed('The props.name parameter is misformed.');
-
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services/${props.name}`;
-  return await Promise.resolve(fetch({ url, method: 'DELETE' })).then((res) => {
-    return {
+const del = async function (props, fetch = kapi.fetch) {
+  const schema = z.object({
+    name: z.string()
+  });
+  const data = Guard.validateProps(schema, props);
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services/${data.name}`;
+  return await fetch({ url, method: 'DELETE' })
+  .then((res) => ({
       result: res,
       type: 'ExternalName',
-      name: `${props.name}`,
-    };
-  });
+      name: `${data.name}`,
+    })
+  );
 };
 
 const test_exports = {};

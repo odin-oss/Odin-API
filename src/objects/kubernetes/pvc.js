@@ -1,79 +1,60 @@
+import z from 'zod';
 import CONFIG from '../../config/config.js';
 import * as kapi from '../../modules/kapi.module.js';
-//import * as service from '../../objects/service.js';
-//import * as configmap from '../../objects/configmap.js';
-import {
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../../utils/errors.util.js';
 import Guard from '../../utils/guard.util.js';
 
 /**
  * Function that will launch the whole creation of storage part in the kubernetes cluster (only pvc)
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify specific external name resources.
+ * @param {String} label label of the application.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const create = async function (
-  props = { hash: undefined, label: undefined },
+  props,
   fns = {
     execute_creation: execute_creation,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-    label: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!Guard.check_libelle(props.label, 3))
-    throw new ParameterMisformed('The props.label parameter is misformed.');
-
-  return await Promise.resolve(
-    fns.execute_creation({ hash: props.hash, label: props.label })
-  ).then((res) => {
-    return {
-      result: res,
-      type: 'PVC',
-      name: `${props.label}${props.hash}-pvc`,
-    };
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    label: z.string()
   });
+  const data = Guard.validateProps(schema, props);
+  return await fns.execute_creation({ ...data })
+    .then((res) => {
+      return {
+        result: res,
+        type: 'PVC',
+        name: `${data.label}${data.hash}-pvc`,
+      };
+    });
 };
+
 /**
  * This function is executing the creation of the PVC object in the Kubernetes cluster.
- * @param {*} props {label, hash}
- * @param {*} fetch spy on test execution, else will be executed by kapi fetch
- * @returns
+ * @param {String} hash unique hash to identify specific external name resources.
+ * @param {String} label label of the application.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 const execute_creation = async function (
-  props = { label: undefined, hash: undefined },
+  props,
   fetch = kapi.fetch
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-    label: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!Guard.check_libelle(props.label, 3))
-    throw new ParameterMisformed('The props.label parameter is misformed.');
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    label: z.string()
+  });
+  const data = Guard.validateProps(schema, props);
 
   const body = {
     metadata: {
-      name: `${props.label}${props.hash}-pvc`,
-      namespace: `n${props.hash}`,
+      name: `${data.label}${data.hash}-pvc`,
+      namespace: `n${data.hash}`,
       labels: {
         type: 'PVC',
-        hash: `${props.hash}`,
+        hash: `${data.hash}`,
         shutable: 'false',
       },
     },
@@ -91,15 +72,13 @@ const execute_creation = async function (
   if (CONFIG.KUBERNETES_VOLUME_TYPE === 'Block') {
     body.spec.volumeMode = 'Block';
   }
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${props.hash}/persistentvolumeclaims`;
-  return await Promise.resolve(fetch({ url, method: 'POST', body })).then(
-    (res) => {
-      return {
-        type: 'PersistentVolumeClaim',
-        name: `${props.label}${props.hash}-pvc`,
-        result: res,
-      };
-    }
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/persistentvolumeclaims`;
+  return await fetch({ url, method: 'POST', body }).then(
+    (res) => ({
+      type: 'PersistentVolumeClaim',
+      name: `${data.label}${data.hash}-pvc`,
+      result: res,
+    })
   );
 };
 

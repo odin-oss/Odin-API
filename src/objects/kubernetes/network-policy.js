@@ -1,3 +1,4 @@
+import z from 'zod';
 import CONFIG from '../../config/config.js';
 import * as kapi from '../../modules/kapi.module.js';
 import {
@@ -8,31 +9,24 @@ import Guard from '../../utils/guard.util.js';
 
 /**
  * Function that will create a network policy for a given namespace in cirrus namespace.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify specific network policy resources.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const create = async function (
-  props = {
-    hash: undefined,
-  },
+  props,
   fns = {
     fetch: kapi.fetch,
   }
 ) {
-  const expected_props = {
-    hash: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-
+  const schema = z.object({
+    hash: z.string().min(8).max(8)
+  });
+  const data = Guard.validateProps(schema, props);
   // kapi request
   const body = {
     metadata: {
-      name: `kubec-np-cirrus-kafka-from-n${props.hash}`,
+      name: `kubec-np-cirrus-kafka-from-n${data.hash}`,
       namespace: 'cirrus',
     },
     spec: {
@@ -48,7 +42,7 @@ export const create = async function (
             {
               namespaceSelector: {
                 matchLabels: {
-                  'kubernetes.io/metadata.name': `n${props.hash}`,
+                  'kubernetes.io/metadata.name': `n${data.hash}`,
                 },
               },
             },
@@ -58,48 +52,41 @@ export const create = async function (
     },
   };
   const url = `${CONFIG.KUBERNETES_URL}/apis/networking.k8s.io/v1/namespaces/cirrus/networkpolicies`;
-  return await Promise.resolve(fns.fetch({ url, method: 'POST', body })).then(
-    (res) => {
-      return {
+  return await fns.fetch({ url, method: 'POST', body })
+  .then(
+    (res) => ( {
         result: res,
         type: 'NetworkPolicy',
-        name: `network-policy-${props.hash}`,
-      };
-    }
+        name: `network-policy-${data.hash}`,
+      }
+    )
   );
 };
 
 /**
  * Function that will delete a network policy for a given namespace in cirrus namespace.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify specific external name resources.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const deletion = async function (
-  props = {
-    hash: undefined,
-  },
+  props,
   fns = {
     fetch: kapi.fetch,
   }
 ) {
-  const expected_props = {
-    hash: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-
-  const url = `${CONFIG.KUBERNETES_URL}/apis/networking.k8s.io/v1/namespaces/cirrus/networkpolicies/kubec-np-cirrus-kafka-from-n${props.hash}`;
-  return await Promise.resolve(fns.fetch({ url, method: 'DELETE' })).then(
-    (res) => {
-      return {
+  const schema = z.object({
+    hash: z.string().min(8).max(8)
+  });
+  const data = Guard.validateProps(schema, props);
+  const url = `${CONFIG.KUBERNETES_URL}/apis/networking.k8s.io/v1/namespaces/cirrus/networkpolicies/kubec-np-cirrus-kafka-from-n${data.hash}`;
+  return await fns.fetch({ url, method: 'DELETE' })
+  .then(
+    (res) => ({
         result: res,
         type: 'NetworkPolicy',
-        name: `network-policy-${props.hash}`,
-      };
-    }
+        name: `network-policy-${data.hash}`,
+      }
+    )
   );
 };

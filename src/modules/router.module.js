@@ -1,8 +1,3 @@
-/**
- * Package module
- *
- * Module servant de base aux différentes routes.
- */
 import AUTH from '../routes/auth.route.js';
 import BASE from '../routes/base.route.js';
 import APPLICATION from '../routes/applications.route.js';

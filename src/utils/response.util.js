@@ -1,6 +1,8 @@
 import moment from 'moment-timezone';
 import logs from '../middlewares/winston.js';
 import CONFIG from '../config/config.js';
+import z from 'zod';
+import Guard from './guard.util.js';
 
 export class ApiResponse {
   /**
@@ -10,12 +12,21 @@ export class ApiResponse {
    * @param {moment} timestamp - Timestamp for when the response was created
    */
   constructor(success, data = null, error = null, message = null) {
-    this.success = success;
-    this.message = message;
-    this.data = data;
-    this.error = error;
+    const zod = Guard.validateProps(ApiResponse.schema, {success,data,error,message});
+    this.success = zod.success;
+    this.message = zod.message;
+    this.data = zod.data;
+    this.error = zod.error;
     this.timestamp = moment.tz(CONFIG.APP_TZ);
   }
+
+  // Zod Schema for object validation
+  static schema = z.object({
+    success: z.boolean(),
+    message: z.string(),
+    data: z.object().nullable(),
+    error: z.object().nullable()
+  });
 
   /**
    * Static helper for 2xx responses

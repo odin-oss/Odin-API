@@ -1,9 +1,6 @@
+import z from 'zod';
 import CONFIG from '../../config/config.js';
 import * as kapi from '../../modules/kapi.module.js';
-import {
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../../utils/errors.util.js';
 import Guard from '../../utils/guard.util.js';
 
 /**
@@ -15,189 +12,138 @@ export const SVC_TYPE = Object.freeze({
 });
 /**
  * Function that will launch the deletion of the service in the kubernetes cluster.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify service resources.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const deletion = async function (
-  props = { hash: undefined },
+  props,
   fns = { get_service: get, delete_service: del }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-
-  const list = await Promise.resolve(
-    fns.get_service({ hash: props.hash, onlyShutable: true })
-  ).then((r) => {
-    return r.result;
+  const schema = z.object({
+    hash: z.string().min(8).max(8)
   });
+  const data = Guard.validateProps(schema, props);
+  const list = fns.get_service({ ...data, onlyShutable: true }).then((r) => r.result);
   const promises = list.map((name) =>
-    fns.delete_service({ name, hash: props.hash })
+    fns.delete_service({ ...data, name })
   );
-  return await Promise.all(promises).then((r) => {
-    return r;
-  });
+  return await Promise.all(promises);
 };
 /**
  * Function that will launch the creation of the service in the Kubernetes cluster.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify service resources.
+ * @param {String} label label of the application.
+ * @param {Number} port_externe port to point from this service.
+ * @param {Number} port_interne port serve from this service.
+ * @param {SVC_TYPE} type type of service to deploy - default CLUSTERIP.
+ * @param {Boolean} shutable is this new resource able to be deleted safely on stop.
+ * @param {Function} fetch functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const create = async function (
-  props = {
-    label: undefined,
-    hash: undefined,
-    port_externe: undefined,
-    port_interne: undefined,
-    type: SVC_TYPE.CLUSTERIP,
-    shutable: true,
-  },
+  props,
   fetch = kapi.fetch
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    label: undefined,
-    hash: undefined,
-    port_externe: undefined,
-    port_interne: undefined,
-    type: SVC_TYPE.CLUSTERIP,
-    shutable: true,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!Guard.check_libelle(props.label, 3))
-    throw new ParameterMisformed('The props.label parameter is misformed.');
-  if (!Guard.check_port(props.port_externe))
-    throw new ParameterMisformed(
-      'The props.port_externe parameter is misformed.'
-    );
-  if (!Guard.check_port(props.port_interne))
-    throw new ParameterMisformed(
-      'The props.port_interne parameter is misformed.'
-    );
-  if (props.type !== SVC_TYPE.CLUSTERIP && props.type !== SVC_TYPE.LOADBALANCER)
-    throw new ParameterMisformed('The props.type parameter is misformed.');
-  if (!Guard.check_boolean(props.shutable))
-    throw new ParameterMisformed('The props.shutable parameter is misformed.');
-
-  const prefix = props.type === SVC_TYPE.CLUSTERIP ? 'ci' : 'lb';
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    label: z.string(),
+    port_externe: z.number().positive(),
+    port_interne: z.number().positive(),
+    type: z.instanceof(SVC_TYPE).default(SVC_TYPE.CLUSTERIP),
+    shutable: z.boolean().default(true)
+  });
+  const data = Guard.validateProps(schema, props);
+  const prefix = data.type === SVC_TYPE.CLUSTERIP ? 'ci' : 'lb';
   const typeStr =
-    props.type === SVC_TYPE.CLUSTERIP ? 'ClusterIP' : 'LoadBalancer';
+    data.type === SVC_TYPE.CLUSTERIP ? 'ClusterIP' : 'LoadBalancer';
   const body = {
     apiVersion: 'v1',
     kind: 'Service',
     metadata: {
-      name: `${prefix}${props.label}${props.hash}${props.port_externe}`,
-      namespace: `n${props.hash}`,
+      name: `${prefix}${data.label}${data.hash}${data.port_externe}`,
+      namespace: `n${data.hash}`,
       labels: {
         type: 'Service',
-        hash: `${props.hash}`,
-        shutable: props.shutable ? 'true' : 'false',
+        hash: `${data.hash}`,
+        shutable: data.shutable ? 'true' : 'false',
       },
     },
     spec: {
       ports: [
         {
-          port: props.port_interne,
+          port: data.port_interne,
           protocol: 'TCP',
         },
       ],
       //externalIPs: [`${CONFIG.master_ip}`],
       selector: {
-        app: `${props.label}${props.hash}`,
+        app: `${data.label}${data.hash}`,
       },
       sessionAffinity: 'ClientIP',
       type: `${typeStr}`,
     },
   };
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${props.hash}/services`;
-  return await Promise.resolve(fetch({ url, method: 'POST', body })).then(
-    (res) => {
-      return {
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/services`;
+  return await fetch({ url, method: 'POST', body })
+    .then(
+      (res) => ({
         result: res,
         type: 'Service',
-        name: `${prefix}${props.label}${props.hash}${props.port_externe}`,
-      };
-    }
-  );
+        name: `${prefix}${data.label}${data.hash}${data.port_externe}`,
+      })
+    );
 };
 
 /**
  * Private function that will fetch the Kubernetes API in order to get the name of the services attached to this hash.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify service resources.
+ * @param {Boolean} onlyShutable is this new resource able to be deleted safely on stop.
+ * @param {Function} fetch functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 const get = async function (
-  props = { hash: undefined, onlyShutable: true },
+  props,
   fetch = kapi.fetch
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-    onlyShutable: true,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!Guard.check_boolean(props.onlyShutable))
-    throw new ParameterMisformed(
-      'The props.onlyShutable parameter is misformed.'
-    );
-
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${props.hash}/services?labelSelector=hash=${props.hash},shutable=${props.onlyShutable ? 'true' : 'false'}`;
-  return await Promise.resolve(fetch({ url, method: 'GET' })).then((res) => {
-    return {
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    onlyShutable: z.boolean().default(true)
+  });
+  const data = Guard.validateProps(schema, props);
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/services?labelSelector=hash=${data.hash},shutable=${data.onlyShutable ? 'true' : 'false'}`;
+  return await fetch({ url, method: 'GET' })
+    .then((res) => ({
       result: res.items.map((item) => item.metadata.name),
       type: 'Services',
-      onlyShutable: props.onlyShutable,
-    };
-  });
+      onlyShutable: data.onlyShutable,
+    }
+    ));
 };
 /**
  * Private function that executes the deleteion of the service in the Kubernetes API.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify service resources.
+ * @param {String} name name of the application to delete.
+ * @param {Function} fetch functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 const del = async function (
-  props = { name: undefined, hash: undefined },
+  props,
   fetch = kapi.fetch
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    name: undefined,
-    hash: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!Guard.check_libelle(props.name))
-    throw new ParameterMisformed('The props.name parameter is misformed.');
-
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${props.hash}/services/${props.name}`;
-  return await Promise.resolve(fetch({ url, method: 'DELETE' })).then((res) => {
-    return {
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    name: z.string()
+  });
+  const data = Guard.validateProps(schema, props);
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/services/${data.name}`;
+  return await fetch({ url, method: 'DELETE' })
+    .then((res) => ({
       result: res,
       type: 'Service',
-      name: `${props.name}`,
-    };
-  });
+      name: `${data.name}`,
+    }
+    ));
 };
 
 const test_exports = {};

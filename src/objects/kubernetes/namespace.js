@@ -1,56 +1,55 @@
 import * as kapi from '../../modules/kapi.module.js';
 import CONFIG from '../../config/config.js';
-import {
-  EmptyStringHashError,
-  KubernetesAPINotResponding,
-  MissingArgumentError,
-} from '../../utils/errors.util.js';
+import z from 'zod';
+import Guard from '../../utils/guard.util.js';
 
+/**
+ * Delete a namespace from kubernetes cluster.
+ * @param {String} hash unique hash used to find the application on the cluster. 
+ * @param {Function} fetch functions to overwrite for unit testing.
+ * @returns {JSON}
+ */
 export const deletion = async function (
-  { hash = undefined } = {},
+  props,
   fetch = kapi.fetch
 ) {
-  if (hash === undefined)
-    throw new MissingArgumentError(
-      "Cannot read properties of undefined (reading 'hash')."
-    );
-  if (hash === '')
-    throw new EmptyStringHashError('You must pass the hash argument.');
-
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${hash}`;
-  return await Promise.resolve(fetch({ url, method: 'DELETE' }))
-    .then((res) => {
-      return {
-        result: res,
-        type: 'Namespace',
-        name: `n${hash}`,
-      };
+  const schema = z.object({
+    hash: z.string().min(8).max(8)
+  });
+  const data = Guard.validateProps(schema, props);
+  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}`;
+  return await fetch({ url, method: 'DELETE' })
+    .then((res) => ({
+      result: res,
+      type: 'Namespace',
+      name: `n${data.hash}`,
     })
-    .catch((err) => {
-      throw new KubernetesAPINotResponding(err.message);
-    });
+    )
 };
 
+/**
+ * Create a new namespace on the kubernetes cluster.
+ * @param {String} hash unique hash used to find the application on the cluster. 
+ * @param {Function} fetch functions to overwrite for unit testing.
+ * @returns {JSON}
+ */
 export const create = async function (
-  { hash = undefined } = {},
+  props,
   fetch = kapi.fetch
 ) {
-  if (hash === undefined)
-    throw new MissingArgumentError(
-      "Cannot read properties of undefined (reading 'hash')."
-    );
-  if (hash === '')
-    throw new EmptyStringHashError('You must pass the hash argument.');
-
+  const schema = z.object({
+    hash: z.string().min(8).max(8)
+  });
+  const data = Guard.validateProps(schema, props);
   const body = {
     apiVersion: 'v1',
     kind: 'Namespace',
     metadata: {
-      name: `n${hash}`, // Replace with your desired namespace name
+      name: `n${data.hash}`, // Replace with your desired namespace name
       labels: {
-        'kubernetes.io/metadata.name': `n${hash}`,
+        'kubernetes.io/metadata.name': `n${data.hash}`,
         type: 'Namespace',
-        hash: `${hash}`,
+        hash: `${data.hash}`,
         name: 'user-app-namespace',
       },
     },
@@ -59,13 +58,13 @@ export const create = async function (
     },
   };
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces`;
-  return await Promise.resolve(fetch({ url, method: 'POST', body })).then(
-    (res) => {
-      return {
-        result: res,
-        type: 'Namespace',
-        name: `n${hash}`,
-      };
+  return await fetch({ url, method: 'POST', body })
+  .then(
+    (res) => ({
+      result: res,
+      type: 'Namespace',
+      name: `n${data.hash}`,
     }
+    )
   );
 };

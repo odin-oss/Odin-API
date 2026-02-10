@@ -1,169 +1,134 @@
 import CONFIG from '../../config/config.js';
 import * as kapi from '../../modules/kapi.module.js';
 import { parsing_generic_tags } from '../../utils/parsing.util.js';
-import {
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../../utils/errors.util.js';
+import { ParameterMisformed } from '../../utils/errors.util.js';
 import Guard from '../../utils/guard.util.js';
+import z from 'zod';
 
 /**
  * Function that launch the deletion of the deployment.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify the deploy in the cluster.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const deletion = async function (
-  props = { hash: undefined },
+  props,
   fns = {
     get_deployment: get,
     delete_deployment: del,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-
-  const list = await Promise.resolve(
-    fns.get_deployment({ hash: props.hash, onlyShutable: true })
-  ).then((r) => {
-    return r.result;
+  const schema = z.object({
+    hash: z.string().min(8).max(8)
   });
+  const data = Guard.validateProps(schema, props);
+  const list = await fns.get_deployment({ ...data, onlyShutable: true }
+  ).then((r) => r.result);
   if (list.length === 0) return [];
   const promises = [];
-  for (let i = 0; i < list.length; i++) {
-    promises.push(fns.delete_deployment({ name: list[i], hash: props.hash }));
+  for (let deploy of list) {
+    promises.push(fns.delete_deployment({ ...data, name: deploy }));
   }
-  return await Promise.all(promises).then((r) => {
-    return r;
-  });
+  return await Promise.all(promises);
 };
 /**
  * Function that launch the scaling of the deployement.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify the deploy in the cluster.
+ * @param {String} replicas how many replicas of pods to deploy.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const scale = async function (
-  props = { hash: undefined, replicas: 0 },
+  props,
   fns = { get_deployment: get, put_deployment: put }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-    replicas: 0,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!Guard.check_replica(props.replicas))
-    throw new ParameterMisformed('The props.replicas parameter is misformed.');
-
-  const list = await Promise.resolve(
-    fns.get_deployment({ hash: props.hash, onlyShutable: true })
-  ).then((r) => {
-    return r.result;
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    replicas: z.number().default(0)
   });
+  const data = Guard.validateProps(schema, props);
+  const list = await fns.get_deployment({ ...data, onlyShutable: true }).then((r) => r.result);
   if (list === 'Kubernetes is not activated.') return;
   const promises = [];
-  for (let i = 0; i < list.length; i++) {
+  for (let deploy of list) {
     promises.push(
       fns.put_deployment({
-        name: list[i],
-        hash: props.hash,
-        replicas: props.replicas,
+        name: deploy,
+        hash: data.hash,
+        replicas: data.replicas,
       })
     );
   }
-  return await Promise.all(promises).then((r) => {
-    return r;
-  });
+  return await Promise.all(promises);
 };
 /**
  * Function that will launch the creation of the deployment in the kubernetes cluster.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique hash to identify the deploy in the cluster.
+ * @param {String} image image of the container in the registry.
+ * @param {String} image_tag tag of the image of the container in the registry.
+ * @param {String} username username of the application.
+ * @param {String} password password of the application.
+ * @param {String} service_command service_command of the container.
+ * @param {String} label label of the application.
+ * @param {String} web_title web_title for the UI.
+ * @param {String} ports list of all the ports to open on the container.
+ * @param {String} envs list of all the env vars to set in the container.
+ * @param {String} args list of all the arguments container.
+ * @param {String} node_selectors list of all the node selectors to set - for affinity in kubernetes cluster.
+ * @param {String} generated_label generated label for application.
+ * @param {String} has_storage do we have to set a block storage volume on this container.
+ * @param {String} readiness_probe_initial_delay delay before first readiness probe execution.
+ * @param {String} liveness_probe_initial_delay delay before first liveness probe execution.
+ * @param {String} readiness_probe_period period between two readiness probe execution.
+ * @param {String} liveness_probe_period period between two readiness probe execution.
+ * @param {String} need_compute_gpu do we passthrough compute GPU.
+ * @param {String} need_graphical_rendering_gpu do we passthrough rendering GPU.
+ * @param {String} ram_limit limit of RAM the container can reach.
+ * @param {String} ram_request amount of RAM to reserve for this container.
+ * @param {String} cpu_limit limit of CPU the container can reach.
+ * @param {String} cpu_request amount of CPU to reserve for this container.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const create = async function (
-  props = {
-    hash: undefined,
-    image: undefined,
-    image_tag: undefined,
-    username: undefined,
-    password: undefined,
-    service_command: undefined,
-    label: undefined,
-    web_title: undefined,
-    ports: [],
-    envs: [],
-    args: [],
-    privileged: undefined,
-    generated_label: undefined,
-    has_storage: false,
-    readiness_probe_initial_delay: undefined,
-    liveness_probe_initial_delay: undefined,
-    readiness_probe_period: undefined,
-    liveness_probe_period: undefined,
-    need_compute_gpu: undefined,
-    need_graphical_rendering_gpu: undefined,
-    ram_limit: undefined,
-    ram_request: undefined,
-    cpu_request: undefined,
-    cpu_limit: undefined,
-    node_selectors: [],
-  },
+  props,
   fetch = kapi.fetch
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-    image: undefined,
-    image_tag: undefined,
-    username: undefined,
-    password: undefined,
-    service_command: undefined,
-    label: undefined,
-    web_title: undefined,
-    ports: [],
-    envs: [],
-    args: [],
-    generated_label: undefined,
-    has_storage: false,
-    readiness_probe_initial_delay: undefined,
-    liveness_probe_initial_delay: undefined,
-    readiness_probe_period: undefined,
-    liveness_probe_period: undefined,
-    need_compute_gpu: undefined,
-    need_graphical_rendering_gpu: undefined,
-    ram_limit: undefined,
-    ram_request: undefined,
-    cpu_request: undefined,
-    cpu_limit: undefined,
-    node_selectors: [],
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-
-  // La requête
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    image: z.string(),
+    image_tag: z.string(),
+    username: z.string(),
+    password: z.string(),
+    service_command: z.string(),
+    label: z.string(),
+    web_title: z.string(),
+    ports: z.array().default([]),
+    envs: z.array().default([]),
+    args: z.array().default([]),
+    node_selectors: z.array().default([]),
+    generated_label: z.string(),
+    has_storage: z.boolean(),
+    readiness_probe_initial_delay: z.number().default(10),
+    liveness_probe_initial_delay: z.number().default(10),
+    readiness_probe_period: z.number().default(10),
+    liveness_probe_period: z.number().default(10),
+    need_compute_gpu: z.boolean().default(false),
+    need_graphical_rendering_gpu: z.boolean().default(false),
+    ram_limit: z.string(),
+    ram_request: z.string(),
+    cpu_request: z.string(),
+    cpu_limit: z.string(),
+  });
+  const data = Guard.validateProps(schema, props);
   let body = {
     metadata: {
-      name: `${props.label}${props.hash}`,
-      namespace: `n${props.hash}`,
+      name: `${data.label}${data.hash}`,
+      namespace: `n${data.hash}`,
       labels: {
-        app: `${props.label}${props.hash}`,
+        app: `${data.label}${data.hash}`,
         type: 'Deployment',
-        hash: `${props.hash}`,
+        hash: `${data.hash}`,
         shutable: 'true',
       },
     },
@@ -172,47 +137,47 @@ export const create = async function (
       automountServiceAccountToken: false,
       selector: {
         matchLabels: {
-          app: `${props.label}${props.hash}`,
+          app: `${data.label}${data.hash}`,
         },
       },
       template: {
         metadata: {
           labels: {
-            app: `${props.label}${props.hash}`,
+            app: `${data.label}${data.hash}`,
             type: 'Deployment',
-            hash: `${props.hash}`,
+            hash: `${data.hash}`,
           },
-          name: `${props.label}${props.hash}`,
-          namespace: `n${props.hash}`,
+          name: `${data.label}${data.hash}`,
+          namespace: `n${data.hash}`,
         },
         spec: {
           containers: [
             {
-              name: `pod${props.label}${props.hash}`,
-              image: `${props.image}:${props.image_tag}`,
+              name: `pod${data.label}${data.hash}`,
+              image: `${data.image}:${data.image_tag}`,
               imagePullPolicy: 'IfNotPresent',
               readinessProbe: {
                 exec: {
                   command: ['/bin/sh', '/var/probe.sh'],
                 },
-                initialDelaySeconds: props.readiness_probe_initial_delay,
-                periodSeconds: props.readiness_probe_period,
+                initialDelaySeconds: data.readiness_probe_initial_delay,
+                periodSeconds: data.readiness_probe_period,
               },
               livenessProbe: {
                 exec: {
                   command: ['/bin/sh', '/var/probe.sh'],
                 },
-                initialDelaySeconds: props.liveness_probe_initial_delay,
-                periodSeconds: props.liveness_probe_period,
+                initialDelaySeconds: data.liveness_probe_initial_delay,
+                periodSeconds: data.liveness_probe_period,
               },
               resources: {
                 limits: {
-                  cpu: props.cpu_limit,
-                  memory: props.ram_limit,
+                  cpu: data.cpu_limit,
+                  memory: data.ram_limit,
                 },
                 requests: {
-                  cpu: props.cpu_request,
-                  memory: props.ram_request,
+                  cpu: data.cpu_request,
+                  memory: data.ram_request,
                 },
               },
             },
@@ -227,88 +192,70 @@ export const create = async function (
     },
   };
 
-  // Adding GPU configs
-  if (props.need_compute_gpu) body = add_compute_gpu({ body });
-
-  // Ajout de node_selectors
-  body = add_node_selectors({ body, node_selectors: props.node_selectors });
-
-  // Ajout de Service_commands
-  body = add_service_commands({
-    body,
-    service_command: props.service_command,
-  });
-
-  // Ajout de Arguments
+  if (data.need_compute_gpu) body = add_compute_gpu({ body });
+  body = add_node_selectors({ body, node_selectors: data.node_selectors });
+  body = add_service_commands({ body, service_command: data.service_command });
   body = add_arguments({
     body,
-    args: props.args,
-    hash: props.hash,
-    username: props.username,
-    password: props.password,
-    label: props.label,
-    target: props.target,
-    generated_label: props.generated_label,
-    web_title: props.web_title,
+    args: data.args,
+    hash: data.hash,
+    username: data.username,
+    password: data.password,
+    label: data.label,
+    target: data.target,
+    generated_label: data.generated_label,
+    web_title: data.web_title,
   });
-
-  // Ajout de Ports
-  body = add_ports({ body, ports: props.ports });
-
-  // Ajout de Var_Envs
+  body = add_ports({ body, ports: data.ports });
   body = add_envs({
     body,
-    envs: props.envs,
-    hash: props.hash,
-    username: props.username,
-    password: props.password,
-    label: props.label,
-    target: props.target,
-    generated_label: props.generated_label,
-    web_title: props.web_title,
+    envs: data.envs,
+    hash: data.hash,
+    username: data.username,
+    password: data.password,
+    label: data.label,
+    target: data.target,
+    generated_label: data.generated_label,
+    web_title: data.web_title,
   });
-
-  // Ajout des volumes
   body = add_storage({
     body: body,
-    username: props.username,
-    label: props.label,
-    hash: props.hash,
-    has_storage: props.has_storage,
+    username: data.username,
+    label: data.label,
+    hash: data.hash,
+    has_storage: data.has_storage,
   });
 
-  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${props.hash}/deployments`;
-  return await Promise.resolve(fetch({ url, method: 'POST', body })).then(
-    (res) => {
-      return {
+  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/deployments`;
+  return await fetch({ url, method: 'POST', body })
+    .then(
+      (res) => ({
         result: res,
         type: 'Deployment',
-        name: `${props.label}${props.hash}`,
-      };
-    }
-  );
+        name: `${data.label}${data.hash}`,
+      }
+      ))
+
 };
 /**
  * Private function that will add the node_selectors part to the body.
- * @param {*} param0
- * @returns
+ * @param {Array} node_selectors node selectors to attributes to the body.
+ * @param {JSON} body body to update, used to create the final deployment.
+ * @returns {JSON}
  */
 const add_node_selectors = function (
-  props = { body: undefined, node_selectors: [] }
+  props
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    node_selectors: [],
-    body: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (props.body?.spec?.template?.spec === undefined)
+  const schema = z.object({
+    node_selectors: z.array().default([]),
+    body: z.object()
+  });
+  const data = Guard.validateProps(schema, props);
+
+  if (data.body?.spec?.template?.spec === undefined)
     throw new ParameterMisformed('The props.body parameter is misformed.');
-  props.body.spec.template.spec = {
-    ...props.body.spec.template.spec,
+  data.body.spec.template.spec = {
+    ...data.body.spec.template.spec,
     affinity: {
       nodeAffinity: {
         requiredDuringSchedulingIgnoredDuringExecution: {
@@ -319,7 +266,7 @@ const add_node_selectors = function (
   };
   // NODESELECTOR : We reunite all the value with the same key in the same array.
   const united = [];
-  for (let ns of props.node_selectors) {
+  for (let ns of data.node_selectors) {
     if (united.filter((item) => item.key === ns.key).length === 0) {
       united.push({
         key: ns.key,
@@ -333,7 +280,7 @@ const add_node_selectors = function (
   // adding the reunited data to the body
   if (united.length !== 0) {
     for (let ns = 0; ns < united.length; ns++) {
-      props.body.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms.push(
+      data.body.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms.push(
         {
           matchExpressions: [
             {
@@ -345,398 +292,314 @@ const add_node_selectors = function (
         }
       );
       for (let v of united[ns].values) {
-        props.body.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[
+        data.body.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[
           ns
         ].matchExpressions[0].values.push(`${v}`);
       }
     }
   }
-  return props.body;
+  return data.body;
 };
 
 /**
  * Private function that will add the service commands part to the body.
- * @param {*} param0
- * @returns
+ * @param {String} service_command service command to set in the body.
+ * @param {JSON} body body to update, used to create the final deployment.
+ * @returns {JSON}
  */
 const add_service_commands = function (
-  props = {
-    service_command: '',
-    body: undefined,
-  }
+  props
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    service_command: '',
-    body: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (props?.body?.spec?.template?.spec?.containers === undefined)
-    throw new ParameterMisformed('The props.body parameter is misformed.');
-  if (props.service_command === '') return props.body;
-  props.body.spec.template.spec.containers[0].command = [];
-  for (let sc of props.service_command.split(' ')) {
-    props.body.spec.template.spec.containers[0].command.push(`${sc}`);
+  const schema = z.object({
+    service_command: z.string().min(1).default(''),
+    body: z.object()
+  });
+  const data = Guard.validateProps(schema, props);
+  if (data?.body?.spec?.template?.spec?.containers === undefined)
+    throw new ParameterMisformed('The data.body parameter is misformed.');
+  if (data.service_command === '') return data.body;
+  data.body.spec.template.spec.containers[0].command = [];
+  for (let sc of data.service_command.split(' ')) {
+    data.body.spec.template.spec.containers[0].command.push(`${sc}`);
   }
-  return props.body;
+  return data.body;
 };
 
 /**
  * Private function that will add arguments to the body object.
- * @param {*} param0
- * @returns
+ * @param {Array<String>} args list of args to set in the body.
+ * @param {String} hash unique has the application.
+ * @param {String} generated_label generated label for the application.
+ * @param {String} username username in the final container.
+ * @param {String} password password in the final container.
+ * @param {String} label label of the container.
+ * @param {JSON} body body to update, used to create the final deployment.
+ * @param {String} web_title web_title for the UI.
+ * @param {String} target target one container to speak to another (alpha).
+ * @returns {JSON}
  */
 const add_arguments = function (
-  props = {
-    args: [],
-    hash: '',
-    generated_label: '',
-    username: '',
-    password: '',
-    label: '',
-    body: undefined,
-    web_title: undefined,
-    target: undefined,
-  }
+  props
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    args: [],
-    hash: undefined,
-    generated_label: undefined,
-    username: undefined,
-    password: undefined,
-    label: undefined,
-    body: undefined,
-    web_title: undefined,
-    target: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (props.args.length === 0) return props.body;
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!Guard.check_libelle(props.label, 3))
-    throw new ParameterMisformed('The props.label parameter is misformed.');
-  if (!Guard.check_libelle(props.generated_label))
-    throw new ParameterMisformed(
-      'The props.generated_label parameter is misformed.'
-    );
-  if (!Guard.check_libelle(props.username))
-    throw new ParameterMisformed('The props.username parameter is misformed.');
-  if (props?.body?.spec?.template?.spec?.containers === undefined)
-    throw new ParameterMisformed('The props.body parameter is misformed.');
+  const schema = z.object({
+    args: z.array().default([]),
+    hash: z.string().min(8).max(8).default(''),
+    generated_label: z.string().default(''),
+    username: z.string().default(''),
+    password: z.string().default(''),
+    label: z.string().default(''),
+    body: z.object(),
+    web_title: z.string().default(''),
+    target: z.string().default(''),
+  });
+  const data = Guard.validateProps(schema, props);
+  if (data.args.length === 0) return props.body;
+  if (data?.body?.spec?.template?.spec?.containers === undefined)
+    throw new ParameterMisformed('The data.body parameter is misformed.');
 
-  props.body.spec.template.spec.containers[0].args = [];
-  props.args.forEach((arg) => {
-    props.body.spec.template.spec.containers[0].args.push(
-      parsing_generic_tags(arg.value, {
-        hash: props.hash,
-        username: props.username,
-        password: props.password,
-        label: props.label,
-        target: props.target,
-        generated_label: props.generated_label,
-        web_title: props.web_title,
-      })
+  data.body.spec.template.spec.containers[0].args = [];
+  data.args.forEach((arg) => {
+    data.body.spec.template.spec.containers[0].args.push(
+      parsing_generic_tags(arg.value, { ...data })
     );
   });
 
-  return props.body;
+  return data.body;
 };
 
 /**
  * Private function that will add ports part to the body object.
- * @param {*} param0
- * @returns
+ * @param {Array} ports list of ports to set in the body.
+ * @param {JSON} body body to update, used to create the final deployment.
+ * @returns {JSON}
  */
-const add_ports = function (props = { ports: [], body: undefined }) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    ports: [],
-    body: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (props?.body?.spec?.template?.spec?.containers === undefined)
-    throw new ParameterMisformed('The props.body parameter is misformed.');
-
-  if (props.ports.length === 0) return props.body;
-  for (const element of props.ports) {
-    if (!Guard.check_port(element.port)) {
+const add_ports = function (props) {
+  const schema = z.object({
+    ports: z.array().default([]),
+    body: z.object(),
+  });
+  const data = Guard.validateProps(schema, props);
+  if (data?.body?.spec?.template?.spec?.containers === undefined)
+    throw new ParameterMisformed('The data.body parameter is misformed.');
+  if (data.ports.length === 0) return data.body;
+  for (const element of data.ports) {
+    if (!z.coerce.number().safeParse(element.port).success) {
       throw new ParameterMisformed('One of the port is not a Number.');
     }
   }
-
-  props.body.spec.template.spec.containers[0].ports = [];
-  for (const element of props.ports) {
-    props.body.spec.template.spec.containers[0].ports.push({
+  data.body.spec.template.spec.containers[0].ports = [];
+  for (const element of data.ports) {
+    data.body.spec.template.spec.containers[0].ports.push({
       containerPort: element.port,
       protocol: 'TCP',
     });
   }
-  return props.body;
+  return data.body;
 };
 
 /**
  * Private function that will add envs part to the body object.
- * @param {*} param0
- * @returns
+ * @param {Array} envs list of envs to set in the body.
+ * @param {JSON} body body to update, used to create the final deployment.
+ * @param {String} web_title web_title for the UI.
+ * @param {String} generated_label generated label for the application.
+ * @param {String} username username in the final container.
+ * @param {String} password password in the final container.
+ * @param {String} label label of the container.
+ * @param {String} hash unique has the application.
+ * @returns {JSON}
  */
 const add_envs = function (
-  props = {
-    body: undefined,
-    envs: [],
-    hash: '',
-    username: '',
-    password: '',
-    label: '',
-    generated_label: '',
-    web_title: '',
-  }
+  props
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    body: undefined,
-    envs: [],
-    hash: undefined,
-    username: undefined,
-    password: undefined,
-    label: undefined,
-    generated_label: undefined,
-    web_title: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (props.envs.length === 0) return props.body;
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!Guard.check_libelle(props.label, 3))
-    throw new ParameterMisformed('The props.label parameter is misformed.');
-  if (!Guard.check_libelle(props.generated_label))
-    throw new ParameterMisformed(
-      'The props.generated_label parameter is misformed.'
-    );
-  if (!Guard.check_libelle(props.username))
-    throw new ParameterMisformed('The props.username parameter is misformed.');
-  if (props?.body?.spec?.template?.spec?.containers === undefined)
-    throw new ParameterMisformed('The props.body parameter is misformed.');
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    body: z.object(),
+    envs: z.array().default([]),
+    username: z.string().default(''),
+    password: z.string().default(''),
+    label: z.string().default(''),
+    generated_label: z.string().default(''),
+    web_title: z.string().default(''),
+  });
+  const data = Guard.validateProps(schema, props);
 
-  props.body.spec.template.spec.containers[0].env = [];
-  props.body.spec.template.spec.containers[0].env.push(
-    ...props.envs.map((env) => ({
+  if (data.envs.length === 0) return data.body;
+  if (data?.body?.spec?.template?.spec?.containers === undefined)
+    throw new ParameterMisformed('The data.body parameter is misformed.');
+
+  data.body.spec.template.spec.containers[0].env = [];
+  data.body.spec.template.spec.containers[0].env.push(
+    ...data.envs.map((env) => ({
       name: env.key,
       value: parsing_generic_tags(env.value, {
-        hash: props.hash,
-        username: props.username,
-        password: props.password,
-        label: props.label,
-        target: props.target,
-        generated_label: props.generated_label,
-        web_title: props.web_title,
+        ...data
       }),
     }))
   );
 
-  return props.body;
+  return data.body;
 };
 
 /**
  * Private functions that add GPU compute process in the deployment.
- * @param {*} props
+ * @param {JSON} body body to update, used to create the final deployment.
+ * @returns {JSON}
  */
 const add_compute_gpu = function (
-  props = {
-    body: undefined,
-  }
+  props
 ) {
-  props.body.spec.template.spec.runtimeClassName = 'nvidia';
-  props.body.spec.template.spec.containers[0].resources.limits[
+  const schema = z.object({
+    body: z.object()
+  });
+  const data = Guard.validateProps(schema, props);
+  data.body.spec.template.spec.runtimeClassName = 'nvidia';
+  data.body.spec.template.spec.containers[0].resources.limits[
     'nvidia.com/gpu'
   ] = 1;
-  return props.body;
+  return data.body;
 };
 
 /**
  * Private function that will add storage part to the body object.
- * @param {*} param0
- * @returns
+ * @param {JSON} body body to update, used to create the final deployment.
+ * @param {String} username username in the final container.
+ * @param {String} label label of the container.
+ * @param {String} hash unique has the application.
+ * @param {Boolean} has_storage do we have to attach a volume to the application.
+ * @returns {JSON}
  */
 const add_storage = function (
-  props = {
-    body: undefined,
-    username: undefined,
-    label: undefined,
-    hash: undefined,
-    has_storage: false,
-  }
+  props
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    username: undefined,
-    label: undefined,
-    hash: undefined,
-    has_storage: false,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!Guard.check_libelle(props.label, 3))
-    throw new ParameterMisformed('The props.label parameter is misformed.');
-  if (!Guard.check_libelle(props.username))
-    throw new ParameterMisformed('The props.username parameter is misformed.');
-  if (!Guard.check_boolean(props.has_storage))
-    throw new ParameterMisformed('The props.has_storage must be a boolean.');
-  if (props?.body?.spec?.template?.spec?.containers === undefined)
-    throw new ParameterMisformed('The props.body parameter is misformed.');
-
-  if (!props.has_storage) return props.body;
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    body: z.object(),
+    username: z.string().default(''),
+    label: z.string().default(''),
+    has_storage: z.boolean().default(false)
+  });
+  const data = Guard.validateProps(schema, props);
+  if (data?.body?.spec?.template?.spec?.containers === undefined)
+    throw new ParameterMisformed('The data.body parameter is misformed.');
+  if (!data.has_storage) return data.body;
 
   if (CONFIG.KUBERNETES_VOLUME_TYPE === 'Block') {
-    props.body.spec.template.spec.containers[0].volumeDevices = [];
-    props.body.spec.template.spec.containers[0].volumeDevices.push({
-      devicePath: `/home/${props.username}`,
-      name: `${props.label}${props.hash}-pvc`,
+    data.body.spec.template.spec.containers[0].volumeDevices = [];
+    data.body.spec.template.spec.containers[0].volumeDevices.push({
+      devicePath: `/home/${data.username}`,
+      name: `${data.label}${data.hash}-pvc`,
     });
   } else {
-    props.body.spec.template.spec.containers[0].volumeMounts = [];
-    props.body.spec.template.spec.containers[0].volumeMounts.push({
-      mountPath: `/home/${props.username}`,
-      name: `${props.label}${props.hash}-pvc`,
+    data.body.spec.template.spec.containers[0].volumeMounts = [];
+    data.body.spec.template.spec.containers[0].volumeMounts.push({
+      mountPath: `/home/${data.username}`,
+      name: `${data.label}${data.hash}-pvc`,
     });
   }
-  props.body.spec.template.spec.volumes = [];
-  props.body.spec.template.spec.volumes.push({
-    name: `${props.label}${props.hash}-pvc`,
+  data.body.spec.template.spec.volumes = [];
+  data.body.spec.template.spec.volumes.push({
+    name: `${data.label}${data.hash}-pvc`,
     persistentVolumeClaim: {
-      claimName: `${props.label}${props.hash}-pvc`,
+      claimName: `${data.label}${data.hash}-pvc`,
     },
   });
-  return props.body;
+  return data.body;
 };
 
 /**
  * Private function that will fetch the Kubernetes API to get the deployment object.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique has the application.
+ * @param {Boolean} onlyShutable filter the result only of shutable resources if set to true - default false.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 const get = async function (
-  props = { hash: undefined, onlyShutable: false },
+  props,
   fetch = kapi.fetch
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-    onlyShutable: false,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-
-  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${props.hash}/deployments?labelSelector=type=Deployment,hash=${props.hash},shutable=${props.onlyShutable ? 'true' : 'false'}`;
-  return await Promise.resolve(fetch({ url, method: 'GET' })).then((res) => {
-    if (res === 'Kubernetes is not activated.') return { result: res };
-    return {
-      result: res.items.map((item) => item.metadata.name),
-      type: 'Deployments',
-      onlyShutable: props.onlyShutable,
-    };
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    onlyShutable: z.boolean().default(false)
   });
+  const data = Guard.validateProps(schema, props);
+  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/deployments?labelSelector=type=Deployment,hash=${data.hash},shutable=${data.onlyShutable ? 'true' : 'false'}`;
+  return await fetch({ url, method: 'GET' })
+    .then((res) => {
+      if (res === 'Kubernetes is not activated.') return { result: res };
+      return {
+        result: res.items.map((item) => item.metadata.name),
+        type: 'Deployments',
+        onlyShutable: data.onlyShutable,
+      };
+    });
 };
 
 /**
  * Private function that will execute the deletion of the deployment in the Kubernetes cluster.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique has the application.
+ * @param {String} name name of the application to delete.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 const del = async function (
-  props = { name: undefined, hash: undefined },
+  props,
   fetch = kapi.fetch
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    name: undefined,
-    hash: undefined,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!Guard.check_libelle(props.name))
-    throw new ParameterMisformed('The props.name parameter is misformed.');
-
-  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${props.hash}/deployments/${props.name}`;
-  return await Promise.resolve(fetch({ url, method: 'DELETE' })).then((res) => {
-    return {
-      result: res,
-      type: 'Deployment',
-      name: `${props.name}`,
-    };
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    name: z.string()
   });
+  const data = Guard.validateProps(schema, props);
+  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/deployments/${data.name}`;
+  return await Promise.resolve(fetch({ url, method: 'DELETE' }))
+    .then((res) => (
+      {
+        result: res,
+        type: 'Deployment',
+        name: `${data.name}`,
+      }));
 };
 
 /**
  * Private function that will execute the update of the scale on the Kubernetes API.
- * @param {*} param0
- * @returns
+ * @param {String} hash unique has the application.
+ * @param {String} name name of the application to delete.
+ * @param {Number} replicas count of replicas of the application we want.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 const put = async function (
-  props = { name: undefined, hash: undefined, replicas: 1 },
+  props,
   fetch = kapi.fetch
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    name: undefined,
-    hash: undefined,
-    replicas: 1,
-  };
-  if (Guard.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${Guard.check_props(expected_props, props)}) are missing.`
-    );
-  if (!Guard.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  if (!Guard.check_libelle(props.name))
-    throw new ParameterMisformed('The props.name parameter is misformed.');
-
+  const schema = z.object({
+    hash: z.string().min(8).max(8),
+    name: z.string(),
+    replicas: z.number().default(1)
+  });
+  const data = Guard.validateProps(schema, props);
   const body = {
     kind: 'Scale',
     apiVersion: 'autoscaling/v1',
     metadata: {
-      name: `${props.name}`,
-      namespace: `n${props.hash}`,
+      name: `${data.name}`,
+      namespace: `n${data.hash}`,
     },
     spec: {
-      replicas: props.replicas,
+      replicas: data.replicas,
     },
   };
-  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${props.hash}/deployments/${props.name}/scale`;
-  return await Promise.resolve(fetch({ url, body, method: 'PUT' })).then(
-    (res) => {
-      return {
+  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/deployments/${data.name}/scale`;
+  return await fetch({ url, body, method: 'PUT' })
+    .then(
+      (res) => ({
         result: res,
         type: 'Deployment',
-        name: `${props.name}`,
-      };
-    }
-  );
+        name: `${data.name}`,
+      }
+      )
+    );
 };
 
 const test_exports = {};
