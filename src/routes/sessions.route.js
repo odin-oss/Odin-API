@@ -1,10 +1,6 @@
 import express from 'express';
 import * as session_controller from '../controllers/sessions.controller.js';
-import {
-  isTokenValid,
-  isAdmin,
-  isProfOrAdmin,
-} from '../utils/token.util.js';
+import { isTokenValid, isAdmin, isProfOrAdmin } from '../utils/token.util.js';
 
 const router = express.Router();
 

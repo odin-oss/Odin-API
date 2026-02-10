@@ -1,6 +1,6 @@
-import moment from "moment-timezone";
+import moment from 'moment-timezone';
 import logs from '../middlewares/winston.js';
-import CONFIG from "../config/config.js";
+import CONFIG from '../config/config.js';
 
 export class ApiResponse {
   /**
@@ -21,7 +21,7 @@ export class ApiResponse {
    * Static helper for 2xx responses
    */
   static success(req, res, data, status = 200, message = 'Request successful') {
-    logs.info(`[${req.method}][200] ${req.originalUrl} : ${message}`)
+    logs.info(`[${req.method}][200] ${req.originalUrl} : ${message}`);
     res.status(status).json(new ApiResponse(true, data, null, message));
   }
 
@@ -37,6 +37,8 @@ export class ApiResponse {
     logs.error(
       `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
     );
-    res.status(status).json(new ApiResponse(false, null, errorBody, err.message));
+    res
+      .status(status)
+      .json(new ApiResponse(false, null, errorBody, err.message));
   }
 }

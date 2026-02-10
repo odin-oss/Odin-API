@@ -29,7 +29,7 @@ export class Application_export {
 
   // Zod Schema for object validation
   static schema = z.object({
-    id_export: z.number().int().optional(),
+    id_export: z.number().int().optional().nullable(),
     id_application: z.number().int().optional(),
     init_date: z
       .string()

@@ -20,9 +20,7 @@ const storage = multer.diskStorage({
   },
   filename: async function (req, file, cb) {
     // Custom filename: e.g., timestamp-originalname
-    const uniqueSuffix = await Promise.resolve(
-      generate_unique_hash()
-    );
+    const uniqueSuffix = await Promise.resolve(generate_unique_hash());
     const ext = path.extname(file.originalname); // preserve original file extension
 
     cb(null, `img-${uniqueSuffix}${ext}`);

@@ -41,10 +41,7 @@ export const parsing_generic_tags = function (
     throw new ParameterMisformed(
       'The custom_values.username parameter is misformed.'
     );
-  if (
-    !Guard.check_libelle(custom_values.target) &&
-    custom_values.target !== ''
-  )
+  if (!Guard.check_libelle(custom_values.target) && custom_values.target !== '')
     throw new ParameterMisformed(
       'The custom_values.target parameter is misformed.'
     );

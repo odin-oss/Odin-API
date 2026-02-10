@@ -21,7 +21,16 @@ export const list = async (
   counter.inc();
 
   //Request
-  await fns.datacenter_list()
-    .then(dcs => ApiResponse.success(req, res, dcs.map((dc) => dc.public_format()), 200, 'List of datacenters transmitted.'))
-    .catch(err => ApiResponse.error(req, res, err));
+  await fns
+    .datacenter_list()
+    .then((dcs) =>
+      ApiResponse.success(
+        req,
+        res,
+        dcs.map((dc) => dc.public_format()),
+        200,
+        'List of datacenters transmitted.'
+      )
+    )
+    .catch((err) => ApiResponse.error(req, res, err));
 };

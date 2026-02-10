@@ -21,7 +21,16 @@ export const list = async function (
   counter.inc();
 
   //Request
-  await fns.environment_list()
-    .then(environments => ApiResponse.success(req, res, environments.map((env) => env.public_format()), 200, 'List of environments transmitted.'))
-    .catch(err => ApiResponse.error(req, res, err));
+  await fns
+    .environment_list()
+    .then((environments) =>
+      ApiResponse.success(
+        req,
+        res,
+        environments.map((env) => env.public_format()),
+        200,
+        'List of environments transmitted.'
+      )
+    )
+    .catch((err) => ApiResponse.error(req, res, err));
 };

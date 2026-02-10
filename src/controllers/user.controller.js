@@ -26,9 +26,20 @@ export const me = async function (
   //Request
   try {
     const id_user = token.getUserId({ token: req.headers['authorization'] });
-    await fns.user_get({ id_user })
-      .then(user => ApiResponse.success(req, res, user.public_format(), 200, 'Informations transmitted.'))
-  } catch (err) { ApiResponse.error(req, res, err); }
+    await fns
+      .user_get({ id_user })
+      .then((user) =>
+        ApiResponse.success(
+          req,
+          res,
+          user.public_format(),
+          200,
+          'Informations transmitted.'
+        )
+      );
+  } catch (err) {
+    ApiResponse.error(req, res, err);
+  }
 };
 
 /**
@@ -53,14 +64,23 @@ export const update_password = async function (
   try {
     Guard.check_body(req, ['old_password', 'password']);
     const id_user = token.getUserId({ token: req.headers['authorization'] });
-    await fns.user_update_password({
-      id_user,
-      old_password: req.body.old_password,
-      password: req.body.password,
-    })
-      .then(user => ApiResponse.success(req, res, user.public_format(), 200, 'Password changed.'))
-  } catch (err) { 
-    ApiResponse.error(req, res, err); 
+    await fns
+      .user_update_password({
+        id_user,
+        old_password: req.body.old_password,
+        password: req.body.password,
+      })
+      .then((user) =>
+        ApiResponse.success(
+          req,
+          res,
+          user.public_format(),
+          200,
+          'Password changed.'
+        )
+      );
+  } catch (err) {
+    ApiResponse.error(req, res, err);
   }
 };
 
@@ -89,9 +109,18 @@ export const list = async function (
       throw new ParameterMisformed(
         'The req.query.user_role parameter is misformed.'
       );
-    await fns.user_list({ user_role: req.query.user_role })
-      .then(users => ApiResponse.success(req, res, users.map((user) => user.public_format()), 200, 'List of users transmitted.'));
-  } catch (err) { ApiResponse.error(req, res, err) }
+    await fns.user_list({ user_role: req.query.user_role }).then((users) =>
+      ApiResponse.success(
+        req,
+        res,
+        users.map((user) => user.public_format()),
+        200,
+        'List of users transmitted.'
+      )
+    );
+  } catch (err) {
+    ApiResponse.error(req, res, err);
+  }
 };
 
 /**
@@ -123,13 +152,18 @@ export const create = async function (
     ]);
     if (!['PROFESSEUR', 'ETUDIANT'].includes(req.body.role))
       throw new ParameterMisformed('The req.body.role parameter is misformed.');
-    await
-      fns.create({
+    await fns
+      .create({
         mail: req.body.mail,
         pwd: req.body.password,
         role: req.body.role,
         lastname: req.body.lastname,
         firstname: req.body.firstname,
-      }).then(u => ApiResponse.success(req, res, u.public_format(), 201, 'User created.'));
-  } catch (err) { ApiResponse.error(req, res, err); }
+      })
+      .then((u) =>
+        ApiResponse.success(req, res, u.public_format(), 201, 'User created.')
+      );
+  } catch (err) {
+    ApiResponse.error(req, res, err);
+  }
 };

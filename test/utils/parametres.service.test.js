@@ -250,28 +250,23 @@ describe('Guard.ce.check_key()', () => {
 });
 describe('Guard.ce.check_email()', () => {
   it('called with correct mail format and should return true.', () => {
-    chai.expect(Guard._email('benoit.lefebvre@getcaelus.cloud')).to.be
-      .true;
+    chai.expect(Guard._email('benoit.lefebvre@getcaelus.cloud')).to.be.true;
   });
   it('called with not correct mail format and should return false.', () => {
-    chai.expect(Guard._email('benoit.lefebvre@getcaelus')).to.be
-      .false;
+    chai.expect(Guard._email('benoit.lefebvre@getcaelus')).to.be.false;
   });
 });
 describe('Guard.ce.state_changed_date()', () => {
   it('called with a correct moment date and should return true.', () => {
-    chai.expect(Guard._changed_date(moment.tz(CONFIG.APP_TZ))).to.be
-      .true;
+    chai.expect(Guard._changed_date(moment.tz(CONFIG.APP_TZ))).to.be.true;
   });
   it('called with a future moment date and should return false.', () => {
-    chai.expect(
-      Guard._changed_date(moment.tz(CONFIG.APP_TZ).add(2, 'days'))
-    ).to.be.false;
+    chai.expect(Guard._changed_date(moment.tz(CONFIG.APP_TZ).add(2, 'days'))).to
+      .be.false;
   });
   it('called with a not moment date and should return false.', () => {
-    chai.expect(
-      Guard._changed_date("moment.tz(CONFIG.APP_TZ).add(2, 'days')")
-    ).to.be.false;
+    chai.expect(Guard._changed_date("moment.tz(CONFIG.APP_TZ).add(2, 'days')"))
+      .to.be.false;
   });
 });
 describe('Guard.ce.check_password()', () => {

@@ -21,7 +21,16 @@ export const list = async function (
   counter.inc();
 
   //Request
-  await fns.category_list()
-    .then(categories => ApiResponse.success(req, res, categories.map((category) => category.public_format()), 200, 'List of categories transmitted.'))
-    .catch(err => ApiResponse.error(req, res, err));
+  await fns
+    .category_list()
+    .then((categories) =>
+      ApiResponse.success(
+        req,
+        res,
+        categories.map((category) => category.public_format()),
+        200,
+        'List of categories transmitted.'
+      )
+    )
+    .catch((err) => ApiResponse.error(req, res, err));
 };

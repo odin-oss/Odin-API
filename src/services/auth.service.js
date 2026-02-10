@@ -35,13 +35,11 @@ export const connect = async function (
   if (!Guard.check_email(props.mail))
     throw new ParameterMisformed('The props.mail parameter is misformed.');
 
-  return await fns.user_get({ mail: props.mail }).then(
-    (user) => {
-      if (!bcrypt.compareSync(props.password, user.pwd))
-        throw new BadCredentials('The credentials you entered are wrong.');
-      return token.generateToken({ id_user: user.id_user });
-    }
-  );
+  return await fns.user_get({ mail: props.mail }).then((user) => {
+    if (!bcrypt.compareSync(props.password, user.pwd))
+      throw new BadCredentials('The credentials you entered are wrong.');
+    return token.generateToken({ id_user: user.id_user });
+  });
 };
 
 /**
@@ -68,5 +66,7 @@ export const role = async function (
     );
   if (!Guard.check_id(props.id_user))
     throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  return await fns.user_get({ id_user: props.id_user }).then(user => user.role);
+  return await fns
+    .user_get({ id_user: props.id_user })
+    .then((user) => user.role);
 };

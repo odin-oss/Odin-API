@@ -1,16 +1,16 @@
 import {
   BadTypeArgumentError,
   MissingArgumentError,
-  ParameterMisformed
+  ParameterMisformed,
 } from './errors.util.js';
 import logs from '../middlewares/winston.js';
 
 export default class Guard {
   /**
    * Validate the properties of an object with a zod schema and throw an error if the validation fails.
-   * @param {ZodSchema} schema 
-   * @param {Object} props 
-   * @returns 
+   * @param {ZodSchema} schema
+   * @param {Object} props
+   * @returns
    */
   static validateProps = function (schema, props) {
     const result = schema.safeParse(props);
@@ -26,7 +26,6 @@ export default class Guard {
     }
     return result.data;
   };
-
 
   /**
    * Check what arguments you have into the request's query & get list of missing ones.

@@ -1,8 +1,6 @@
 import * as user_builder from '../builders/user.builder.js';
 import { User } from '../objects/User.js';
-import {
-  BadCredentials
-} from '../utils/errors.util.js';
+import { BadCredentials } from '../utils/errors.util.js';
 import bcrypt from 'bcrypt';
 import { role_by_label } from '../builders/auth.builder.js';
 import z from 'zod';

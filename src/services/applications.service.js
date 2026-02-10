@@ -18,7 +18,11 @@ import {
 } from '../utils/errors.util.js';
 import { History } from '../objects/History.js';
 import Guard from '../utils/guard.util.js';
-import { generate_label, generate_unique_hash, generate_unique_label } from './randomdictonary.service.js';
+import {
+  generate_label,
+  generate_unique_hash,
+  generate_unique_label,
+} from './randomdictonary.service.js';
 
 /**
  * Service that will get all the informations about an application.
@@ -180,16 +184,20 @@ export const update_state = async function (
       "The props.state_application must be in ['Off','Ready']."
     );
   // We get the app
-  const application = await fns.application_get({ id_application: props.id_application });
+  const application = await fns.application_get({
+    id_application: props.id_application,
+  });
 
   // We get the corresponding datacenter
-  const datacenter = await fns.datacenter_get({ id_datacenter: application.datacenter.id_datacenter });
+  const datacenter = await fns.datacenter_get({
+    id_datacenter: application.datacenter.id_datacenter,
+  });
 
   // we update the app in the db
   await fns.application_update({
-      id_application: props.id_application,
-      state_application: props.state_application,
-    });
+    id_application: props.id_application,
+    state_application: props.state_application,
+  });
 
   const promises = [];
   // We get the updated database

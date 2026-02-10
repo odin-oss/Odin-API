@@ -24,7 +24,7 @@ export class User {
     id_user: z.number().int().optional(),
     lastname: z.string().min(1),
     firstname: z.string().min(1),
-    mail: z.string().email({ message: 'Invalid email address' }),
+    mail: z.email('Invalid email address'),
     role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
     pwd: z.string().min(8).optional(),
   });

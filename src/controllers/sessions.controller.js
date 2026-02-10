@@ -73,7 +73,8 @@ export const create = async (
         'The req.body.label_application parameter is misformed.'
       );
 
-    await fns.session_create({
+    await fns
+      .session_create({
         label_session: req.body.label_session,
         label_application: req.body.label_application,
         begin_date: req.body.begin_date,
@@ -83,7 +84,15 @@ export const create = async (
         users: JSON.parse(req.body.users),
         professors: JSON.parse(req.body.professors),
       })
-      .then((session) => ApiResponse.success(req, res, session.public_format(), 200, 'Session started.'));
+      .then((session) =>
+        ApiResponse.success(
+          req,
+          res,
+          session.public_format(),
+          200,
+          'Session started.'
+        )
+      );
   } catch (err) {
     ApiResponse.error(req, res, err);
   }
@@ -110,8 +119,15 @@ export const list = async (
   //Request
   try {
     const id_user = token.getUserId({ token: req.headers['authorization'] });
-    await fns.session_list({ id_user })
-    .then(sessions => ApiResponse.success(req, res, sessions.map((session) => session.public_format()), 200, 'List of sessions transmitted.'));
+    await fns.session_list({ id_user }).then((sessions) =>
+      ApiResponse.success(
+        req,
+        res,
+        sessions.map((session) => session.public_format()),
+        200,
+        'List of sessions transmitted.'
+      )
+    );
   } catch (err) {
     ApiResponse.error(req, res, err);
   }
@@ -144,8 +160,17 @@ export const get = async (
         'The req.query.id_session parameter is misformed.'
       );
     const id_user = token.getUserId({ token: req.headers['authorization'] });
-    await fns.session_get({ id_session: req.query.id_session, id_user })
-    .then(session => ApiResponse.success(req, res, session.public_format(), 200, 'Session transmitted.'));
+    await fns
+      .session_get({ id_session: req.query.id_session, id_user })
+      .then((session) =>
+        ApiResponse.success(
+          req,
+          res,
+          session.public_format(),
+          200,
+          'Session transmitted.'
+        )
+      );
   } catch (err) {
     ApiResponse.error(req, res, err);
   }

@@ -1,7 +1,10 @@
 import { nameExists, hashExists } from '../builders/applications.builder.js';
 import * as random_dictionary_builder from '../builders/randomdictionary.builder.js';
 import * as crypto from 'crypto';
-import { MissingArgumentError, ParameterMisformed } from '../utils/errors.util.js';
+import {
+  MissingArgumentError,
+  ParameterMisformed,
+} from '../utils/errors.util.js';
 import Guard from '../utils/guard.util.js';
 
 /**

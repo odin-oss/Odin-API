@@ -25,9 +25,18 @@ export const connect = async (
   // Vérification du contenu de la requête
   try {
     Guard.check_body(req, ['mail', 'password']);
-    await fns.auth_connect({ mail: req.body.mail, password: req.body.password })
-    .then(token => ApiResponse.success(req, res, { token }, 200, 'Authentication successful'))
+    await fns
+      .auth_connect({ mail: req.body.mail, password: req.body.password })
+      .then((token) =>
+        ApiResponse.success(
+          req,
+          res,
+          { token },
+          200,
+          'Authentication successful'
+        )
+      );
   } catch (err) {
-    ApiResponse.error(req,res,err);
+    ApiResponse.error(req, res, err);
   }
 };
