@@ -70,8 +70,7 @@ export const update_password = async function (
         old_password: req.body.old_password,
         password: req.body.password,
       })
-      .then((user) =>
-
+      .then(() =>
         ApiResponse.success(
           req,
           res,
