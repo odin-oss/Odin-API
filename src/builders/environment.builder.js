@@ -57,7 +57,10 @@ export const list = async function () {
         }
       }
       return result;
-    }).catch((err) => { throw dbManager.sequelizeErrorManagement(err) });
+    })
+    .catch((err) => {
+      throw dbManager.sequelizeErrorManagement(err);
+    });
 };
 
 /**
@@ -68,7 +71,7 @@ export const list = async function () {
 export const get = async function (props) {
   try {
     const schema = z.object({
-      id_environment: z.number().positive().optional()
+      id_environment: z.number().positive().optional(),
     });
     const data = Guard.validateProps(schema, props);
     const queryOptions = {
@@ -123,8 +126,9 @@ export const get = async function (props) {
         },
       ],
     };
-    return await dbManager.models.ENVIRONMENT_HAS_INTERFACE.findAll(queryOptions)
-    .then((r) => {
+    return await dbManager.models.ENVIRONMENT_HAS_INTERFACE.findAll(
+      queryOptions
+    ).then((r) => {
       let result;
       for (let env of r) {
         const options = {
@@ -139,16 +143,16 @@ export const get = async function (props) {
           node_selectors: env.INTERFACE.INTERFACE_HAS_NODE_SELECTORs.map(
             (ins) => ({
               ...ins.NODE_SELECTOR,
-              id_node_selector: ins.id_node_selector
+              id_node_selector: ins.id_node_selector,
             })
           ),
           ports: env.INTERFACE.INTERFACE_HAS_PORTs.map((ihp) => ({
             ...ihp,
-            port_type: ihp.PORT_TYPE.label
+            port_type: ihp.PORT_TYPE.label,
           })),
           envs: env.INTERFACE.INTERFACE_HAS_VARIABLEs.map((ihv) => ({
             ...ihv.VARIABLE_ENVIRONMENT,
-            id_variable_environment: ihv.id_variable_environment
+            id_variable_environment: ihv.id_variable_environment,
           })),
         };
         if (result === undefined) {

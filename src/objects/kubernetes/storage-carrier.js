@@ -1,7 +1,7 @@
 import z from 'zod';
 import CONFIG from '../../config/config.js';
 import * as kapi from '../../modules/kapi.module.js';
-import Guard from '../../utils/guard.service.js';
+import Guard from '../../utils/guard.util.js';
 
 /**
  * Function that will launch a Smash export for a given environment.
@@ -25,10 +25,7 @@ import Guard from '../../utils/guard.service.js';
  * @param {Function} fetch functions to overwrite for unit testing.
  * @returns {JSON}
  */
-export const smashExport = async function (
-  props,
-  fetch = kapi.fetch
-) {
+export const smashExport = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
     upload_id: z.string(),
@@ -46,10 +43,10 @@ export const smashExport = async function (
     availability: z.string(),
     sender_name: z.string(),
     sender_email: z.email(),
-    receiver_email: z.email()
+    receiver_email: z.email(),
   });
   const data = Guard.validateProps(schema, props);
-  
+
   // kapi request
   const body = {
     metadata: {
@@ -137,13 +134,9 @@ export const smashExport = async function (
     },
   };
   const url = `${CONFIG.KUBERNETES_URL}/apis/batch/v1/namespaces/n${data.hash}/jobs`;
-  return await fetch({ url, method: 'POST', body })
-    .then(
-      (res) => ({
-        result: res,
-        type: 'Job',
-        name: `storage-carrier-${data.hash}-${data.upload_id}`,
-      }
-      )
-    );
+  return await fetch({ url, method: 'POST', body }).then((res) => ({
+    result: res,
+    type: 'Job',
+    name: `storage-carrier-${data.hash}-${data.upload_id}`,
+  }));
 };

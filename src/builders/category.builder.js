@@ -37,7 +37,7 @@ export const list = async function () {
               ...category.CATEGORY,
               environments: [
                 new Environment({
-                  ...category.ENVIRONMENT
+                  ...category.ENVIRONMENT,
                 }),
               ],
             })

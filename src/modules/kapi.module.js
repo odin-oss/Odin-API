@@ -1,6 +1,5 @@
 import CONFIG from '../config/config.js';
 import * as nf from 'node-fetch';
-import fs from 'fs/promises';
 import {
   ConnetexKubernetesAPIError,
   KubernetesAPIInvalidURL,
@@ -41,10 +40,8 @@ export const fetch = async function (
     method,
   };
 
-  // add agent only on production envs
-  if (CONFIG.APP_ENVIRONMENT !== 'local' && CONFIG.APP_ENVIRONMENT !== 'test') {
-    options.agent = CONFIG.KUBERNETES_AGENT;
-  }
+  // add agent
+  options.agent = CONFIG.KUBERNETES_AGENT;
 
   // add body on nonGET and nonDELETE method request
   if (method !== 'GET' && method !== 'DELETE') {
@@ -53,9 +50,8 @@ export const fetch = async function (
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const res = await Promise.resolve(fetch(url, options));
+      const res = await fetch(`${CONFIG.KUBERNETES_URL}${url}`, options);
       const contentType = res.headers.get('content-type');
-
       if (res.status === 429 || res.status === 504 || res.status === 502)
         throw new KubernetesAPITimedOut(
           'Kubernetes API timed out or bad gateway'
@@ -80,24 +76,8 @@ export const fetch = async function (
         if (data.reason === 'AlreadyExists')
           throw new ObjectsAlreadyExistsError(data.message);
       }
-      fs.appendFile(
-        './src/tmp_deployment/kapi.log',
-        JSON.stringify(data) + '\n',
-        'utf8'
-      );
       return data;
     } catch (err) {
-      fs.appendFile(
-        './src/tmp_deployment/kapi.log',
-        JSON.stringify(err) + '\n',
-        'utf8'
-      );
-      fs.appendFile(
-        './src/tmp_deployment/kapi.log',
-        JSON.stringify('retrying for attempt ' + attempt + '/' + retries) +
-          '\n',
-        'utf8'
-      );
       if (attempt < retries) {
         // Wait before retrying
         await new Promise((resolve) => setTimeout(resolve, retryDelay));

@@ -14,13 +14,13 @@ import Guard from '../utils/guard.util.js';
 export const smash_module = async (
   props,
   fns = {
-    fetch
+    fetch,
   }
 ) => {
   const schema = z.object({
     route: z.string(),
-    method: z.enum(["get", "post", "delete"]),
-    body: z.object().default({})
+    method: z.enum(['get', 'post', 'delete']),
+    body: z.json().default({}),
   });
   const data = Guard.validateProps(schema, props);
   const smash_version = '01-2024';
@@ -37,14 +37,14 @@ export const smash_module = async (
     },
   };
 
-  return await fns.fetch(url, opt)
+  return await fns.fetch(url, opt);
 };
 
 /**
  * Delete transfer from Smash API.
  * @param {Number} transfer_id transfer id to identify the transfer to delete from Smash API.
  * @param {Function} fns functions to overwrite for unit testing.
- * @returns {JSON} 
+ * @returns {JSON}
  */
 export const exec_transfer_deletion = async (
   props,
@@ -53,12 +53,13 @@ export const exec_transfer_deletion = async (
   }
 ) => {
   const schema = z.object({
-    transfer_id: z.string()
+    transfer_id: z.string(),
   });
   const data = Guard.validateProps(schema, props);
-  return await fns.smash_module({
+  return await fns
+    .smash_module({
       route: `/transfer/${data.transfer_id}`,
       method: 'delete',
-    }
-  ).then((response) => response.json());
+    })
+    .then((response) => response.json());
 };

@@ -20,11 +20,10 @@ export const connect = async function (
 ) {
   const schema = z.object({
     mail: z.email(),
-    password: z.string().min(1)
+    password: z.string().min(1),
   });
   const data = Guard.validateProps(schema, props);
-  return await fns.user_get({ mail: data.mail })
-  .then((user) => {
+  return await fns.user_get({ mail: data.mail }).then((user) => {
     if (!bcrypt.compareSync(data.password, user.pwd))
       throw new BadCredentials('The credentials you entered are wrong.');
     return token.generateToken({ id_user: user.id_user });
@@ -44,9 +43,8 @@ export const role = async function (
   }
 ) {
   const schema = z.object({
-    id_user: z.number().positive()
+    id_user: z.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
-  return await fns.user_get({ ...data })
-    .then((user) => user.role);
+  return await fns.user_get({ ...data }).then((user) => user.role);
 };

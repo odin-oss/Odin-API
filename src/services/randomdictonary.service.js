@@ -16,11 +16,10 @@ export const generate_label = async (
   fns = { dictionary_list: random_dictionary_builder.list }
 ) => {
   const schema = z.object({
-    count: z.number().default(3)
+    count: z.number().default(3),
   });
   const data = Guard.validateProps(schema, props);
-  return await fns.dictionary_list()
-  .then((dictionary) => {
+  return await fns.dictionary_list().then((dictionary) => {
     let result = '';
     for (let i = 0; i < data.count; i++) {
       result =
@@ -48,7 +47,7 @@ export const generate_unique_label = async (
   }
 ) => {
   const schema = z.object({
-    count: z.number().default(3)
+    count: z.number().default(3),
   });
   const data = Guard.validateProps(schema, props);
   let label = '';

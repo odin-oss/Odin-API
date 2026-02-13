@@ -4,8 +4,8 @@ import * as application_service from './applications.service.js';
 import * as storage_builder from '../builders/storage.builder.js';
 import * as environment_builder from '../builders/environment.builder.js';
 import * as user_builder from '../builders/user.builder.js';
+import { smashExport } from '../objects/kubernetes/storage-carrier.js';
 import CONFIG from '../config/config.js';
-import { exec_smash_export } from '../modules/ms-deployment.module.js';
 import { exec_transfer_deletion } from '../modules/smash-api.module.js';
 import {
   ParameterMisformed,
@@ -29,7 +29,7 @@ export const getStorage = async function (
   }
 ) {
   const schema = z.object({
-    id_application: z.number().positive()
+    id_application: z.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
   const promises = [fns.get_storage({ ...data })];
@@ -52,14 +52,14 @@ export const exportStorage = async function (
     application_get: application_service.get,
     get_application_export: storage_builder.getNonErrorApplicationStorage,
     storage_create: storage_builder.create,
-    exec_smash_export: exec_smash_export,
+    exec_smash_export: smashExport,
     service_delete_storage: deleteStorage,
   }
 ) {
   const schema = z.object({
     id_application: z.number().positive(),
     delete_existing_export: z.boolean().optional(),
-    app_deletion: z.boolean().default(false)
+    app_deletion: z.boolean().default(false),
   });
   const data = Guard.validateProps(schema, props);
   let previous_export_deleted = false;
@@ -94,7 +94,7 @@ export const exportStorage = async function (
   ) {
     throw new StorageAlreadyExists(
       'An Export is already in progress. Current status: ' +
-      applicationStorage.status
+        applicationStorage.status
     );
   }
 
@@ -174,7 +174,7 @@ export const deleteStorage = async function (
 ) {
   const schema = z.object({
     id_application: z.number().positive(),
-    id_export: z.number().positive()
+    id_export: z.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
   const application_export = await fns.export_get({ ...data });

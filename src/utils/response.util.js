@@ -12,7 +12,12 @@ export class ApiResponse {
    * @param {moment} timestamp - Timestamp for when the response was created
    */
   constructor(success, data = null, error = null, message = null) {
-    const zod = Guard.validateProps(ApiResponse.schema, {success,data,error,message});
+    const zod = Guard.validateProps(ApiResponse.schema, {
+      success,
+      data,
+      error,
+      message,
+    });
     this.success = zod.success;
     this.message = zod.message;
     this.data = zod.data;
@@ -24,8 +29,8 @@ export class ApiResponse {
   static schema = z.object({
     success: z.boolean(),
     message: z.string(),
-    data: z.object().nullable(),
-    error: z.object().nullable()
+    data: z.json().nullable(),
+    error: z.json().nullable(),
   });
 
   /**

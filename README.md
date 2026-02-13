@@ -47,9 +47,6 @@ You may need to deploy your database psql image (from [Caelus](https://gitlab.co
 
 # Modules
 
-## MS-Deployment
-
-**src/modules/ms-deployment.module.js** is used to send deployment request directly to MS-Deployment. 
 
 ### Plasma environment
 

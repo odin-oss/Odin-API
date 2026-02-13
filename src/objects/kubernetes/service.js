@@ -21,13 +21,13 @@ export const deletion = async function (
   fns = { get_service: get, delete_service: del }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
-  const list = fns.get_service({ ...data, onlyShutable: true }).then((r) => r.result);
-  const promises = list.map((name) =>
-    fns.delete_service({ ...data, name })
-  );
+  const list = fns
+    .get_service({ ...data, onlyShutable: true })
+    .then((r) => r.result);
+  const promises = list.map((name) => fns.delete_service({ ...data, name }));
   return await Promise.all(promises);
 };
 /**
@@ -41,17 +41,14 @@ export const deletion = async function (
  * @param {Function} fetch functions to overwrite for unit testing.
  * @returns {JSON}
  */
-export const create = async function (
-  props,
-  fetch = kapi.fetch
-) {
+export const create = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
     label: z.string(),
     port_externe: z.number().positive(),
     port_interne: z.number().positive(),
     type: z.instanceof(SVC_TYPE).default(SVC_TYPE.CLUSTERIP),
-    shutable: z.boolean().default(true)
+    shutable: z.boolean().default(true),
   });
   const data = Guard.validateProps(schema, props);
   const prefix = data.type === SVC_TYPE.CLUSTERIP ? 'ci' : 'lb';
@@ -85,14 +82,11 @@ export const create = async function (
     },
   };
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/services`;
-  return await fetch({ url, method: 'POST', body })
-    .then(
-      (res) => ({
-        result: res,
-        type: 'Service',
-        name: `${prefix}${data.label}${data.hash}${data.port_externe}`,
-      })
-    );
+  return await fetch({ url, method: 'POST', body }).then((res) => ({
+    result: res,
+    type: 'Service',
+    name: `${prefix}${data.label}${data.hash}${data.port_externe}`,
+  }));
 };
 
 /**
@@ -102,23 +96,18 @@ export const create = async function (
  * @param {Function} fetch functions to overwrite for unit testing.
  * @returns {JSON}
  */
-const get = async function (
-  props,
-  fetch = kapi.fetch
-) {
+const get = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
-    onlyShutable: z.boolean().default(true)
+    onlyShutable: z.boolean().default(true),
   });
   const data = Guard.validateProps(schema, props);
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/services?labelSelector=hash=${data.hash},shutable=${data.onlyShutable ? 'true' : 'false'}`;
-  return await fetch({ url, method: 'GET' })
-    .then((res) => ({
-      result: res.items.map((item) => item.metadata.name),
-      type: 'Services',
-      onlyShutable: data.onlyShutable,
-    }
-    ));
+  return await fetch({ url, method: 'GET' }).then((res) => ({
+    result: res.items.map((item) => item.metadata.name),
+    type: 'Services',
+    onlyShutable: data.onlyShutable,
+  }));
 };
 /**
  * Private function that executes the deleteion of the service in the Kubernetes API.
@@ -127,23 +116,18 @@ const get = async function (
  * @param {Function} fetch functions to overwrite for unit testing.
  * @returns {JSON}
  */
-const del = async function (
-  props,
-  fetch = kapi.fetch
-) {
+const del = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
-    name: z.string()
+    name: z.string(),
   });
   const data = Guard.validateProps(schema, props);
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/services/${data.name}`;
-  return await fetch({ url, method: 'DELETE' })
-    .then((res) => ({
-      result: res,
-      type: 'Service',
-      name: `${data.name}`,
-    }
-    ));
+  return await fetch({ url, method: 'DELETE' }).then((res) => ({
+    result: res,
+    type: 'Service',
+    name: `${data.name}`,
+  }));
 };
 
 const test_exports = {};

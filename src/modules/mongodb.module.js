@@ -11,15 +11,15 @@ import Guard from '../utils/guard.util.js';
 export const saveApplication = async function (
   props,
   fns = {
-    mongodb
+    mongodb,
   }
 ) {
   const schema = z.object({
-    application: z.array(Object)
+    application: z.array(Object),
   });
   const data = Guard.validateProps(schema, props);
   const schema_app = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data_app = Guard.validateProps(schema_app, props);
   const mdb = await fns.mongodb.getInstance();
@@ -43,7 +43,7 @@ export const updateApplication = async function (
 ) {
   const schema = z.object({
     hash: z.string().min(8),
-    state: z.enum(['started', 'shutted', 'Getting Ready'])
+    state: z.enum(['started', 'shutted', 'Getting Ready']),
   });
   const data = Guard.validateProps(schema, props);
   const mdb = await fns.mongodb.getInstance();
@@ -54,7 +54,7 @@ export const updateApplication = async function (
 };
 /**
  * Function that will delete the statefile from the MDB collection.
- * @param {String} hash unique hash to identify the application to delete. 
+ * @param {String} hash unique hash to identify the application to delete.
  * @param {Function} fns functions to overwrite for unit testing.
  * @returns {String}
  */
@@ -65,7 +65,7 @@ export const deleteApplication = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8)
+    hash: z.string().min(8),
   });
   const data = Guard.validateProps(schema, props);
   const mdb = await fns.mongodb.getInstance();

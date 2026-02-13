@@ -1,6 +1,9 @@
 import * as nf from 'node-fetch';
 import CONFIG from '../config/config.js';
-import { AppsIngressErrorNotDefined } from '../utils/errors.util.js';
+import {
+  AppsIngressErrorNotDefined,
+  AppsIngressNotReachable,
+} from '../utils/errors.util.js';
 /**
  * Function used to communicate with the Kubernetes API.
  * @param {*} param0
@@ -36,12 +39,14 @@ export const fetch = async function (
     options.body = raw_body;
   }
   try {
-    const res = await Promise.resolve(fetch(url, options));
+    const res = await fetch(`http://${CONFIG.APPS_INGRESS_URL}${url}`, options);
     if (!res.headers.get('content-type')?.includes('application/json'))
       return { result: 'ok' };
     let data = await res.json();
     return data;
   } catch (err) {
+    if (err instanceof nf.FetchError)
+      throw new AppsIngressNotReachable(err.message);
     throw new AppsIngressErrorNotDefined(err.message);
   }
 };

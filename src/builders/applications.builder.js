@@ -3,7 +3,10 @@ import moment from 'moment-timezone';
 import z from 'zod';
 import CONFIG from '../config/config.js';
 import dbManager from '../config/db.config.js';
-import { DBObjectNotFound, MissingArgumentError } from '../utils/errors.util.js';
+import {
+  DBObjectNotFound,
+  MissingArgumentError,
+} from '../utils/errors.util.js';
 import { Application } from '../objects/Application.js';
 import { Environment } from '../objects/Environment.js';
 import { Datacenter } from '../objects/Datacenter.js';
@@ -23,8 +26,10 @@ export const get = async function (props) {
       key: z.string().optional(),
       hash: z.string().min(8).max(8).optional(),
     });
-    if (!props.id_application && !props.key && !props.hash) 
-      throw new MissingArgumentError("Either id_application, key, hash must be sent.")
+    if (!props.id_application && !props.key && !props.hash)
+      throw new MissingArgumentError(
+        'Either id_application, key, hash must be sent.'
+      );
     const data = Guard.validateProps(schema, props);
     const options = {
       where: {},
@@ -64,13 +69,13 @@ export const get = async function (props) {
 
 /**
  * Get the Application list from id_user.
- * @param {Number} id_user id of the user. 
+ * @param {Number} id_user id of the user.
  * @returns {Array<Application>}
  */
 export const list = async function (props) {
   try {
     const schema = z.object({
-      id_user: z.number().positive()
+      id_user: z.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
@@ -86,20 +91,22 @@ export const list = async function (props) {
         },
       ],
     };
-    return await dbManager.models.APPLICATION.findAll(options)
-      .then(r => r.map((app) =>
-        new Application({
-          ...app,
-          state_application: app.ENUM_STATE_APPLICATION.label,
-          datacenter: new Datacenter({
-            id_datacenter: app.id_datacenter,
-            label: '',
-            city: '',
-            provider: '',
-          }),
-          environment: new Environment(app.ENVIRONMENT),
-        })
-      ));
+    return await dbManager.models.APPLICATION.findAll(options).then((r) =>
+      r.map(
+        (app) =>
+          new Application({
+            ...app,
+            state_application: app.ENUM_STATE_APPLICATION.label,
+            datacenter: new Datacenter({
+              id_datacenter: app.id_datacenter,
+              label: '',
+              city: '',
+              provider: '',
+            }),
+            environment: new Environment(app.ENVIRONMENT),
+          })
+      )
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -110,12 +117,10 @@ export const list = async function (props) {
  * @param {Number} id_application id of the application to renew
  * @returns {Application}
  */
-export const renew_expiration = async function (
-  props
-) {
+export const renew_expiration = async function (props) {
   try {
     const schema = z.object({
-      id_application: z.number().positive()
+      id_application: z.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
@@ -141,9 +146,10 @@ export const renew_expiration = async function (
       },
     };
 
-    return await
-      dbManager.models.APPLICATION.update(opt_update, opt_condition)
-        .then(() => 'The application expiration have been renewed.');
+    return await dbManager.models.APPLICATION.update(
+      opt_update,
+      opt_condition
+    ).then(() => 'The application expiration have been renewed.');
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -162,9 +168,7 @@ export const renew_expiration = async function (
  * @param {String || moment} state_changed_date datatime when the application is started // scheduled - last update of state.
  * @returns { Application }
  */
-export const create = async function (
-  props
-) {
+export const create = async function (props) {
   try {
     const schema = z.object({
       id_user: z.number().positive(),
@@ -180,7 +184,7 @@ export const create = async function (
         .refine((val) => moment(val).isValid(), {
           message: 'Invalid date format',
         })
-        .transform((val) => moment(val).tz(CONFIG.APP_TZ))
+        .transform((val) => moment(val).tz(CONFIG.APP_TZ)),
     });
     const data = Guard.validateProps(schema, props);
     // We find the state from different parameters.
@@ -188,39 +192,44 @@ export const create = async function (
     const esp_options = {
       where: { label: creation_state },
     };
-    const id_enum_state_application = await dbManager.models.ENUM_STATE_APPLICATION.findOne(esp_options)
-      .then((r) => {
-        if (r == null)
-          throw new DBObjectNotFound('The state could not be found.');
-        return r.id_enum_state_application;
-      });
+    const id_enum_state_application =
+      await dbManager.models.ENUM_STATE_APPLICATION.findOne(esp_options).then(
+        (r) => {
+          if (r == null)
+            throw new DBObjectNotFound('The state could not be found.');
+          return r.id_enum_state_application;
+        }
+      );
 
     // We prepare the creation of the application
     const options = {
       ...data,
       id_enum_state_application: id_enum_state_application,
-      custom_label: data.custom_label === '' ? data.generated_label : data.custom_label,
+      custom_label:
+        data.custom_label === '' ? data.generated_label : data.custom_label,
       creation_date: moment.tz(CONFIG.APP_TZ).utc().format(),
       programming_shutdown_date:
         creation_state === 'Ready'
           ? moment(data.state_changed_date)
-            .tz(CONFIG.APP_TZ)
-            .clone()
-            .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 's')
-            .utc()
-            .format() :
-          null
+              .tz(CONFIG.APP_TZ)
+              .clone()
+              .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 's')
+              .utc()
+              .format()
+          : null,
     };
-    return await dbManager.models.APPLICATION.create(options)
-      .then(r => new Application({
-        ...data,
-        datacenter: undefined,
-        environment: new Environment({
-          id_environment: r.id_environment,
-          label: '',
-          icon: '',
-        }),
-      }));
+    return await dbManager.models.APPLICATION.create(options).then(
+      (r) =>
+        new Application({
+          ...data,
+          datacenter: undefined,
+          environment: new Environment({
+            id_environment: r.id_environment,
+            label: '',
+            icon: '',
+          }),
+        })
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -228,38 +237,37 @@ export const create = async function (
 
 /**
  * Check if the user is the owner of the application.
- * @param {Number} id_user id of the user 
+ * @param {Number} id_user id of the user
  * @param {String} key unique key of the application.(optionnal)
- * @param {Number} id_application id of the application 
+ * @param {Number} id_application id of the application
  * @returns {Boolean}
  */
-export const is_owner = async function (
-  props
-) {
+export const is_owner = async function (props) {
   try {
     const schema = z.object({
       id_user: z.number().positive(),
       key: z.string().min(2).optional(),
-      id_application: z.number().positive()
+      id_application: z.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
     const whereOpt =
       data.key === undefined
         ? {
-          [Op.and]: [
-            { id_application: data.id_application },
-            { id_user: data.id_user },
-          ],
-        }
+            [Op.and]: [
+              { id_application: data.id_application },
+              { id_user: data.id_user },
+            ],
+          }
         : {
-          [Op.and]: [
-            { generated_label: data.key },
-            { id_user: data.id_user },
-          ],
-        };
+            [Op.and]: [
+              { generated_label: data.key },
+              { id_user: data.id_user },
+            ],
+          };
 
-    return await dbManager.models.APPLICATION.findOne({ where: whereOpt })
-      .then(r => r != null);
+    return await dbManager.models.APPLICATION.findOne({ where: whereOpt }).then(
+      (r) => r != null
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -273,7 +281,7 @@ export const is_owner = async function (
 export const nameExists = async (props) => {
   try {
     const schema = z.object({
-      name: z.string().min(2)
+      name: z.string().min(2),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
@@ -281,8 +289,9 @@ export const nameExists = async (props) => {
         generated_label: data.name,
       },
     };
-    return await dbManager.models.APPLICATION.findOne(options)
-      .then(r => r != null);
+    return await dbManager.models.APPLICATION.findOne(options).then(
+      (r) => r != null
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -290,21 +299,21 @@ export const nameExists = async (props) => {
 
 /**
  * Builder used to check if the new hash generated is available or already attributed.
- * @param {String} hash hash to check 
+ * @param {String} hash hash to check
  * @returns {Boolean}
  */
 export const hashExists = async (props) => {
   try {
     const schema = z.object({
-      hash: z.string().min(8).max(8)
+      hash: z.string().min(8).max(8),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
       where: { hash: data.hash },
     };
-    return await dbManager.models.APPLICATION.findOne(options)
-      .then(r => r != null)
-
+    return await dbManager.models.APPLICATION.findOne(options).then(
+      (r) => r != null
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -312,23 +321,23 @@ export const hashExists = async (props) => {
 
 /**
  * Delete an application from the database.
- * @param {Number} id_application id of the application to delete. 
+ * @param {Number} id_application id of the application to delete.
  * @returns {Application}
  */
-export const deletion = async function (
-  props
-) {
+export const deletion = async function (props) {
   try {
     const schema = z.object({
-      id_application: z.number().positive()
+      id_application: z.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
     // getting state for label 'Deleted'
     let options = {
       where: { label: 'Deleted' },
     };
-    const id_enum_state_application = await dbManager.models.ENUM_STATE_APPLICATION.findOne(options)
-      .then(r => r.id_enum_state_application);
+    const id_enum_state_application =
+      await dbManager.models.ENUM_STATE_APPLICATION.findOne(options).then(
+        (r) => r.id_enum_state_application
+      );
 
     const opt_update = {
       id_enum_state_application: id_enum_state_application,
@@ -339,8 +348,9 @@ export const deletion = async function (
         id_application: data.id_application,
       },
     };
-    return await dbManager.models.APPLICATION.update(opt_update, options)
-      .then(r => r > 0);
+    return await dbManager.models.APPLICATION.update(opt_update, options).then(
+      (r) => r > 0
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -350,20 +360,20 @@ export const deletion = async function (
  * @param {Number} id_application id of the application.
  * @returns {Boolean}
  */
-export const download_deletion = async function (
-  props
-) {
+export const download_deletion = async function (props) {
   try {
     const schema = z.object({
-      id_application: z.number().positive()
+      id_application: z.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
     // getting state for label 'DeletedLaunch'
     let options = {
       where: { label: 'DeletedLaunch' },
     };
-    const id_enum_state_application = await dbManager.models.ENUM_STATE_APPLICATION.findOne(options)
-      .then(r => r.id_enum_state_application);
+    const id_enum_state_application =
+      await dbManager.models.ENUM_STATE_APPLICATION.findOne(options).then(
+        (r) => r.id_enum_state_application
+      );
 
     const opt_update = {
       id_enum_state_application: id_enum_state_application,
@@ -374,8 +384,9 @@ export const download_deletion = async function (
         id_application: data.id_application,
       },
     };
-    return await dbManager.models.APPLICATION.update(opt_update, options)
-      .then((r) => r > 0);
+    return await dbManager.models.APPLICATION.update(opt_update, options).then(
+      (r) => r > 0
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -383,25 +394,24 @@ export const download_deletion = async function (
 
 /**
  * Change the state of the application.
- * @param {Number} id_application id of the application to update. 
- * @param {String} state_application state of the application 
+ * @param {Number} id_application id of the application to update.
+ * @param {String} state_application state of the application
  * @returns {Boolean}
  */
-export const update_state = async function (
-  props
-) {
-
+export const update_state = async function (props) {
   try {
     const schema = z.object({
       id_application: z.number().positive(),
-      state_application: z.enum(['Off', 'Ready'])
+      state_application: z.enum(['Off', 'Ready']),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
       where: { label: data.state_application },
     };
-    const id_enum_state_application = await dbManager.models.ENUM_STATE_APPLICATION.findOne(options)
-      .then(r => r.id_enum_state_application);
+    const id_enum_state_application =
+      await dbManager.models.ENUM_STATE_APPLICATION.findOne(options).then(
+        (r) => r.id_enum_state_application
+      );
 
     const opt_update = {
       id_enum_state_application: id_enum_state_application,
@@ -409,11 +419,12 @@ export const update_state = async function (
       programming_shutdown_date:
         data.state_application === 'Ready'
           ? moment
-            .tz(CONFIG.APP_TZ)
-            .clone()
-            .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 's')
-            .utc()
-            .format() : null,
+              .tz(CONFIG.APP_TZ)
+              .clone()
+              .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 's')
+              .utc()
+              .format()
+          : null,
     };
     const opt_condition = {
       where: {
@@ -421,7 +432,10 @@ export const update_state = async function (
       },
     };
 
-    return await dbManager.models.APPLICATION.update(opt_update, opt_condition).then((r) => {
+    return await dbManager.models.APPLICATION.update(
+      opt_update,
+      opt_condition
+    ).then((r) => {
       if (r[0] === 0)
         throw new DBObjectNotFound('The application to update does not exist.');
       return r[0] > 0;

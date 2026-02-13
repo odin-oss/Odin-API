@@ -5,40 +5,32 @@ import Guard from '../../utils/guard.util.js';
 
 /**
  * Delete a namespace from kubernetes cluster.
- * @param {String} hash unique hash used to find the application on the cluster. 
+ * @param {String} hash unique hash used to find the application on the cluster.
  * @param {Function} fetch functions to overwrite for unit testing.
  * @returns {JSON}
  */
-export const deletion = async function (
-  props,
-  fetch = kapi.fetch
-) {
+export const deletion = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}`;
-  return await fetch({ url, method: 'DELETE' })
-    .then((res) => ({
-      result: res,
-      type: 'Namespace',
-      name: `n${data.hash}`,
-    })
-    )
+  return await fetch({ url, method: 'DELETE' }).then((res) => ({
+    result: res,
+    type: 'Namespace',
+    name: `n${data.hash}`,
+  }));
 };
 
 /**
  * Create a new namespace on the kubernetes cluster.
- * @param {String} hash unique hash used to find the application on the cluster. 
+ * @param {String} hash unique hash used to find the application on the cluster.
  * @param {Function} fetch functions to overwrite for unit testing.
  * @returns {JSON}
  */
-export const create = async function (
-  props,
-  fetch = kapi.fetch
-) {
+export const create = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
   const body = {
@@ -58,13 +50,9 @@ export const create = async function (
     },
   };
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces`;
-  return await fetch({ url, method: 'POST', body })
-  .then(
-    (res) => ({
-      result: res,
-      type: 'Namespace',
-      name: `n${data.hash}`,
-    }
-    )
-  );
+  return await fetch({ url, method: 'POST', body }).then((res) => ({
+    result: res,
+    type: 'Namespace',
+    name: `n${data.hash}`,
+  }));
 };

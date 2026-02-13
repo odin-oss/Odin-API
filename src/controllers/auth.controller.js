@@ -5,10 +5,9 @@ import Guard from '../utils/guard.util.js';
 
 /**
  * Controller that checks parameters and should execute the connexion.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const connect = async (
   req,

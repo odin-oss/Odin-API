@@ -25,9 +25,75 @@ import logger from './middlewares/winston.js';
 import CONFIG from './config/config.js';
 import routerModule from './modules/router.module.js';
 import dbManager from './config/db.config.js';
+import { fetch as kong } from './modules/kong-api.module.js';
+import { fetch as kapi } from './modules/kapi.module.js';
 import pkg from '../package.json' with { type: 'json' };
+import { Sequelize } from 'sequelize';
+import { getInstance } from './config/mongo.config.js';
 
-await dbManager.initModels();
+// TEST CONNECT TO PSQL DB
+logger.info(`[SYSTEM][100] / : Trying to connect to PSQL.`);
+await dbManager
+  .initModels()
+  .then(() => logger.info(`[SYSTEM][200] / : 1/5. Postgres DB connected.`))
+  .catch((error) => {
+    if (error instanceof Sequelize.ConnectionRefusedError)
+      logger.error(
+        `[SYSTEM][500] / : 1/5. Postgres Error: The server refused the connection.`
+      );
+    else if (error instanceof Sequelize.AccessDeniedError)
+      logger.error(
+        `[SYSTEM][500] / : 1/5. Postgres Error: The authentication failed.`
+      );
+    else if (error instanceof Sequelize.HostNotFoundError)
+      logger.error(
+        `[SYSTEM][500] / : 1/5. Postgres Error: The server could not find the PSQL host.`
+      );
+    else
+      logger.error(
+        `[SYSTEM][500] / : 1/5. Postgres Error: The server encountered an error : ${error}`
+      );
+    process.exit(0);
+  });
+
+// TEST CONNECT TO MDB
+logger.info(`[SYSTEM][100] / : Trying to connect to MDB.`);
+if (CONFIG.MONGODB_ACTIVATED)
+  await getInstance()
+    .then(() => logger.info(`[SYSTEM][200] / : 2/5. MongoDB connected.`))
+    .catch((error) => {
+      logger.error(
+        `[SYSTEM][500] / : 2/5. MongoDB Error: The server encountered an error : ${error}`
+      );
+      process.exit(0);
+    });
+else logger.warn(`[SYSTEM][200] / : 2/5. MongoDB disabled.`);
+
+// TEST CONNECT TO KONG
+logger.info(`[SYSTEM][100] / : Trying to connect to KONG (APPS-INGRESS).`);
+if (CONFIG.APPS_INGRESS_ACTIVATED)
+  await kong({ url: '/status', method: 'get' })
+    .then(() => logger.info(`[SYSTEM][200] / : 3/5. KONG reachable.`))
+    .catch((error) => {
+      logger.error(
+        `[SYSTEM][500] / : 3/5. KONG Error: The server encountered an error : ${error}`
+      );
+      process.exit(0);
+    });
+else logger.warn(`[SYSTEM][200] / : 3/5. KONG disabled.`);
+
+// TEST CONNECT TO Kubernetes API
+logger.info(`[SYSTEM][100] / : Trying to connect to Kubernetes API.`);
+if (CONFIG.KUBERNETES_ACTIVATED)
+  await kapi({ url: '/healthz', method: 'get' })
+    .then(() => logger.info(`[SYSTEM][200] / : 4/5. Kubernetes API reachable.`))
+    .catch((error) => {
+      logger.error(
+        `[SYSTEM][500] / : 4/5. Kubernetes API Error: The server encountered an error : ${error}`
+      );
+      process.exit(0);
+    });
+else logger.warn(`[SYSTEM][200] / : 4/5. Kubernetes API disabled.`);
 
 const optionsJSdoc = {
   definition: {

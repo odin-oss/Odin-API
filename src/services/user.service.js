@@ -37,7 +37,9 @@ export const list_by_role = async function (
     user_list: user_builder.list,
   }
 ) {
-  const schema = z.object({ role: z.enum(["ETUDIANT", "PROFESSEUR", "ADMINISTRATEUR"]) });
+  const schema = z.object({
+    role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
+  });
   const data = Guard.validateProps(schema, props);
   return await fns.user_list({ ...data });
 };
@@ -60,13 +62,16 @@ export const update_password = async function (
 ) {
   const schema = z.object({
     id_user: z.number().positive(),
-    password: z.string()
+    password: z
+      .string()
       .min(8, { message: 'The password must contains at least 8 characters.' })
       .refine((val) => /[0-9]/.test(val), {
-        message: 'The password must contains at least 1 number.'
+        message: 'The password must contains at least 1 number.',
       })
-      .refine((val) => /[!@#$%^&*(),.?":{}|<>]/.test(val), { message: 'The password must contains at least 1 special char.' }),
-    old_password: z.string()
+      .refine((val) => /[!@#$%^&*(),.?":{}|<>]/.test(val), {
+        message: 'The password must contains at least 1 special char.',
+      }),
+    old_password: z.string(),
   });
   const data = Guard.validateProps(schema, props);
   const user = await fns.user_get({ ...data });
@@ -96,16 +101,19 @@ export const create = async function (
   }
 ) {
   const schema = z.object({
-    pwd: z.string()
+    pwd: z
+      .string()
       .min(8, { message: 'The password must contains at least 8 characters.' })
       .refine((val) => /[0-9]/.test(val), {
-        message: 'The password must contains at least 1 number.'
+        message: 'The password must contains at least 1 number.',
       })
-      .refine((val) => /[!@#$%^&*(),.?":{}|<>]/.test(val), { message: 'The password must contains at least 1 special char.' }),
+      .refine((val) => /[!@#$%^&*(),.?":{}|<>]/.test(val), {
+        message: 'The password must contains at least 1 special char.',
+      }),
     mail: z.email(),
-    role: z.enum(["ETUDIANT", "PROFESSEUR", "ADMINISTRATEUR"]),
+    role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
     lastname: z.string().min(1),
-    firstname: z.string().min(1)
+    firstname: z.string().min(1),
   });
   const data = Guard.validateProps(schema, props);
   const hashed_password = fns.bcrypt.hashSync(data.pwd, 11);

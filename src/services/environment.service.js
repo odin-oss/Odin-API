@@ -28,7 +28,7 @@ export const get = async function (
   }
 ) {
   const schema = z.object({
-    id_environment: z.number().positive()
+    id_environment: z.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
   return await fns.environment_get({ ...data });

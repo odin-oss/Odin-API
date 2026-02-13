@@ -225,7 +225,6 @@ export const deletion = async (
  * @param {*} req HTTP request.
  * @param {*} res HTTP response.
  * @param {*} fns overwriting functions for tests.
- * @returns
  */
 export const create = async (
   req,

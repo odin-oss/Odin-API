@@ -14,10 +14,10 @@ export const deletion = async function (
   fns = { get: get, delete: del }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
-  const list = await fns.get({ ...data }).then(r => r.result);
+  const list = await fns.get({ ...data }).then((r) => r.result);
   if (list === 'Kubernetes is not activated.') return;
   const promises = list.map((name) => fns.delete({ name }));
   return await Promise.all(promises);
@@ -31,14 +31,11 @@ export const deletion = async function (
  * @param {Function} fetch functions to overwrite for unit testing.
  * @returns {JSON}
  */
-export const create = async function (
-  props,
-  fetch = kapi.fetch
-) {
+export const create = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
     label: z.string(),
-    port_externe: z.number().positive()
+    port_externe: z.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
   const body = {
@@ -65,14 +62,11 @@ export const create = async function (
     },
   };
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services`;
-  return await fetch({ url, method: 'POST', body }).then(
-    (res) => ({
-        result: res,
-        type: 'ExternalName',
-        name: `ci${data.label}${data.hash}${data.port_externe}-proxy`,
-      }
-    )
-  );
+  return await fetch({ url, method: 'POST', body }).then((res) => ({
+    result: res,
+    type: 'ExternalName',
+    name: `ci${data.label}${data.hash}${data.port_externe}-proxy`,
+  }));
 };
 
 /**
@@ -82,18 +76,14 @@ export const create = async function (
  * @param {Function} fetch functions to overwrite for unit testing.
  * @returns {JSON}
  */
-const get = async function (
-  props,
-  fetch = kapi.fetch
-) {
+const get = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
-    onlyShutable: z.boolean().default(true)
+    onlyShutable: z.boolean().default(true),
   });
   const data = Guard.validateProps(schema, props);
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services?labelSelector=type=ExternalName,hash=${data.hash},shutable=${{ ...expected_props, ...props }.onlyShutable ? 'true' : 'false'}`;
-  return await fetch({ url, method: 'GET' })
-  .then((res) => {
+  return await fetch({ url, method: 'GET' }).then((res) => {
     if (res === 'Kubernetes is not activated.') return { result: res };
     return {
       result: res?.items.map((item) => item.metadata.name),
@@ -109,17 +99,15 @@ const get = async function (
  */
 const del = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    name: z.string()
+    name: z.string(),
   });
   const data = Guard.validateProps(schema, props);
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services/${data.name}`;
-  return await fetch({ url, method: 'DELETE' })
-  .then((res) => ({
-      result: res,
-      type: 'ExternalName',
-      name: `${data.name}`,
-    })
-  );
+  return await fetch({ url, method: 'DELETE' }).then((res) => ({
+    result: res,
+    type: 'ExternalName',
+    name: `${data.name}`,
+  }));
 };
 
 const test_exports = {};

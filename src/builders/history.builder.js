@@ -15,23 +15,24 @@ export const create = async function (props) {
   try {
     const schema = z.object({
       id_user: z.number().positive(),
-      id_application: z.number().positive()
+      id_application: z.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
       ...data,
       datetime: moment.tz(CONFIG.APP_TZ).utc().format(),
     };
-    return await dbManager.models.HISTORY.create(options)
-      .then(r => new History({
-        records: [
-          new Record({
-            ...r,
-            datetime: moment(r.datetime).tz(CONFIG.APP_TZ),
-          }),
-        ],
-      })
-      );
+    return await dbManager.models.HISTORY.create(options).then(
+      (r) =>
+        new History({
+          records: [
+            new Record({
+              ...r,
+              datetime: moment(r.datetime).tz(CONFIG.APP_TZ),
+            }),
+          ],
+        })
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -46,7 +47,7 @@ export const get_last_record = async function (props) {
   try {
     const schema = z.object({
       id_user: z.number().positive(),
-      id_application: z.number().positive()
+      id_application: z.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
@@ -57,8 +58,7 @@ export const get_last_record = async function (props) {
       },
       order: [['datetime', 'DESC']],
     };
-    return await dbManager.models.HISTORY.findOne(options)
-    .then((r) => {
+    return await dbManager.models.HISTORY.findOne(options).then((r) => {
       if (r == null) return new History();
       return new History({
         records: [

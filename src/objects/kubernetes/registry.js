@@ -9,21 +9,17 @@ import Guard from '../../utils/guard.util.js';
  * @param {Function} fetch functions to overwrite for unit testing.
  * @returns {JSON}
  */
-export const deletion = async function (
-  props,
-  fetch = kapi.fetch
-) {
+export const deletion = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/secrets/registryhub`;
-  return await fetch({ url, method: 'DELETE' })
-    .then((res) => ({
-      result: res,
-      type: 'RegistryHub',
-      name: `registryhub`,
-    }));
+  return await fetch({ url, method: 'DELETE' }).then((res) => ({
+    result: res,
+    type: 'RegistryHub',
+    name: `registryhub`,
+  }));
 };
 
 /**
@@ -32,10 +28,7 @@ export const deletion = async function (
  * @param {Function} fetch functions to overwrite for unit testing.
  * @returns {JSON}
  */
-export const create = async function (
-  props,
-  fetch = kapi.fetch
-) {
+export const create = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
   });
@@ -64,12 +57,9 @@ export const create = async function (
     type: 'kubernetes.io/dockerconfigjson',
   };
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data_checks.hash}/secrets`;
-  return await fetch({ url, method: 'POST', body })
-    .then(
-      (res) => ({
-        result: res,
-        type: 'RegistryHub',
-        name: `registryhub`,
-      })
-    );
+  return await fetch({ url, method: 'POST', body }).then((res) => ({
+    result: res,
+    type: 'RegistryHub',
+    name: `registryhub`,
+  }));
 };

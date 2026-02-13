@@ -19,11 +19,12 @@ export const deletion = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
-  const list = await fns.get_deployment({ ...data, onlyShutable: true }
-  ).then((r) => r.result);
+  const list = await fns
+    .get_deployment({ ...data, onlyShutable: true })
+    .then((r) => r.result);
   if (list.length === 0) return [];
   const promises = [];
   for (let deploy of list) {
@@ -44,10 +45,12 @@ export const scale = async function (
 ) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
-    replicas: z.number().default(0)
+    replicas: z.number().default(0),
   });
   const data = Guard.validateProps(schema, props);
-  const list = await fns.get_deployment({ ...data, onlyShutable: true }).then((r) => r.result);
+  const list = await fns
+    .get_deployment({ ...data, onlyShutable: true })
+    .then((r) => r.result);
   if (list === 'Kubernetes is not activated.') return;
   const promises = [];
   for (let deploy of list) {
@@ -90,10 +93,7 @@ export const scale = async function (
  * @param {Function} fns functions to overwrite for unit testing.
  * @returns {JSON}
  */
-export const create = async function (
-  props,
-  fetch = kapi.fetch
-) {
+export const create = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
     image: z.string(),
@@ -227,15 +227,11 @@ export const create = async function (
   });
 
   const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/deployments`;
-  return await fetch({ url, method: 'POST', body })
-    .then(
-      (res) => ({
-        result: res,
-        type: 'Deployment',
-        name: `${data.label}${data.hash}`,
-      }
-      ))
-
+  return await fetch({ url, method: 'POST', body }).then((res) => ({
+    result: res,
+    type: 'Deployment',
+    name: `${data.label}${data.hash}`,
+  }));
 };
 /**
  * Private function that will add the node_selectors part to the body.
@@ -243,12 +239,10 @@ export const create = async function (
  * @param {JSON} body body to update, used to create the final deployment.
  * @returns {JSON}
  */
-const add_node_selectors = function (
-  props
-) {
+const add_node_selectors = function (props) {
   const schema = z.object({
     node_selectors: z.array().default([]),
-    body: z.object()
+    body: z.json(),
   });
   const data = Guard.validateProps(schema, props);
 
@@ -307,12 +301,10 @@ const add_node_selectors = function (
  * @param {JSON} body body to update, used to create the final deployment.
  * @returns {JSON}
  */
-const add_service_commands = function (
-  props
-) {
+const add_service_commands = function (props) {
   const schema = z.object({
     service_command: z.string().min(1).default(''),
-    body: z.object()
+    body: z.json(),
   });
   const data = Guard.validateProps(schema, props);
   if (data?.body?.spec?.template?.spec?.containers === undefined)
@@ -338,9 +330,7 @@ const add_service_commands = function (
  * @param {String} target target one container to speak to another (alpha).
  * @returns {JSON}
  */
-const add_arguments = function (
-  props
-) {
+const add_arguments = function (props) {
   const schema = z.object({
     args: z.array().default([]),
     hash: z.string().min(8).max(8).default(''),
@@ -348,7 +338,7 @@ const add_arguments = function (
     username: z.string().default(''),
     password: z.string().default(''),
     label: z.string().default(''),
-    body: z.object(),
+    body: z.json(),
     web_title: z.string().default(''),
     target: z.string().default(''),
   });
@@ -376,7 +366,7 @@ const add_arguments = function (
 const add_ports = function (props) {
   const schema = z.object({
     ports: z.array().default([]),
-    body: z.object(),
+    body: z.json(),
   });
   const data = Guard.validateProps(schema, props);
   if (data?.body?.spec?.template?.spec?.containers === undefined)
@@ -409,12 +399,10 @@ const add_ports = function (props) {
  * @param {String} hash unique has the application.
  * @returns {JSON}
  */
-const add_envs = function (
-  props
-) {
+const add_envs = function (props) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
-    body: z.object(),
+    body: z.json(),
     envs: z.array().default([]),
     username: z.string().default(''),
     password: z.string().default(''),
@@ -433,7 +421,7 @@ const add_envs = function (
     ...data.envs.map((env) => ({
       name: env.key,
       value: parsing_generic_tags(env.value, {
-        ...data
+        ...data,
       }),
     }))
   );
@@ -446,11 +434,9 @@ const add_envs = function (
  * @param {JSON} body body to update, used to create the final deployment.
  * @returns {JSON}
  */
-const add_compute_gpu = function (
-  props
-) {
+const add_compute_gpu = function (props) {
   const schema = z.object({
-    body: z.object()
+    body: z.json(),
   });
   const data = Guard.validateProps(schema, props);
   data.body.spec.template.spec.runtimeClassName = 'nvidia';
@@ -469,15 +455,13 @@ const add_compute_gpu = function (
  * @param {Boolean} has_storage do we have to attach a volume to the application.
  * @returns {JSON}
  */
-const add_storage = function (
-  props
-) {
+const add_storage = function (props) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
-    body: z.object(),
+    body: z.json(),
     username: z.string().default(''),
     label: z.string().default(''),
-    has_storage: z.boolean().default(false)
+    has_storage: z.boolean().default(false),
   });
   const data = Guard.validateProps(schema, props);
   if (data?.body?.spec?.template?.spec?.containers === undefined)
@@ -514,25 +498,21 @@ const add_storage = function (
  * @param {Function} fns functions to overwrite for unit testing.
  * @returns {JSON}
  */
-const get = async function (
-  props,
-  fetch = kapi.fetch
-) {
+const get = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
-    onlyShutable: z.boolean().default(false)
+    onlyShutable: z.boolean().default(false),
   });
   const data = Guard.validateProps(schema, props);
   const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/deployments?labelSelector=type=Deployment,hash=${data.hash},shutable=${data.onlyShutable ? 'true' : 'false'}`;
-  return await fetch({ url, method: 'GET' })
-    .then((res) => {
-      if (res === 'Kubernetes is not activated.') return { result: res };
-      return {
-        result: res.items.map((item) => item.metadata.name),
-        type: 'Deployments',
-        onlyShutable: data.onlyShutable,
-      };
-    });
+  return await fetch({ url, method: 'GET' }).then((res) => {
+    if (res === 'Kubernetes is not activated.') return { result: res };
+    return {
+      result: res.items.map((item) => item.metadata.name),
+      type: 'Deployments',
+      onlyShutable: data.onlyShutable,
+    };
+  });
 };
 
 /**
@@ -542,23 +522,20 @@ const get = async function (
  * @param {Function} fns functions to overwrite for unit testing.
  * @returns {JSON}
  */
-const del = async function (
-  props,
-  fetch = kapi.fetch
-) {
+const del = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
-    name: z.string()
+    name: z.string(),
   });
   const data = Guard.validateProps(schema, props);
   const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/deployments/${data.name}`;
-  return await Promise.resolve(fetch({ url, method: 'DELETE' }))
-    .then((res) => (
-      {
-        result: res,
-        type: 'Deployment',
-        name: `${data.name}`,
-      }));
+  return await Promise.resolve(fetch({ url, method: 'DELETE' })).then(
+    (res) => ({
+      result: res,
+      type: 'Deployment',
+      name: `${data.name}`,
+    })
+  );
 };
 
 /**
@@ -569,14 +546,11 @@ const del = async function (
  * @param {Function} fns functions to overwrite for unit testing.
  * @returns {JSON}
  */
-const put = async function (
-  props,
-  fetch = kapi.fetch
-) {
+const put = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
     name: z.string(),
-    replicas: z.number().default(1)
+    replicas: z.number().default(1),
   });
   const data = Guard.validateProps(schema, props);
   const body = {
@@ -591,15 +565,11 @@ const put = async function (
     },
   };
   const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/deployments/${data.name}/scale`;
-  return await fetch({ url, body, method: 'PUT' })
-    .then(
-      (res) => ({
-        result: res,
-        type: 'Deployment',
-        name: `${data.name}`,
-      }
-      )
-    );
+  return await fetch({ url, body, method: 'PUT' }).then((res) => ({
+    result: res,
+    type: 'Deployment',
+    name: `${data.name}`,
+  }));
 };
 
 const test_exports = {};

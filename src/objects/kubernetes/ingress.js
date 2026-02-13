@@ -14,19 +14,19 @@ import z from 'zod';
 export const addInKong = async function (
   props,
   fns = {
-    fetch: fetch,
+    fetch,
   }
 ) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
     ports: z.array().default([]),
-    label: z.string()
+    label: z.string(),
   });
   const data_checks = Guard.validateProps(schema, props);
   // Creating Service in Kong
   let promises = [];
   for (let port of data_checks.ports) {
-    const url = `http://${CONFIG.APPS_INGRESS_URL}/services`;
+    const url = `/services`;
     const data = {
       name: `${data_checks.hash}-${data_checks.label}-${port.label.toLocaleLowerCase()}`,
       url: `http://ci${data_checks.label}${data_checks.hash}${port.port}-proxy:${port.port}`,
@@ -44,7 +44,7 @@ export const addInKong = async function (
   // Creating Route in Kong
   promises = [];
   for (let s = 0; s < svc.length; s++) {
-    const url = `http://${CONFIG.APPS_INGRESS_URL}/services/${svc[s].id}/routes`;
+    const url = `/services/${svc[s].id}/routes`;
     const data = {
       paths: [
         `/${data_checks.hash}/${data_checks.label}-${data_checks.ports[s].label.toLocaleLowerCase()}/`,
@@ -59,7 +59,7 @@ export const addInKong = async function (
     promises.push(
       fns.fetch({
         method: 'POST',
-        url: `http://${CONFIG.APPS_INGRESS_URL}/services/${svc[s].id}/plugins`,
+        url: `/services/${svc[s].id}/plugins`,
         body: {
           name: 'odin-auth',
           config: {
@@ -93,20 +93,20 @@ export const deleteFromKong = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
   let promises = [];
   promises.push(
     fns.fetch({
       method: 'GET',
-      url: `http://${CONFIG.APPS_INGRESS_URL}/services`,
+      url: `/services`,
     })
   );
   promises.push(
     fns.fetch({
       method: 'GET',
-      url: `http://${CONFIG.APPS_INGRESS_URL}/routes`,
+      url: `/routes`,
     })
   );
   const [services, routes] = await Promise.all(promises);
@@ -121,7 +121,7 @@ export const deleteFromKong = async function (
     filteredRoutes.map((route) =>
       fns.fetch({
         method: 'DELETE',
-        url: `http://${CONFIG.APPS_INGRESS_URL}/routes/${route.id}`,
+        url: `/routes/${route.id}`,
       })
     )
   );
@@ -131,7 +131,7 @@ export const deleteFromKong = async function (
     filteredServices.map((svc) =>
       fns.fetch({
         method: 'DELETE',
-        url: `http://${CONFIG.APPS_INGRESS_URL}/services/${svc.id}`,
+        url: `/services/${svc.id}`,
       })
     )
   );

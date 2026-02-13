@@ -47,13 +47,19 @@ const envSchema = z.object({
   KAFKA_TOPIC: z.string().default('upload-logs'),
 
   // KONG - APPS INGRESS
-  APPS_INGRESS_ACTIVATED: z.string().default('true'),
+  APPS_INGRESS_ACTIVATED: z
+    .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+    .transform((val) => val === 'true')
+    .default(true),
   APPS_INGRESS_URL: z.string().default('localhost:8001'),
 
   // KUBERNETES API
   KUBERNETES_VOLUME_TYPE: z.string().default('Block'),
   KUBERNETES_STORAGE_CLASSNAME: z.string().default('sbs-default'),
-  KUBERNETES_ACTIVATED: z.string().default('true'),
+  KUBERNETES_ACTIVATED: z
+    .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+    .transform((val) => val === 'true')
+    .default(true),
   KUBERNETES_URL: z.string().default('http://127.0.0.1:8080'),
   KUBERNETES_TOKEN: z.string().default(''),
   KUBERNETES_MASTER_IP: z.string(),
@@ -71,7 +77,11 @@ const envSchema = z.object({
   LOG_LEVEL_EXCEPTIONS: z.string().default('debug'),
 
   // MONGODB CONFIGURATION
-  MONGODB_URL: z.string().default('localhost:10008'),
+  MONGODB_ACTIVATED: z
+    .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+    .transform((val) => val === 'true')
+    .default(true),
+  MONGODB_URL: z.string().default('localhost:27017'),
   MONGODB_USERNAME: z.string().default('odin'),
   MONGODB_PASSWORD: z.string().default('odin'),
   MONGODB_DB: z.string().default('odin_db'),

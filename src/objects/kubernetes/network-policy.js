@@ -20,7 +20,7 @@ export const create = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
   // kapi request
@@ -52,15 +52,11 @@ export const create = async function (
     },
   };
   const url = `${CONFIG.KUBERNETES_URL}/apis/networking.k8s.io/v1/namespaces/cirrus/networkpolicies`;
-  return await fns.fetch({ url, method: 'POST', body })
-  .then(
-    (res) => ( {
-        result: res,
-        type: 'NetworkPolicy',
-        name: `network-policy-${data.hash}`,
-      }
-    )
-  );
+  return await fns.fetch({ url, method: 'POST', body }).then((res) => ({
+    result: res,
+    type: 'NetworkPolicy',
+    name: `network-policy-${data.hash}`,
+  }));
 };
 
 /**
@@ -76,17 +72,13 @@ export const deletion = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
   const url = `${CONFIG.KUBERNETES_URL}/apis/networking.k8s.io/v1/namespaces/cirrus/networkpolicies/kubec-np-cirrus-kafka-from-n${data.hash}`;
-  return await fns.fetch({ url, method: 'DELETE' })
-  .then(
-    (res) => ({
-        result: res,
-        type: 'NetworkPolicy',
-        name: `network-policy-${data.hash}`,
-      }
-    )
-  );
+  return await fns.fetch({ url, method: 'DELETE' }).then((res) => ({
+    result: res,
+    type: 'NetworkPolicy',
+    name: `network-policy-${data.hash}`,
+  }));
 };

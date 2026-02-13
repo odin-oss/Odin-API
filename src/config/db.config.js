@@ -57,21 +57,14 @@ class DBManager {
 
   async executeInitScript(filePath) {
     const sequelize = this.getSequelize();
-    try {
-      const sql = fs.readFileSync(filePath, 'utf8');
+    const sql = fs.readFileSync(filePath, 'utf8');
 
-      // Split by semicolon if you have multiple statements,
-      // or just run the whole blob if your dialect supports it.
-      await sequelize.query(sql);
-      logger.info(
-        `[SYSTEM][200] / : Initial SQL script executed successfully (${filePath}).`
-      );
-    } catch (error) {
-      logger.info(
-        `[SYSTEM][200] / : Initial SQL script executed successfully (${filePath}).`
-      );
-      throw error;
-    }
+    // Split by semicolon if you have multiple statements,
+    // or just run the whole blob if your dialect supports it.
+    await sequelize.query(sql);
+    logger.info(
+      `[SYSTEM][200] / : Initial SQL script executed successfully (${filePath}).`
+    );
   }
 
   async initModels() {

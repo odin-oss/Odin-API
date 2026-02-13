@@ -2,7 +2,7 @@ import dbManager from '../config/db.config.js';
 import { User } from '../objects/User.js';
 import {
   DBObjectNotFound,
-  MissingArgumentError
+  MissingArgumentError,
 } from '../utils/errors.util.js';
 import { Op } from 'sequelize';
 import Guard from '../utils/guard.util.js';
@@ -17,10 +17,11 @@ import z from 'zod';
 export const get = async function (props) {
   const schema = z.object({
     id_user: z.number().positive().optional(),
-    mail: z.email("The mail address is not properly formated.").optional()
+    mail: z.email('The mail address is not properly formated.').optional(),
   });
   const data = Guard.validateProps(schema, props);
-  if (props.id_user === undefined && props.mail === undefined) throw new MissingArgumentError("Either mail or id_user must be present.")
+  if (props.id_user === undefined && props.mail === undefined)
+    throw new MissingArgumentError('Either mail or id_user must be present.');
   const options = {
     include: [
       {
@@ -39,7 +40,7 @@ export const get = async function (props) {
     .then((r) => {
       if (r == null) throw new DBObjectNotFound('The user could not be found.');
       return new User({
-        ...r,
+        ...r.dataValues,
         pwd: r.PASSWORD.pwd,
         role: r.USER_ROLE.label,
       });
@@ -57,7 +58,7 @@ export const get = async function (props) {
 export const list = async function (props) {
   try {
     const schema = z.object({
-      role: z.enum(["ETUDIANT", "PROFESSEUR", "ADMINISTRATEUR"])
+      role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
@@ -67,8 +68,9 @@ export const list = async function (props) {
         where: { label: data.role },
       },
     };
-    return await dbManager.models.USERS.findAll(options)
-      .then(r => r.map(user => new User({ ...user, role: user.USER_ROLE.label })));
+    return await dbManager.models.USERS.findAll(options).then((r) =>
+      r.map((user) => new User({ ...user, role: user.USER_ROLE.label }))
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -82,7 +84,7 @@ export const list = async function (props) {
 export const get_list = async function (props) {
   try {
     const schema = z.object({
-      ids: z.array(z.number().positive())
+      ids: z.array(z.number().positive()),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
@@ -96,8 +98,9 @@ export const get_list = async function (props) {
         required: true,
       },
     };
-    return await dbManager.models.USERS.findAll(options)
-      .then(r => r.map(user => new User({ ...user, role: user.USER_ROLE.label })));
+    return await dbManager.models.USERS.findAll(options).then((r) =>
+      r.map((user) => new User({ ...user, role: user.USER_ROLE.label }))
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -113,7 +116,7 @@ export const update_password = async function (props) {
   try {
     const schema = z.object({
       id_user: z.number().positive(),
-      hashed_password: z.string()
+      hashed_password: z.string(),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
@@ -122,7 +125,8 @@ export const update_password = async function (props) {
       },
     };
     const user = await dbManager.models.USERS.findOne(options);
-    if (user == null) throw new DBObjectNotFound('The user could not be found.');
+    if (user == null)
+      throw new DBObjectNotFound('The user could not be found.');
 
     const opt_update = {
       pwd: data.hashed_password,
@@ -133,12 +137,13 @@ export const update_password = async function (props) {
       },
     };
 
-    return await dbManager.models.PASSWORD.update(opt_update, opt_condition)
-      .then(() => "The user's password has been changed.");
-  }
-  catch (err) {
+    return await dbManager.models.PASSWORD.update(
+      opt_update,
+      opt_condition
+    ).then(() => "The user's password has been changed.");
+  } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
-  };
+  }
 };
 
 /**
@@ -157,10 +162,12 @@ export const create = async function (props) {
       lastname: z.string().min(1),
       mail: z.email('Invalid email address'),
       id_role: z.number().positive(),
-      hashed_password: z.string()
+      hashed_password: z.string(),
     });
     const data = Guard.validateProps(schema, props);
-    const pwd = await dbManager.models.PASSWORD.create({ pwd: data.hashed_password });
+    const pwd = await dbManager.models.PASSWORD.create({
+      pwd: data.hashed_password,
+    });
     const options = {
       firstname: data.firstname,
       lastname: data.lastname,
@@ -168,8 +175,9 @@ export const create = async function (props) {
       id_role: data.id_role,
       id_password: pwd.id_password,
     };
-    return await dbManager.models.USERS.create(options)
-    .then( r => new User({...r}));
+    return await dbManager.models.USERS.create(options).then(
+      (r) => new User({ ...r })
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }

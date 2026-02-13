@@ -1,7 +1,7 @@
 import z from 'zod';
 import dbManager from '../config/db.config.js';
 import { Datacenter } from '../objects/Datacenter.js';
-import {DBObjectNotFound} from '../utils/errors.util.js';
+import { DBObjectNotFound } from '../utils/errors.util.js';
 import Guard from '../utils/guard.util.js';
 
 /**
@@ -10,8 +10,10 @@ import Guard from '../utils/guard.util.js';
  */
 export const list = async function () {
   return await dbManager.models.DATACENTER.findAll()
-    .then(dcs => dcs.map(dc => new Datacenter({ ...dc })))
-    .catch(err => { throw dbManager.models.sequelizeErrorManagement(err) });
+    .then((dcs) => dcs.map((dc) => new Datacenter({ ...dc })))
+    .catch((err) => {
+      throw dbManager.models.sequelizeErrorManagement(err);
+    });
 };
 
 /**
@@ -21,7 +23,7 @@ export const list = async function () {
  */
 export const get = async function (props) {
   const schema = z.object({
-    id_datacenter: z.number().positive()
+    id_datacenter: z.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
   return await dbManager.models.DATACENTER.findOne({ where: { ...data } })
@@ -30,5 +32,7 @@ export const get = async function (props) {
         throw new DBObjectNotFound('The datacenter could not be found.');
       return new Datacenter({ ...r });
     })
-    .catch((err) => { throw dbManager.models.sequelizeErrorManagement(err) });
+    .catch((err) => {
+      throw dbManager.models.sequelizeErrorManagement(err);
+    });
 };

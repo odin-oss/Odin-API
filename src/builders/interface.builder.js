@@ -11,7 +11,7 @@ import z from 'zod';
  */
 export const get = async function (props) {
   const schema = z.object({
-    id_interface: z.number().positive()
+    id_interface: z.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
   const options = {
@@ -72,15 +72,15 @@ export const get = async function (props) {
         })),
         node_selectors: r.INTERFACE_HAS_NODE_SELECTORs.map((ins) => ({
           ...ins.NODE_SELECTOR,
-          id_node_selector: ins.id_node_selector
+          id_node_selector: ins.id_node_selector,
         })),
         ports: r.INTERFACE_HAS_PORTs.map((ihp) => ({
           ...ihp,
-          port_type: ihp.PORT_TYPE.label
+          port_type: ihp.PORT_TYPE.label,
         })),
         envs: r.INTERFACE_HAS_VARIABLEs.map((ihv) => ({
           ...ihv.VARIABLE_ENVIRONMENT,
-          id_variable_environment: ihv.id_variable_environment
+          id_variable_environment: ihv.id_variable_environment,
         })),
       });
     })

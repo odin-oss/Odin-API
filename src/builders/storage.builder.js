@@ -11,16 +11,21 @@ import z from 'zod';
  * Create an application in the database
  * @param {Number} id_application id of the application
  * @param {Number} availability_days count of days when the link will be available.
- * @returns {Application_export} 
+ * @returns {Application_export}
  */
 export const create = async function (props) {
   try {
     const schema = z.object({
       id_application: z.number().positive(),
-      availability_days: z.number().positive().transform((val) => moment()
-        .tz(CONFIG.APP_TZ)
-        .add(props.availability_days, 'days')
-        .format())
+      availability_days: z
+        .number()
+        .positive()
+        .transform((val) =>
+          moment()
+            .tz(CONFIG.APP_TZ)
+            .add(props.availability_days, 'days')
+            .format()
+        ),
     });
     const data = Guard.validateProps(schema, props);
     const id_enum_export_state = await getIdEnumState({ status: 'Launched' });
@@ -31,11 +36,13 @@ export const create = async function (props) {
       expiration_date: data.availability_days,
       id_enum_export_state,
     };
-    return await dbManager.models.APPLICATION_EXPORT.create(options)
-      .then(r => new Application_export({
-        ...r,
-        status: 'Launched',
-      }));
+    return await dbManager.models.APPLICATION_EXPORT.create(options).then(
+      (r) =>
+        new Application_export({
+          ...r,
+          status: 'Launched',
+        })
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -43,29 +50,30 @@ export const create = async function (props) {
 
 /**
  * Get a spectific Application_export from the database.
- * @param {Number} id_export id of the Application_export 
+ * @param {Number} id_export id of the Application_export
  * @returns {Application_export}
  */
 export const get = async function (props) {
   try {
     const schema = z.object({
-      id_export: z.number().positive()
+      id_export: z.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
-    return await dbManager.models.APPLICATION_EXPORT.findOne({ where: { ...data } })
-      .then(async (r) => {
-        if (r === null)
-          throw new DBObjectNotFound(
-            `The element id_export = '${props.id_export}' could not be found.`
-          );
-        const status = await getStatusFromId({
-          id_enum_export_state: r.id_enum_export_state,
-        });
-        return new Application_export({
-          ...r,
-          status: status,
-        });
+    return await dbManager.models.APPLICATION_EXPORT.findOne({
+      where: { ...data },
+    }).then(async (r) => {
+      if (r === null)
+        throw new DBObjectNotFound(
+          `The element id_export = '${props.id_export}' could not be found.`
+        );
+      const status = await getStatusFromId({
+        id_enum_export_state: r.id_enum_export_state,
       });
+      return new Application_export({
+        ...r,
+        status: status,
+      });
+    });
   } catch (err) {
     if (err instanceof DBObjectNotFound) throw err;
     throw dbManager.sequelizeErrorManagement(err);
@@ -74,13 +82,13 @@ export const get = async function (props) {
 
 /**
  * Get the last storage data for the specific application.
- * @param {Number} id_application id of the application which we want the Application_export 
- * @returns {Application_export} 
+ * @param {Number} id_application id of the application which we want the Application_export
+ * @returns {Application_export}
  */
 export const getLatestStorage = async function (props) {
   try {
     const schema = z.object({
-      id_application: z.number().positive()
+      id_application: z.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
@@ -92,8 +100,8 @@ export const getLatestStorage = async function (props) {
       },
       order: [['init_date', 'DESC']],
     };
-    return await dbManager.models.APPLICATION_EXPORT.findOne(options)
-      .then(async (r) => {
+    return await dbManager.models.APPLICATION_EXPORT.findOne(options).then(
+      async (r) => {
         if (r === null)
           return new Application_export({
             ...r,
@@ -109,7 +117,8 @@ export const getLatestStorage = async function (props) {
           id_enum_export_state: r.id_enum_export_state,
         });
         return new Application_export({ ...r, status });
-      });
+      }
+    );
   } catch (err) {
     if (err instanceof DBObjectNotFound) throw err;
     throw dbManager.sequelizeErrorManagement(err);
@@ -119,12 +128,12 @@ export const getLatestStorage = async function (props) {
 /**
  * Get Non Error Application Storage from id_application.
  * @param {Number} id_application id of the application.
- * @returns {Application_export} 
+ * @returns {Application_export}
  */
 export const getNonErrorApplicationStorage = async function (props) {
   try {
     const schema = z.object({
-      id_application: z.number().positive()
+      id_application: z.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
     const id_enum_available_states = await getIdsEnumStates({
@@ -139,8 +148,8 @@ export const getNonErrorApplicationStorage = async function (props) {
       },
       order: [['init_date', 'DESC']],
     };
-    return await dbManager.models.APPLICATION_EXPORT.findOne(options)
-      .then(async (r) => {
+    return await dbManager.models.APPLICATION_EXPORT.findOne(options).then(
+      async (r) => {
         if (
           r !== null &&
           id_enum_available_states.includes(r.id_enum_export_state)
@@ -160,7 +169,8 @@ export const getNonErrorApplicationStorage = async function (props) {
           id_enum_export_state: null,
           status: null,
         });
-      });
+      }
+    );
   } catch (err) {
     if (err instanceof DBObjectNotFound) throw err;
     throw dbManager.sequelizeErrorManagement(err);
@@ -169,13 +179,13 @@ export const getNonErrorApplicationStorage = async function (props) {
 
 /**
  * Demete a specific export from the database.
- * @param {Number} id_export id of the export to delete. 
+ * @param {Number} id_export id of the export to delete.
  * @returns {Application_export}
  */
 export const deleteExport = async function (props) {
   try {
     const schema = z.object({
-      id_export: z.number().positive()
+      id_export: z.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
     const id_enum_export_state = await getIdEnumState({ status: 'Revoked' });
@@ -183,12 +193,14 @@ export const deleteExport = async function (props) {
     const opt_condition = {
       where: { id_export: data.id_export },
     };
-    return await dbManager.models.APPLICATION_EXPORT.update({ id_enum_export_state }, opt_condition)
-      .then((r) => {
-        if (r[0] === 0)
-          throw new DBObjectNotFound('The export to update does not exist.');
-        return new Application_export({ ...r[0] });
-      });
+    return await dbManager.models.APPLICATION_EXPORT.update(
+      { id_enum_export_state },
+      opt_condition
+    ).then((r) => {
+      if (r[0] === 0)
+        throw new DBObjectNotFound('The export to update does not exist.');
+      return new Application_export({ ...r[0] });
+    });
   } catch (err) {
     if (err instanceof DBObjectNotFound) throw err;
     throw dbManager.sequelizeErrorManagement(err);
@@ -197,13 +209,13 @@ export const deleteExport = async function (props) {
 
 /**
  * Set error state on a specific Application_export.
- * @param {Number} id_export id of the export to put error on. 
+ * @param {Number} id_export id of the export to put error on.
  * @returns {Application_export}
  */
 export const setError = async function (props) {
   try {
     const schema = z.object({
-      id_export: z.number().positive()
+      id_export: z.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
     const id_enum_export_state = await getIdEnumState({ status: 'Error' });
@@ -212,12 +224,14 @@ export const setError = async function (props) {
     const opt_condition = {
       where: { id_export: data.id_export },
     };
-    return await dbManager.models.APPLICATION_EXPORT.update({ id_enum_export_state }, opt_condition)
-      .then((r) => {
-        if (r[0] === 0)
-          throw new DBObjectNotFound('The export to update does not exist.');
-        return new Application_export({ ...r[0] });
-      });
+    return await dbManager.models.APPLICATION_EXPORT.update(
+      { id_enum_export_state },
+      opt_condition
+    ).then((r) => {
+      if (r[0] === 0)
+        throw new DBObjectNotFound('The export to update does not exist.');
+      return new Application_export({ ...r[0] });
+    });
   } catch (err) {
     if (err instanceof DBObjectNotFound) throw err;
     throw dbManager.sequelizeErrorManagement(err);
@@ -226,7 +240,7 @@ export const setError = async function (props) {
 
 /**
  * Get Id Enum State from the state name
- * @param {String} status state we want the id of  
+ * @param {String} status state we want the id of
  * @returns {Number}
  */
 export const getIdEnumState = async function (props) {
@@ -237,17 +251,19 @@ export const getIdEnumState = async function (props) {
       'Available',
       'Expired',
       'Revoked',
-      'Error'])
+      'Error',
+    ]),
   });
   const data = Guard.validateProps(schema, props);
-  return await dbManager.models.ENUM_EXPORT_STATE.findOne({ where: { ...data } })
-    .then((r) => {
-      if (r == null)
-        throw new DBObjectNotFound(
-          `The state "${props.status}" could not be found.`
-        );
-      return r.id_enum_export_state;
-    });
+  return await dbManager.models.ENUM_EXPORT_STATE.findOne({
+    where: { ...data },
+  }).then((r) => {
+    if (r == null)
+      throw new DBObjectNotFound(
+        `The state "${props.status}" could not be found.`
+      );
+    return r.id_enum_export_state;
+  });
 };
 
 /**
@@ -255,23 +271,25 @@ export const getIdEnumState = async function (props) {
  * @param {Array<String>} statuses list of status we want the ids
  * @returns {Array<Number>}
  */
-export const getIdsEnumStates = async function (
-  props
-) {
+export const getIdsEnumStates = async function (props) {
   const schema = z.object({
-    statuses: z.array(z.enum(['Launched',
-      'Exporting',
-      'Available',
-      'Expired',
-      'Revoked',
-      'Error']))
+    statuses: z.array(
+      z.enum([
+        'Launched',
+        'Exporting',
+        'Available',
+        'Expired',
+        'Revoked',
+        'Error',
+      ])
+    ),
   });
   const data = Guard.validateProps(schema, props);
   const opt_state = {
     where: { status: data.statuses },
   };
-  return await dbManager.models.ENUM_EXPORT_STATE.findAll(opt_state)
-    .then(results => {
+  return await dbManager.models.ENUM_EXPORT_STATE.findAll(opt_state).then(
+    (results) => {
       if (results.length !== data.statuses.length) {
         const foundStatuses = results.map((r) => r.status);
         const missingStatuses = data.statuses.filter(
@@ -282,7 +300,8 @@ export const getIdsEnumStates = async function (
         );
       }
       return results.map((r) => r.id_enum_export_state);
-    });
+    }
+  );
 };
 
 /**
@@ -292,19 +311,20 @@ export const getIdsEnumStates = async function (
  */
 export const getStatusFromId = async function (props) {
   const schema = z.object({
-    id_enum_export_state: z.number().positive()
+    id_enum_export_state: z.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
   const opt_state = {
     where: { ...data },
   };
-  return await dbManager.models.ENUM_EXPORT_STATE.findOne(opt_state)
-    .then((result) => {
+  return await dbManager.models.ENUM_EXPORT_STATE.findOne(opt_state).then(
+    (result) => {
       if (!result) {
         throw new DBObjectNotFound(
           `The state with ID "${data.id_enum_export_state}" could not be found.`
         );
       }
       return result.status;
-    });
+    }
+  );
 };

@@ -15,7 +15,7 @@ export const create = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
   const body = {
@@ -53,15 +53,11 @@ export const create = async function (
     },
   };
   const url = `${CONFIG.KUBERNETES_URL}/apis/security.istio.io/v1/namespaces/cirrus/authorizationpolicies`;
-  return await fns.fetch({ url, method: 'POST', body })
-    .then(
-      (res) => ({
-        result: res,
-        type: 'AuthorizationPolicy',
-        name: `authorization-policy-${data.hash}`,
-      }
-      )
-    );
+  return await fns.fetch({ url, method: 'POST', body }).then((res) => ({
+    result: res,
+    type: 'AuthorizationPolicy',
+    name: `authorization-policy-${data.hash}`,
+  }));
 };
 
 /**
@@ -77,16 +73,13 @@ export const deletion = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
   const url = `${CONFIG.KUBERNETES_URL}/apis/security.istio.io/v1/namespaces/cirrus/authorizationpolicies/istio-ap-cirrus-kafka-n${data.hash}`;
-  return await fns.fetch({ url, method: 'DELETE' })
-    .then(
-      (res) => ({
-        result: res,
-        type: 'AuthorizationPolicy',
-        name: `authorization-policy-${data.hash}`,
-      })
-    );
+  return await fns.fetch({ url, method: 'DELETE' }).then((res) => ({
+    result: res,
+    type: 'AuthorizationPolicy',
+    name: `authorization-policy-${data.hash}`,
+  }));
 };

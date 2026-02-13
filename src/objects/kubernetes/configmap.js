@@ -32,7 +32,7 @@ export const create = async function (
     namespace: z.string().min(1),
     name: z.string().min(1),
     filename: z.string().min(1),
-    shutable: z.boolean().default(true)
+    shutable: z.boolean().default(true),
   });
   const data_checks = Guard.validateProps(schema, props);
   const data = await fns.readFile(data_checks.path, 'utf8');
@@ -52,13 +52,11 @@ export const create = async function (
     },
   };
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/${data_checks.namespace}/configmaps`;
-  return await fns.fetch({ url, method: 'POST', body }).then(
-    (res) => ({
-        result: res,
-        type: 'ConfigMap',
-        name: `${data_checks.name}`,
-      })
-  );
+  return await fns.fetch({ url, method: 'POST', body }).then((res) => ({
+    result: res,
+    type: 'ConfigMap',
+    name: `${data_checks.name}`,
+  }));
 };
 /**
  * Function that will update the configmap in the kubernetes cluster.
@@ -82,7 +80,7 @@ export const update = async function (
     namespace: z.string().min(1),
     name: z.string().min(1),
     filename: z.string().min(1),
-    shutable: z.boolean().default(true)
+    shutable: z.boolean().default(true),
   });
   const data_checks = Guard.validateProps(schema, props);
   const data = await fns.readFile(data_checks.path, 'utf8');
@@ -100,5 +98,5 @@ export const update = async function (
     },
   };
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/${data_checks.namespace}/configmaps/${data_checks.name}`;
-  return await fns.fetch({ url, method: 'PUT', body }).then((res) =>  res);
+  return await fns.fetch({ url, method: 'PUT', body }).then((res) => res);
 };

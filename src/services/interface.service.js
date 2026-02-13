@@ -16,7 +16,7 @@ export const get = async function (
   }
 ) {
   const schema = z.object({
-    id_interface: z.number().positive()
+    id_interface: z.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
   return await fns.interface_get({ ...data });

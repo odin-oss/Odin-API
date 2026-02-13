@@ -18,17 +18,16 @@ export const create = async function (
 ) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
-    label: z.string()
+    label: z.string(),
   });
   const data = Guard.validateProps(schema, props);
-  return await fns.execute_creation({ ...data })
-    .then((res) => {
-      return {
-        result: res,
-        type: 'PVC',
-        name: `${data.label}${data.hash}-pvc`,
-      };
-    });
+  return await fns.execute_creation({ ...data }).then((res) => {
+    return {
+      result: res,
+      type: 'PVC',
+      name: `${data.label}${data.hash}-pvc`,
+    };
+  });
 };
 
 /**
@@ -38,13 +37,10 @@ export const create = async function (
  * @param {Function} fns functions to overwrite for unit testing.
  * @returns {JSON}
  */
-const execute_creation = async function (
-  props,
-  fetch = kapi.fetch
-) {
+const execute_creation = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(8).max(8),
-    label: z.string()
+    label: z.string(),
   });
   const data = Guard.validateProps(schema, props);
 
@@ -73,13 +69,11 @@ const execute_creation = async function (
     body.spec.volumeMode = 'Block';
   }
   const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/persistentvolumeclaims`;
-  return await fetch({ url, method: 'POST', body }).then(
-    (res) => ({
-      type: 'PersistentVolumeClaim',
-      name: `${data.label}${data.hash}-pvc`,
-      result: res,
-    })
-  );
+  return await fetch({ url, method: 'POST', body }).then((res) => ({
+    type: 'PersistentVolumeClaim',
+    name: `${data.label}${data.hash}-pvc`,
+    result: res,
+  }));
 };
 
 const test_exports = {};

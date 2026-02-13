@@ -52,7 +52,7 @@ export const create = async function (
       })
       .transform((val) => moment(val).tz(CONFIG.APP_TZ)),
     users: z.array(Number).default([]),
-    professors: z.array(Number).default([])
+    professors: z.array(Number).default([]),
   });
   const data = Guard.validateProps(schema, props);
 
@@ -123,7 +123,7 @@ export const list = async function (
   }
 ) {
   const schema = z.object({
-    id_user: z.number().positive()
+    id_user: z.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
 
@@ -134,9 +134,7 @@ export const list = async function (
       'The user is neither PROFESSEUR or ADMINISTRATEUR.'
     );
 
-  const sessions = await Promise.resolve(
-    fns.session_list({ ...data })
-  );
+  const sessions = await Promise.resolve(fns.session_list({ ...data }));
   const unique_ids = [
     ...new Set([
       ...sessions.flatMap((session) =>
@@ -147,26 +145,23 @@ export const list = async function (
       ),
     ]),
   ];
-  return await fns.user_list({ ids: unique_ids })
-    .then(
-      (result) => {
-        for (const session of sessions) {
-          for (let idx = 0; idx < session.users.length; idx++) {
-            const user_id = session.users[idx].id_user;
-            const corresponding_user = result.find((u) => u.id_user === user_id);
-            if (corresponding_user) session.users[idx] = corresponding_user;
-          }
-        }
-        for (const session of sessions) {
-          for (let idx = 0; idx < session.professors.length; idx++) {
-            const user_id = session.professors[idx].id_user;
-            const corresponding_user = result.find((u) => u.id_user === user_id);
-            if (corresponding_user) session.professors[idx] = corresponding_user;
-          }
-        }
-        return sessions;
+  return await fns.user_list({ ids: unique_ids }).then((result) => {
+    for (const session of sessions) {
+      for (let idx = 0; idx < session.users.length; idx++) {
+        const user_id = session.users[idx].id_user;
+        const corresponding_user = result.find((u) => u.id_user === user_id);
+        if (corresponding_user) session.users[idx] = corresponding_user;
       }
-    );
+    }
+    for (const session of sessions) {
+      for (let idx = 0; idx < session.professors.length; idx++) {
+        const user_id = session.professors[idx].id_user;
+        const corresponding_user = result.find((u) => u.id_user === user_id);
+        if (corresponding_user) session.professors[idx] = corresponding_user;
+      }
+    }
+    return sessions;
+  });
 };
 
 /**
@@ -188,7 +183,7 @@ export const get = async function (
 ) {
   const schema = z.object({
     id_application: z.number().positive(),
-    id_session: z.number().positive()
+    id_session: z.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
   const user_role = await fns.user_get({ ...data });
@@ -213,8 +208,7 @@ export const get = async function (
     ]),
   ];
 
-  await fns.user_list({ ids: unique_ids })
-  .then((result) => {
+  await fns.user_list({ ids: unique_ids }).then((result) => {
     for (let idx = 0; idx < session.users.length; idx++) {
       const user_id = session.users[idx].id_user;
       const corresponding_user = result.find((u) => u.id_user === user_id);

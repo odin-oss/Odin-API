@@ -17,7 +17,7 @@ import z from 'zod';
 
 /**
  * Attribute the session to a professor in the database
- * @param {Number} id_user id of the user that will be prof 
+ * @param {Number} id_user id of the user that will be prof
  * @param {Number} id_session id of the session
  * @param {Array<Function>} fns functions to overwrite when testing.
  * @returns
@@ -31,14 +31,13 @@ export const attribute_professor = async function (
   try {
     const schema = z.object({
       id_user: z.number().positive(),
-      id_session: z.number().positive()
+      id_session: z.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
-    const user = await Promise.resolve(
-      fns.user_get({ id_user: data.id_user })
-    );
-    return await dbManager.models.SESSION_HAS_PROFESSOR.create({ ...data })
-      .then((r) => ({ id_session: r.id_session, user }));
+    const user = await Promise.resolve(fns.user_get({ id_user: data.id_user }));
+    return await dbManager.models.SESSION_HAS_PROFESSOR.create({
+      ...data,
+    }).then((r) => ({ id_session: r.id_session, user }));
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -50,7 +49,7 @@ export const attribute_professor = async function (
  * @param {Number} id_session id of the session.
  * @param {Number} id_application id of the application.
  * @param {Function} fns functions for unit tests overwriting
- * @returns 
+ * @returns
  */
 export const attribute_user_and_application = async function (
   props,
@@ -68,8 +67,9 @@ export const attribute_user_and_application = async function (
     const data = Guard.validateProps(schema, props);
     await fns.application_get({ id_application: data.id_application });
     const user = await fns.user_get({ id_user: data.id_user });
-    return await dbManager.models.SESSION_HAS_USER.create({ ...data })
-      .then((r) => ({ ...r, user }));
+    return await dbManager.models.SESSION_HAS_USER.create({ ...data }).then(
+      (r) => ({ ...r, user })
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -89,24 +89,31 @@ export const create = async function (props) {
     const schema = z.object({
       id_environment: z.number().positive().optional(),
       label: z.string(),
-      begin_date: z.string().refine((val) => moment(val).isValid(), {
-        message: "Invalid date format"
-      }).transform((val) => moment(val).tz(CONFIG.APP_TZ).utc().format()),
+      begin_date: z
+        .string()
+        .refine((val) => moment(val).isValid(), {
+          message: 'Invalid date format',
+        })
+        .transform((val) => moment(val).tz(CONFIG.APP_TZ).utc().format()),
 
-      end_date: z.string().refine((val) => moment(val).isValid(), {
-        message: "Invalid date format"
-      }).transform((val) => moment(val).tz(CONFIG.APP_TZ).utc().format())
+      end_date: z
+        .string()
+        .refine((val) => moment(val).isValid(), {
+          message: 'Invalid date format',
+        })
+        .transform((val) => moment(val).tz(CONFIG.APP_TZ).utc().format()),
     });
     const data = Guard.validateProps(schema, props);
-    return await dbManager.models.SESSION.create({ ...data })
-      .then(r => new Session({
-        ...r,
-        label: data.label,
-        begin_date: moment(data.begin_date).tz(CONFIG.APP_TZ),
-        id_environment: data.id_environment,
-        end_date: moment(data.end_date).tz(CONFIG.APP_TZ),
-      })
-      );
+    return await dbManager.models.SESSION.create({ ...data }).then(
+      (r) =>
+        new Session({
+          ...r,
+          label: data.label,
+          begin_date: moment(data.begin_date).tz(CONFIG.APP_TZ),
+          id_environment: data.id_environment,
+          end_date: moment(data.end_date).tz(CONFIG.APP_TZ),
+        })
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -116,7 +123,7 @@ export const create = async function (props) {
  * List attributed session from database.
  * @param {Number} id_user id of the user
  * @param {Function} fns functions to overwrite in unit tests
- * @returns {Array<Session>} List of the sessions 
+ * @returns {Array<Session>} List of the sessions
  */
 export const list = async function (
   props,
@@ -126,7 +133,7 @@ export const list = async function (
 ) {
   try {
     const schema = z.object({
-      id_user: z.number().positive()
+      id_user: z.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
     const user_role = await fns.user_get({ ...data });
@@ -203,30 +210,35 @@ export const list = async function (
         ],
       });
     }
-    return await promise
-      .then((r) => {
-        const tmp = [];
-        for (const item of r) {
-          let result;
-          const source = (user_role.role === 'PROFESSEUR') ? item.SESSION : item;
-          result = {
-            ...source,
-            environment: new Environment(source.ENVIRONMENT),
-            users: source.SESSION_HAS_USERs.map(user => new User(user)),
-            applications: source.SESSION_HAS_USERs.map(app => new Application(app.APPLICATION)),
-            professors: source.SESSION_HAS_PROFESSORs.map(user => new User(user)),
-          };
-          for (const [index, app] of result.applications.entries()) {
-            const rawUserSession = source.SESSION_HAS_USERs[index];
-            app.datacenter = new Datacenter(rawUserSession.APPLICATION.DATACENTER);
-            app.environment = result.environment;
-            result.datacenter = app.datacenter;
-          }
-
-          tmp.push(new Session(result));
+    return await promise.then((r) => {
+      const tmp = [];
+      for (const item of r) {
+        let result;
+        const source = user_role.role === 'PROFESSEUR' ? item.SESSION : item;
+        result = {
+          ...source,
+          environment: new Environment(source.ENVIRONMENT),
+          users: source.SESSION_HAS_USERs.map((user) => new User(user)),
+          applications: source.SESSION_HAS_USERs.map(
+            (app) => new Application(app.APPLICATION)
+          ),
+          professors: source.SESSION_HAS_PROFESSORs.map(
+            (user) => new User(user)
+          ),
+        };
+        for (const [index, app] of result.applications.entries()) {
+          const rawUserSession = source.SESSION_HAS_USERs[index];
+          app.datacenter = new Datacenter(
+            rawUserSession.APPLICATION.DATACENTER
+          );
+          app.environment = result.environment;
+          result.datacenter = app.datacenter;
         }
-        return tmp;
-      });
+
+        tmp.push(new Session(result));
+      }
+      return tmp;
+    });
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -240,66 +252,68 @@ export const list = async function (
  */
 export const get_on_professeur = async function (props) {
   try {
-  const schema = z.object({
-    id_user: z.number().positive(),
-    id_session: z.number().positive()
-  });
-  const data = Guard.validateProps(schema, props);
+    const schema = z.object({
+      id_user: z.number().positive(),
+      id_session: z.number().positive(),
+    });
+    const data = Guard.validateProps(schema, props);
 
-  await dbManager.models.SESSION_HAS_PROFESSOR.findOne({ where: { ...data } })
-    .then((r) => {
+    await dbManager.models.SESSION_HAS_PROFESSOR.findOne({
+      where: { ...data },
+    }).then((r) => {
       if (r === null)
         throw new ProfessorIsNotAttributed(
           `The session is not attributed to the current user.`
         );
     });
 
-  const promise = dbManager.models.SESSION_HAS_PROFESSOR.findOne({
-    where: {
-      id_session: data.id_session,
-    },
-    include: [
-      {
-        model: dbManager.models.SESSION,
-        required: true,
-        include: [
-          {
-            model: dbManager.models.ENVIRONMENT,
-            required: true,
-          },
-          {
-            model: dbManager.models.SESSION_HAS_PROFESSOR,
-            required: false,
-          },
-          {
-            model: dbManager.models.SESSION_HAS_USER,
-            required: false,
-            include: [
-              {
-                model: dbManager.models.APPLICATION,
-                required: true,
-                include: [
-                  {
-                    model: dbManager.models.DATACENTER,
-                    required: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
+    const promise = dbManager.models.SESSION_HAS_PROFESSOR.findOne({
+      where: {
+        id_session: data.id_session,
       },
-    ],
-  });
-  return await promise
-    .then((result) => {
+      include: [
+        {
+          model: dbManager.models.SESSION,
+          required: true,
+          include: [
+            {
+              model: dbManager.models.ENVIRONMENT,
+              required: true,
+            },
+            {
+              model: dbManager.models.SESSION_HAS_PROFESSOR,
+              required: false,
+            },
+            {
+              model: dbManager.models.SESSION_HAS_USER,
+              required: false,
+              include: [
+                {
+                  model: dbManager.models.APPLICATION,
+                  required: true,
+                  include: [
+                    {
+                      model: dbManager.models.DATACENTER,
+                      required: false,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    return await promise.then((result) => {
       const session = new Session({
         ...result.SESSION,
         environment: new Environment(result.SESSION.ENVIRONMENT),
-        users: result.SESSION.SESSION_HAS_USERs.map(user => new User(user)),
-        applications: result.SESSION.SESSION_HAS_USERs.map(app => new Application(app.APPLICATION)),
+        users: result.SESSION.SESSION_HAS_USERs.map((user) => new User(user)),
+        applications: result.SESSION.SESSION_HAS_USERs.map(
+          (app) => new Application(app.APPLICATION)
+        ),
         professors: result.SESSION.SESSION_HAS_PROFESSORs.map(
-          user => new User(user)
+          (user) => new User(user)
         ),
       });
       for (const [i, app] of session.applications.entries()) {
@@ -310,19 +324,19 @@ export const get_on_professeur = async function (props) {
         session.datacenter = app.datacenter;
       }
       return session;
-    })
-  } catch (err) { throw dbManager.sequelizeErrorManagement(err) };
+    });
+  } catch (err) {
+    throw dbManager.sequelizeErrorManagement(err);
+  }
 };
 
 /**
  * Get session if user is ADMINISTRATEUR.
  * @param {*} props
  */
-export const get_on_administrateur = async function (
-  props
-) {
+export const get_on_administrateur = async function (props) {
   const schema = z.object({
-    id_session: z.number().positive()
+    id_session: z.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
 
@@ -358,7 +372,7 @@ export const get_on_administrateur = async function (
     ],
   });
   return await promise
-    .then(result => {
+    .then((result) => {
       const session = new Session({
         ...result,
         environment: new Environment(result.ENVIRONMENT),
@@ -377,5 +391,7 @@ export const get_on_administrateur = async function (
       }
       return session;
     })
-    .catch((err) => { throw dbManager.sequelizeErrorManagement(err) });
+    .catch((err) => {
+      throw dbManager.sequelizeErrorManagement(err);
+    });
 };

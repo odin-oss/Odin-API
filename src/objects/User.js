@@ -22,11 +22,11 @@ export class User {
   // Zod Schema for object validation
   static schema = z.object({
     id_user: z.number().int().optional(),
-    lastname: z.string().min(1),
-    firstname: z.string().min(1),
-    mail: z.email('Invalid email address'),
-    role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
-    pwd: z.string().min(8).optional(),
+    lastname: z.string().min(1).optional(),
+    firstname: z.string().min(1).optional(),
+    mail: z.email('Invalid email address').optional(),
+    role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']).optional(),
+    pwd: z.string().min(8).optional().optional(),
   });
 
   // Getters

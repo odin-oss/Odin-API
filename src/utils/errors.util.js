@@ -342,3 +342,13 @@ export class AppsIngressErrorNotDefined extends Error {
     this.name = 'AppsIngressErrorNotDefined';
   }
 }
+/**
+ * AppsIngressNotReachable.
+ */
+export class AppsIngressNotReachable extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 500;
+    this.name = 'AppsIngressNotReachable';
+  }
+}

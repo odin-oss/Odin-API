@@ -35,21 +35,22 @@ export const exec_deletion = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
-  const promises = [];
-  promises.push(fns.delete_network_policy({ ...data }));
-  promises.push(fns.delete_authorization_policy({ ...data }));
-  promises.push(fns.external_name_deletion({ ...data }));
-  promises.push(fns.namespace_deletion({ ...data }));
-  promises.push(fns.delete_application({ ...data }));
-  promises.push(fns.registry_hub_deletion({ ...data }));
-  promises.push(fns.deployment_deletion({ ...data }));
-  promises.push(fns.service_deletion({ ...data }));
-  promises.push(fns.deleteFromKong({ ...data }));
+  const promises = [
+    fns.delete_network_policy({ ...data }),
+    fns.delete_authorization_policy({ ...data }),
+    fns.external_name_deletion({ ...data }),
+    fns.namespace_deletion({ ...data }),
+    fns.delete_application({ ...data }),
+    fns.registry_hub_deletion({ ...data }),
+    fns.deployment_deletion({ ...data }),
+    fns.service_deletion({ ...data }),
+    fns.deleteFromKong({ ...data }),
+  ];
 
-  return await Promise.all(promises).then(r => ({ ...data }));
+  return await Promise.all(promises).then((r) => ({ ...data }));
 };
 
 /**
@@ -66,7 +67,7 @@ export const exec_start = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
   const promises = [
@@ -76,7 +77,7 @@ export const exec_start = async function (
       state: 'started',
     }),
   ];
-  return await Promise.all(promises).then((r) => ({ ...data }));
+  return await Promise.all(promises).then(() => ({ ...data }));
 };
 
 /**
@@ -93,7 +94,7 @@ export const exec_shutdown = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8)
+    hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
   const promises = [
@@ -138,8 +139,7 @@ export const create = async function (
     generated_label: z.string(),
     username: z.string(),
     password: z.string(),
-    web_title: z.string()
-
+    web_title: z.string(),
   });
   const data = Guard.validateProps(schema, props);
   await fns.save_app({
@@ -234,8 +234,7 @@ export const create = async function (
           target: '',
         })
       );
-
     }
   }
-  return await Promise.all(promises).then(r => ({ hash: data.hash }));
+  return await Promise.all(promises).then(() => ({ hash: data.hash }));
 };

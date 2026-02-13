@@ -20,16 +20,13 @@ export const parsing_generic_tags = function (
     hash: z.string().min(2),
     generated_label: z.string().min(2),
     web_title: z.string().min(2),
-    target: z.string().default('')
+    target: z.string().default(''),
   });
   const data = Guard.validateProps(schema, custom_values);
   let result = value.replace('<hash>', `${data.hash}`);
   result = result.replace('<username>', `${data.username}`);
   result = result.replace('<password>', `${data.password}`);
-  result = result.replace(
-    '<generated_label>',
-    `${data.generated_label}`
-  );
+  result = result.replace('<generated_label>', `${data.generated_label}`);
   result = result.replace('<target>', `${data.target}`);
   result = result.replace(
     '<subpath>',

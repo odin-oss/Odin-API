@@ -43,7 +43,7 @@ export const get = async (
 ) => {
   const schema = z.object({
     id_application: z.number().positive().optional(),
-    key: z.string().optional()
+    key: z.string().optional(),
   });
   const data = Guard.validateProps(schema, props);
   if (props.id_application === undefined && props.key === undefined)
@@ -143,7 +143,7 @@ export const update_state = async function (
 ) {
   const schema = z.object({
     id_application: z.number().positive(),
-    state_application: z.enum(["Off", "Ready"])
+    state_application: z.enum(['Off', 'Ready']),
   });
   const data = Guard.validateProps(schema, props);
   const application = await fns.application_get({
@@ -199,7 +199,7 @@ export const deletion = async function (
 ) {
   const schema = z.object({
     id_application: z.number().positive(),
-    backup_storage: z.boolean().default(true)
+    backup_storage: z.boolean().default(true),
   });
   const data = Guard.validateProps(schema, props);
   const app = await Promise.resolve(
@@ -208,7 +208,7 @@ export const deletion = async function (
   if (!['Ready', 'Off'].includes(app.state_application))
     throw new ApplicationInvalidStateError(
       'The application must be in states Ready or Off to be deleted, current state is ' +
-      app.state_application
+        app.state_application
     );
 
   const datacenter = await Promise.resolve(
@@ -270,12 +270,13 @@ export const create = async function (
     id_environment: z.number().positive(),
     id_datacenter: z.number().positive(),
     label: z.string().min(1),
-    state_changed_date: z.string()
+    state_changed_date: z
+      .string()
       .refine((val) => moment(val).isValid(), {
         message: 'Invalid date format',
       })
       .transform((val) => moment(val).tz(CONFIG.APP_TZ))
-      .default(moment.tz(CONFIG.APP_TZ))
+      .default(moment.tz(CONFIG.APP_TZ)),
   });
   const data = Guard.validateProps(schema, props);
   const infos = await fns.user_get({ id_user: data.id_user });
