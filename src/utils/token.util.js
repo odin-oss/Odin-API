@@ -40,7 +40,7 @@ export const generateToken = function (
     },
     CONFIG.APP_TOKEN_KEYPASS,
     {
-      expiresIn: CONFIG.APP_TOKEN_EXPIRATION_HOURS,
+      expiresIn: CONFIG.APP_TOKEN_EXPIRATION_HOURS+"h",
     }
   );
 };
@@ -110,7 +110,7 @@ export const isTokenValid = async (
       throw new MissingArgumentError('The token is missing.');
     if (req.headers['authorization'].slice(0, 7) !== 'Bearer ')
       throw new ParameterMisformed('The props.token parameter is misformed.');
-
+    
     const token = req.headers['authorization'].slice(7);
     const verifiedToken = fns.jwt_verify(token, CONFIG.APP_TOKEN_KEYPASS);
     if (!verifiedToken.id_user)

@@ -71,10 +71,11 @@ export const update_password = async function (
         password: req.body.password,
       })
       .then((user) =>
+
         ApiResponse.success(
           req,
           res,
-          user.public_format(),
+          {},
           200,
           'Password changed.'
         )
