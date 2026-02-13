@@ -68,7 +68,7 @@ const execute_creation = async function (props, fetch = kapi.fetch) {
   if (CONFIG.KUBERNETES_VOLUME_TYPE === 'Block') {
     body.spec.volumeMode = 'Block';
   }
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/persistentvolumeclaims`;
+  const url = `/api/v1/namespaces/n${data.hash}/persistentvolumeclaims`;
   return await fetch({ url, method: 'POST', body }).then((res) => ({
     type: 'PersistentVolumeClaim',
     name: `${data.label}${data.hash}-pvc`,

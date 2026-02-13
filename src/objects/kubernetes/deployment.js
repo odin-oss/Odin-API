@@ -226,7 +226,7 @@ export const create = async function (props, fetch = kapi.fetch) {
     has_storage: data.has_storage,
   });
 
-  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/deployments`;
+  const url = `/apis/apps/v1/namespaces/n${data.hash}/deployments`;
   return await fetch({ url, method: 'POST', body }).then((res) => ({
     result: res,
     type: 'Deployment',
@@ -504,7 +504,7 @@ const get = async function (props, fetch = kapi.fetch) {
     onlyShutable: z.boolean().default(false),
   });
   const data = Guard.validateProps(schema, props);
-  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/deployments?labelSelector=type=Deployment,hash=${data.hash},shutable=${data.onlyShutable ? 'true' : 'false'}`;
+  const url = `/apis/apps/v1/namespaces/n${data.hash}/deployments?labelSelector=type=Deployment,hash=${data.hash},shutable=${data.onlyShutable ? 'true' : 'false'}`;
   return await fetch({ url, method: 'GET' }).then((res) => {
     if (res === 'Kubernetes is not activated.') return { result: res };
     return {
@@ -528,7 +528,7 @@ const del = async function (props, fetch = kapi.fetch) {
     name: z.string(),
   });
   const data = Guard.validateProps(schema, props);
-  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/deployments/${data.name}`;
+  const url = `/apis/apps/v1/namespaces/n${data.hash}/deployments/${data.name}`;
   return await Promise.resolve(fetch({ url, method: 'DELETE' })).then(
     (res) => ({
       result: res,
@@ -564,7 +564,7 @@ const put = async function (props, fetch = kapi.fetch) {
       replicas: data.replicas,
     },
   };
-  const url = `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/deployments/${data.name}/scale`;
+  const url = `/apis/apps/v1/namespaces/n${data.hash}/deployments/${data.name}/scale`;
   return await fetch({ url, body, method: 'PUT' }).then((res) => ({
     result: res,
     type: 'Deployment',

@@ -133,7 +133,7 @@ export const smashExport = async function (props, fetch = kapi.fetch) {
       },
     },
   };
-  const url = `${CONFIG.KUBERNETES_URL}/apis/batch/v1/namespaces/n${data.hash}/jobs`;
+  const url = `/apis/batch/v1/namespaces/n${data.hash}/jobs`;
   return await fetch({ url, method: 'POST', body }).then((res) => ({
     result: res,
     type: 'Job',

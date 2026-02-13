@@ -14,7 +14,7 @@ export const deletion = async function (props, fetch = kapi.fetch) {
     hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}`;
+  const url = `/api/v1/namespaces/n${data.hash}`;
   return await fetch({ url, method: 'DELETE' }).then((res) => ({
     result: res,
     type: 'Namespace',
@@ -49,7 +49,7 @@ export const create = async function (props, fetch = kapi.fetch) {
       phase: 'Active', // This is typically managed by Kubernetes
     },
   };
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces`;
+  const url = `/api/v1/namespaces`;
   return await fetch({ url, method: 'POST', body }).then((res) => ({
     result: res,
     type: 'Namespace',

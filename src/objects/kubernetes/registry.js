@@ -14,7 +14,7 @@ export const deletion = async function (props, fetch = kapi.fetch) {
     hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/secrets/registryhub`;
+  const url = `/api/v1/namespaces/n${data.hash}/secrets/registryhub`;
   return await fetch({ url, method: 'DELETE' }).then((res) => ({
     result: res,
     type: 'RegistryHub',
@@ -56,7 +56,7 @@ export const create = async function (props, fetch = kapi.fetch) {
     },
     type: 'kubernetes.io/dockerconfigjson',
   };
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data_checks.hash}/secrets`;
+  const url = `/api/v1/namespaces/n${data_checks.hash}/secrets`;
   return await fetch({ url, method: 'POST', body }).then((res) => ({
     result: res,
     type: 'RegistryHub',

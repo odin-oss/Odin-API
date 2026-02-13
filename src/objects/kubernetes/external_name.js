@@ -61,7 +61,7 @@ export const create = async function (props, fetch = kapi.fetch) {
       type: 'ExternalName',
     },
   };
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services`;
+  const url = `/api/v1/namespaces/cirrus/services`;
   return await fetch({ url, method: 'POST', body }).then((res) => ({
     result: res,
     type: 'ExternalName',
@@ -82,7 +82,7 @@ const get = async function (props, fetch = kapi.fetch) {
     onlyShutable: z.boolean().default(true),
   });
   const data = Guard.validateProps(schema, props);
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services?labelSelector=type=ExternalName,hash=${data.hash},shutable=${{ ...expected_props, ...props }.onlyShutable ? 'true' : 'false'}`;
+  const url = `/api/v1/namespaces/cirrus/services?labelSelector=type=ExternalName,hash=${data.hash},shutable=${{ ...expected_props, ...props }.onlyShutable ? 'true' : 'false'}`;
   return await fetch({ url, method: 'GET' }).then((res) => {
     if (res === 'Kubernetes is not activated.') return { result: res };
     return {
@@ -102,7 +102,7 @@ const del = async function (props, fetch = kapi.fetch) {
     name: z.string(),
   });
   const data = Guard.validateProps(schema, props);
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/cirrus/services/${data.name}`;
+  const url = `/api/v1/namespaces/cirrus/services/${data.name}`;
   return await fetch({ url, method: 'DELETE' }).then((res) => ({
     result: res,
     type: 'ExternalName',

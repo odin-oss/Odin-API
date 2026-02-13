@@ -81,7 +81,7 @@ export const create = async function (props, fetch = kapi.fetch) {
       type: `${typeStr}`,
     },
   };
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/services`;
+  const url = `/api/v1/namespaces/n${data.hash}/services`;
   return await fetch({ url, method: 'POST', body }).then((res) => ({
     result: res,
     type: 'Service',
@@ -102,7 +102,7 @@ const get = async function (props, fetch = kapi.fetch) {
     onlyShutable: z.boolean().default(true),
   });
   const data = Guard.validateProps(schema, props);
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/services?labelSelector=hash=${data.hash},shutable=${data.onlyShutable ? 'true' : 'false'}`;
+  const url = `/api/v1/namespaces/n${data.hash}/services?labelSelector=hash=${data.hash},shutable=${data.onlyShutable ? 'true' : 'false'}`;
   return await fetch({ url, method: 'GET' }).then((res) => ({
     result: res.items.map((item) => item.metadata.name),
     type: 'Services',
@@ -122,7 +122,7 @@ const del = async function (props, fetch = kapi.fetch) {
     name: z.string(),
   });
   const data = Guard.validateProps(schema, props);
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/services/${data.name}`;
+  const url = `/api/v1/namespaces/n${data.hash}/services/${data.name}`;
   return await fetch({ url, method: 'DELETE' }).then((res) => ({
     result: res,
     type: 'Service',

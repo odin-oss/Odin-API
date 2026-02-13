@@ -50,7 +50,7 @@ export const fetch = async function (
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const res = await fetch(`${CONFIG.KUBERNETES_URL}${url}`, options);
+      const res = await fetch(`${url}`, options);
       const contentType = res.headers.get('content-type');
       if (res.status === 429 || res.status === 504 || res.status === 502)
         throw new KubernetesAPITimedOut(

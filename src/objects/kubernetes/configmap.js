@@ -51,7 +51,7 @@ export const create = async function (
       },
     },
   };
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/${data_checks.namespace}/configmaps`;
+  const url = `/api/v1/namespaces/${data_checks.namespace}/configmaps`;
   return await fns.fetch({ url, method: 'POST', body }).then((res) => ({
     result: res,
     type: 'ConfigMap',
@@ -97,6 +97,6 @@ export const update = async function (
       },
     },
   };
-  const url = `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/${data_checks.namespace}/configmaps/${data_checks.name}`;
+  const url = `/api/v1/namespaces/${data_checks.namespace}/configmaps/${data_checks.name}`;
   return await fns.fetch({ url, method: 'PUT', body }).then((res) => res);
 };

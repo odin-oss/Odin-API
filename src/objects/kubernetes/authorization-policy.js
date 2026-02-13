@@ -52,7 +52,7 @@ export const create = async function (
       ],
     },
   };
-  const url = `${CONFIG.KUBERNETES_URL}/apis/security.istio.io/v1/namespaces/cirrus/authorizationpolicies`;
+  const url = `/apis/security.istio.io/v1/namespaces/cirrus/authorizationpolicies`;
   return await fns.fetch({ url, method: 'POST', body }).then((res) => ({
     result: res,
     type: 'AuthorizationPolicy',
@@ -76,7 +76,7 @@ export const deletion = async function (
     hash: z.string().min(8).max(8),
   });
   const data = Guard.validateProps(schema, props);
-  const url = `${CONFIG.KUBERNETES_URL}/apis/security.istio.io/v1/namespaces/cirrus/authorizationpolicies/istio-ap-cirrus-kafka-n${data.hash}`;
+  const url = `/apis/security.istio.io/v1/namespaces/cirrus/authorizationpolicies/istio-ap-cirrus-kafka-n${data.hash}`;
   return await fns.fetch({ url, method: 'DELETE' }).then((res) => ({
     result: res,
     type: 'AuthorizationPolicy',
