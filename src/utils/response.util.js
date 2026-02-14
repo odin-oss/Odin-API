@@ -12,16 +12,16 @@ export class ApiResponse {
    * @param {moment} timestamp - Timestamp for when the response was created
    */
   constructor(success, data = null, error = null, message = null) {
-    const zod = Guard.validateProps(ApiResponse.schema, {
+    const validated = Guard.validateProps(ApiResponse.schema, {
       success,
       data,
       error,
       message,
     });
-    this.success = zod.success;
-    this.message = zod.message;
-    this.data = zod.data;
-    this.error = zod.error;
+    this.success = validated.success;
+    this.message = validated.message;
+    this.data = validated.data;
+    this.error = validated.error;
     this.timestamp = moment.tz(CONFIG.APP_TZ);
   }
 
@@ -29,15 +29,15 @@ export class ApiResponse {
   static schema = z.object({
     success: z.boolean(),
     message: z.string(),
-    data: z.json().nullable(),
-    error: z.json().nullable(),
+    data: z.any().nullable().optional(),
+    error: z.any().nullable().optional(),
   });
 
   /**
    * Static helper for 2xx responses
    */
   static success(req, res, data, status = 200, message = 'Request successful') {
-    logs.info(`[${req.method}][200] ${req.originalUrl} : ${message}`);
+    logs.info(`[${req.method}][${req.status}] ${req.originalUrl} : ${message}`);
     res.status(status).json(new ApiResponse(true, data, null, message));
   }
 

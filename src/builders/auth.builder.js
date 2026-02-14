@@ -48,7 +48,7 @@ export const update = async function (props) {
       });
     });
   } catch (err) {
-    throw dbManager.models.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
@@ -75,7 +75,7 @@ export const role_by_id = async function (props) {
       });
     });
   } catch (err) {
-    throw dbManager.models.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };
 /**
@@ -89,16 +89,12 @@ export const role_by_label = async function (props) {
       label: z.string(),
     });
     const data = Guard.validateProps(schema, props);
-    const options = {
-      where: {
-        label: data.label,
-      },
-    };
+    const options = { where: { ...data } };
     return await dbManager.models.USER_ROLE.findOne(options).then((r) => {
       if (!r) throw new DBObjectNotFound('The user role could not be found.');
-      return new UserRole({ ...r });
+      return new UserRole({ ...r.dataValues });
     });
   } catch (err) {
-    throw dbManager.models.sequelizeErrorManagement(err);
+    throw dbManager.sequelizeErrorManagement(err);
   }
 };

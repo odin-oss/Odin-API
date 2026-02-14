@@ -56,7 +56,7 @@ export const get = async function (props) {
           `The element id_application = '${data.id_application}' could not be found.`
         );
       return new Application({
-        ...r,
+        ...r.dataValues,
         state_application: r.ENUM_STATE_APPLICATION.label,
         datacenter: new Datacenter(r),
         environment: new Environment(r.ENVIRONMENT),

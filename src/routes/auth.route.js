@@ -4,9 +4,44 @@
  * @module route/auth
  */
 import express from 'express';
-import * as auth_controller from '../controllers/auth.controller.js';
+import { connect } from '../controllers/auth.controller.js';
+import { app_access_granted } from '../utils/token.util.js';
+import { counter, counter_get } from '../middlewares/prometheus.js';
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * /auth/app:
+ *  get:
+ *    description: Does the user have the access to the app ?
+ *    security:
+ *      - Bearer: []
+ *    tags:
+ *      - Authentication
+ *    produces:
+ *      - application/json
+ *    parameters:
+ *     - name: hash
+ *       description: Application's hash.
+ *       in: query
+ *       required: true
+ *       type: integer
+ *     - name: token
+ *       description: User's personal token.
+ *       in: query
+ *       required: true
+ *       type: integer
+ *    responses:
+ *       200:
+ *         description: true if access is authorized.
+ *
+ */
+router.get('/:hash/*', function (req, res) {
+  counter.inc();
+  counter_get.inc();
+  app_access_granted(req, res);
+});
 
 /**
  * @swagger
@@ -56,9 +91,7 @@ const router = express.Router();
  *           $ref: '#/definitions/DBConnexionRefused'
  *
  */
-router.post('/connect_by_credentials', (req, res) =>
-  auth_controller.connect(req, res)
-);
+router.post('/connect_by_credentials', (req, res) => connect(req, res));
 
 export default router;
 

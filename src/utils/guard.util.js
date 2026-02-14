@@ -22,7 +22,11 @@ export default class Guard {
         throw new MissingArgumentError(
           `Missing arguments: ${result.error.issues.map((i) => i.path).join(', ')}`
         );
-      throw new ParameterMisformed(result.error.errors[0].message);
+      if (result.error.issues[0].errors)
+        throw new ParameterMisformed(
+          result.error.issues[0].errors.map((err) => err[0].message)
+        );
+      throw new ParameterMisformed(result.error.issues[0].message);
     }
     return result.data;
   };

@@ -4,13 +4,13 @@ import * as token from '../utils/token.util.js';
 import { ParameterMisformed } from '../utils/errors.util.js';
 import { ApiResponse } from '../utils/response.util.js';
 import Guard from '../utils/guard.util.js';
+import z from 'zod';
 
 /**
  * Controller that checks parameters and return current user's informations.
  * @param {*} req HTTP request.
  * @param {*} res HTTP response.
  * @param {*} fns overwriting service function for tests.
- * @returns
  */
 export const me = async function (
   req,
@@ -47,7 +47,6 @@ export const me = async function (
  * @param {*} req HTTP request.
  * @param {*} res HTTP response.
  * @param {*} fns overwriting service function for tests.
- * @returns
  */
 export const update_password = async function (
   req,
@@ -70,15 +69,7 @@ export const update_password = async function (
         old_password: req.body.old_password,
         password: req.body.password,
       })
-      .then(() =>
-        ApiResponse.success(
-          req,
-          res,
-          {},
-          200,
-          'Password changed.'
-        )
-      );
+      .then(() => ApiResponse.success(req, res, {}, 200, 'Password changed.'));
   } catch (err) {
     ApiResponse.error(req, res, err);
   }
@@ -105,19 +96,21 @@ export const list = async function (
   //Request
   try {
     Guard.check_query(req, ['user_role']);
-    if (!Guard.check_user_role(req.query.user_role))
-      throw new ParameterMisformed(
-        'The req.query.user_role parameter is misformed.'
+    const schema = z.object({
+      user_role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
+    });
+    const data = Guard.validateProps(schema, req.query);
+    await fns
+      .user_list(data)
+      .then((users) =>
+        ApiResponse.success(
+          req,
+          res,
+          { users: users.map((user) => user.public_format()) },
+          200,
+          'List of users transmitted.'
+        )
       );
-    await fns.user_list({ user_role: req.query.user_role }).then((users) =>
-      ApiResponse.success(
-        req,
-        res,
-        users.map((user) => user.public_format()),
-        200,
-        'List of users transmitted.'
-      )
-    );
   } catch (err) {
     ApiResponse.error(req, res, err);
   }
@@ -164,6 +157,8 @@ export const create = async function (
         ApiResponse.success(req, res, u.public_format(), 201, 'User created.')
       );
   } catch (err) {
+
+        console.log(err)
     ApiResponse.error(req, res, err);
   }
 };

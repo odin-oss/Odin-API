@@ -10,9 +10,9 @@ import Guard from '../utils/guard.util.js';
  */
 export const list = async function () {
   return await dbManager.models.DATACENTER.findAll()
-    .then((dcs) => dcs.map((dc) => new Datacenter({ ...dc })))
+    .then((dcs) => dcs.map((dc) => new Datacenter({ ...dc.dataValues })))
     .catch((err) => {
-      throw dbManager.models.sequelizeErrorManagement(err);
+      throw dbManager.sequelizeErrorManagement(err);
     });
 };
 
@@ -30,9 +30,9 @@ export const get = async function (props) {
     .then((r) => {
       if (r == null)
         throw new DBObjectNotFound('The datacenter could not be found.');
-      return new Datacenter({ ...r });
+      return new Datacenter({ ...r.dataValues });
     })
     .catch((err) => {
-      throw dbManager.models.sequelizeErrorManagement(err);
+      throw dbManager.sequelizeErrorManagement(err);
     });
 };

@@ -38,10 +38,10 @@ export const list_by_role = async function (
   }
 ) {
   const schema = z.object({
-    role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
+    user_role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
   });
   const data = Guard.validateProps(schema, props);
-  return await fns.user_list({ ...data });
+  return await fns.user_list(data);
 };
 
 /**
@@ -50,7 +50,7 @@ export const list_by_role = async function (
  * @param {String} password new password to set to the user.
  * @param {String} old_password old password of the user.
  * @param {Function} fns functions to overwrite for unit testing.
- * @returns User
+ * @returns {JSON}
  */
 export const update_password = async function (
   props,
@@ -95,9 +95,9 @@ export const update_password = async function (
 export const create = async function (
   props,
   fns = {
-    bcrypt: bcrypt,
+    bcrypt,
     create: user_builder.create,
-    role_by_label: role_by_label,
+    role_by_label
   }
 ) {
   const schema = z.object({
@@ -121,6 +121,7 @@ export const create = async function (
   return await fns
     .create({
       ...data,
+      id_role: role.id_role,
       hashed_password: hashed_password,
     })
     .then((user) => {

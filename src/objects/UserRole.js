@@ -13,8 +13,8 @@ export class UserRole {
 
   // Zod Schema for object validation
   static schema = z.object({
-    id_role: z.number().int().positive(),
-    label: z.string().min(1),
+    id_role: z.number().int().positive().optional(),
+    label: z.string().min(1).optional(),
   });
 
   // Getters

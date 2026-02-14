@@ -1,4 +1,14 @@
 /**
+ * Error that is sent whenever the asked url is not found.
+ */
+export class URLNotFound extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 404;
+    this.name = 'URLNotFound';
+  }
+}
+/**
  * BadTypeArgumentError returned whenever a function receives an argument not with the expected type.
  */
 export class BadTypeArgumentError extends Error {

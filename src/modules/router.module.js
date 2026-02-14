@@ -8,7 +8,8 @@ import CATEGORY from '../routes/category.route.js';
 import IMAGES from '../routes/images.route.js';
 import USER from '../routes/user.route.js';
 import SESSION from '../routes/sessions.route.js';
-import logs from '../middlewares/winston.js';
+import { ApiResponse } from '../utils/response.util.js';
+import { URLNotFound } from '../utils/errors.util.js';
 
 export default (app) => {
   app.use('/application', APPLICATION);
@@ -21,8 +22,7 @@ export default (app) => {
   app.use('/session', SESSION);
   app.use('/user', USER);
   app.use('/', BASE);
-  app.use('/*', function (req, res) {
-    logs.error(`[404] : ${req.originalUrl} not found.`);
-    return res.status(404).json({ result: 'URL not found.' });
-  });
+  app.use('/*', (req, res) =>
+    ApiResponse.error(req, res, new URLNotFound('URL not found.'))
+  );
 };

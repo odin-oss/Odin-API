@@ -14,7 +14,7 @@ import {
  * Function used to communicate with the Kubernetes API.
  * @param {String} url URI to fetch on the Kubernetes API
  * @param {String} method method to use. (GET/POST/DELETE/PATCH...etc)
- * @param {JSON} body particular body to send. 
+ * @param {JSON} body particular body to send.
  * @param {Function} fetch overwriting fetch for test.
  * @param {Number} retries number of retries to execute on fail.
  * @param {Number} retryDelay how many ms between retries.

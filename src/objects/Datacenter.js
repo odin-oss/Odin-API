@@ -17,10 +17,10 @@ export class Datacenter {
 
   // Zod Schema for object validation
   static schema = z.object({
-    id_datacenter: z.number().int().positive(),
-    label: z.string().min(1).trim(),
-    provider: z.string().min(1).trim(),
-    city: z.string().min(1).trim(),
+    id_datacenter: z.number().int().positive().optional(),
+    label: z.string().min(1).trim().optional(),
+    provider: z.string().min(1).trim().optional(),
+    city: z.string().min(1).trim().optional(),
   });
 
   // Getters

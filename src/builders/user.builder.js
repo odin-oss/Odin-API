@@ -58,18 +58,18 @@ export const get = async function (props) {
 export const list = async function (props) {
   try {
     const schema = z.object({
-      role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
+      user_role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
       include: {
         model: dbManager.models.USER_ROLE,
         required: true,
-        where: { label: data.role },
+        where: { label: data.user_role },
       },
     };
     return await dbManager.models.USERS.findAll(options).then((r) =>
-      r.map((user) => new User({ ...user, role: user.USER_ROLE.label }))
+      r.map((user) => new User({ ...user.dataValues, role: user.USER_ROLE.label }))
     );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
@@ -169,14 +169,11 @@ export const create = async function (props) {
       pwd: data.hashed_password,
     });
     const options = {
-      firstname: data.firstname,
-      lastname: data.lastname,
-      mail: data.mail,
-      id_role: data.id_role,
+      ...data,
       id_password: pwd.id_password,
     };
     return await dbManager.models.USERS.create(options).then(
-      (r) => new User({ ...r })
+      (r) => new User({ ...r.dataValues })
     );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
