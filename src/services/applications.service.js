@@ -96,7 +96,8 @@ export const list = async function (
   }
   promises = [
     ...promises,
-    ...applications.map((app) => fns.history_get_last_record({
+    ...applications.map((app) =>
+      fns.history_get_last_record({
         id_user: data.id_user,
         id_application: app.id_application,
       })

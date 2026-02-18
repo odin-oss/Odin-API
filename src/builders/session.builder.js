@@ -31,11 +31,13 @@ export const attribute_professor = async function (
   try {
     const schema = z.object({
       id_user: z.coerce.number().int().positive(),
-      id_session: z.coerce.number().int().positive()
+      id_session: z.coerce.number().int().positive(),
     });
     const data = Guard.validateProps(schema, props);
     const user = await Promise.resolve(fns.user_get({ id_user: data.id_user }));
-    return await dbManager.models.SESSION_HAS_PROFESSOR.create({ ...data }).then((r) => ({ id_session: r.id_session, user }));
+    return await dbManager.models.SESSION_HAS_PROFESSOR.create({
+      ...data,
+    }).then((r) => ({ id_session: r.id_session, user }));
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -101,7 +103,8 @@ export const create = async function (props) {
     });
     const data = Guard.validateProps(schema, props);
     return await dbManager.models.SESSION.create({ ...data }).then(
-      (r) => new Session({
+      (r) =>
+        new Session({
           ...r.dataValues,
           label: data.label,
           begin_date: moment(data.begin_date).tz(CONFIG.APP_TZ),
@@ -370,11 +373,15 @@ export const get_on_administrateur = async function (props) {
       const session = new Session({
         ...result.dataValues,
         environment: new Environment(result.ENVIRONMENT.dataValues),
-        users: result.SESSION_HAS_USERs.map((user) => new User(user.dataValues)),
+        users: result.SESSION_HAS_USERs.map(
+          (user) => new User(user.dataValues)
+        ),
         applications: result.SESSION_HAS_USERs.map(
           (app) => new Application(app.APPLICATION.dataValues)
         ),
-        professors: result.SESSION_HAS_PROFESSORs.map((user) => new User(user.dataValues)),
+        professors: result.SESSION_HAS_PROFESSORs.map(
+          (user) => new User(user.dataValues)
+        ),
       });
       for (const [i, app] of session.applications.entries()) {
         app.datacenter = new Datacenter(

@@ -278,8 +278,8 @@ export const getIdsEnumStates = async function (props) {
   };
   return await dbManager.models.ENUM_EXPORT_STATE.findAll(opt_state).then(
     (results) => {
-      const res_statuses = results.map(state => state.dataValues.status);
-      if ((new Set(res_statuses)).size !== data.statuses.length) {
+      const res_statuses = results.map((state) => state.dataValues.status);
+      if (new Set(res_statuses).size !== data.statuses.length) {
         const foundStatuses = results.map((r) => r.status);
         const missingStatuses = data.statuses.filter(
           (s) => !foundStatuses.includes(s)
@@ -288,7 +288,9 @@ export const getIdsEnumStates = async function (props) {
           `The state(s) "${missingStatuses.join(', ')}" could not be found.`
         );
       }
-      return Array.from(new Set(res_statuses)).map((r) => r.id_enum_export_state);
+      return Array.from(new Set(res_statuses)).map(
+        (r) => r.id_enum_export_state
+      );
     }
   );
 };

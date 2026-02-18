@@ -2,7 +2,7 @@ import * as application_service from '../services/applications.service.js';
 import * as session_builder from '../builders/session.builder.js';
 import * as user_service from '../services/user.service.js';
 import * as user_builder from '../builders/user.builder.js';
-import {UserIsNeitherProfOrAdmin} from '../utils/errors.util.js';
+import { UserIsNeitherProfOrAdmin } from '../utils/errors.util.js';
 import { Session } from '../objects/Session.js';
 import Guard from '../utils/guard.util.js';
 import z from 'zod';

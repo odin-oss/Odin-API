@@ -53,6 +53,7 @@ await dbManager
       logger.error(
         `[SYSTEM][500] / : 1/5. Postgres Error: The server encountered an error : ${error}`
       );
+    console.log(error);
     process.exit(0);
   });
 

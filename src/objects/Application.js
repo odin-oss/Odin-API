@@ -248,7 +248,9 @@ export class Application {
       id_user: this.#id_user,
       id_environment: this.#id_environment,
       state_application: this.#state_application,
-      state_changed_date: moment(this.#state_changed_date).tz(CONFIG.APP_TZ).format(),
+      state_changed_date: moment(this.#state_changed_date)
+        .tz(CONFIG.APP_TZ)
+        .format(),
       programming_shutdown_date:
         this.#programming_shutdown_date == null
           ? null

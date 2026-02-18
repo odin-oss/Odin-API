@@ -45,8 +45,12 @@ export const create = async (
     const schema = z.object({
       id_environment: z.coerce.number().positive(),
       id_datacenter: z.coerce.number().positive(),
-      professors: z.preprocess((val) => {return JSON.parse(val)}, z.array(z.coerce.number().int().positive()).default([])),
-      users: z.preprocess((val) => {return JSON.parse(val)}, z.array(z.coerce.number().int().positive()).default([])),
+      professors: z.preprocess((val) => {
+        return JSON.parse(val);
+      }, z.array(z.coerce.number().int().positive()).default([])),
+      users: z.preprocess((val) => {
+        return JSON.parse(val);
+      }, z.array(z.coerce.number().int().positive()).default([])),
       begin_date: z
         .refine((val) => moment(val).isValid(), {
           message: 'Invalid date format',
@@ -58,12 +62,12 @@ export const create = async (
         })
         .transform((val) => moment(val).tz(CONFIG.APP_TZ)),
       label_session: z.string().default('n/a'),
-      label_application: z.string().default('n/a')
+      label_application: z.string().default('n/a'),
     });
-    const data = Guard.validateProps(schema, req.body)
+    const data = Guard.validateProps(schema, req.body);
     await fns
       .session_create({
-        ...data
+        ...data,
       })
       .then((session) =>
         ApiResponse.success(
@@ -136,7 +140,7 @@ export const get = async (
   try {
     Guard.check_query(req, ['id_session']);
     const schema = z.object({
-      id_session: z.coerce.number().int().positive()
+      id_session: z.coerce.number().int().positive(),
     });
     const data = Guard.validateProps(schema, req.query);
     const id_user = token.getUserId({ token: req.headers['authorization'] });

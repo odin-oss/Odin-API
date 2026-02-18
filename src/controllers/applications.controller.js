@@ -43,7 +43,7 @@ export const list = async (
       )
     )
     .catch((err) => {
-      ApiResponse.error(req, res, err)
+      ApiResponse.error(req, res, err);
     });
 };
 
@@ -243,24 +243,23 @@ export const create = async (
   try {
     Guard.check_body(req, ['id_environment', 'id_datacenter']);
     const id_user = token.getUserId({ token: req.headers['authorization'] });
-    const response = await fns
-      .application_create({
-        id_user,
-        id_datacenter: req.body.id_datacenter,
-        id_environment: req.body.id_environment,
-        label: req.body.label === undefined ? '' : req.body.label,
-        state_changed_date:
-          req.body.state_changed_date === undefined
-            ? moment.tz(CONFIG.APP_TZ)
-            : moment(req.body.state_changed_date).tz(CONFIG.APP_TZ),
-      });
+    const response = await fns.application_create({
+      id_user,
+      id_datacenter: req.body.id_datacenter,
+      id_environment: req.body.id_environment,
+      label: req.body.label === undefined ? '' : req.body.label,
+      state_changed_date:
+        req.body.state_changed_date === undefined
+          ? moment.tz(CONFIG.APP_TZ)
+          : moment(req.body.state_changed_date).tz(CONFIG.APP_TZ),
+    });
     ApiResponse.success(
       req,
       res,
       response.public_format(),
       200,
       'Application created.'
-    )
+    );
   } catch (err) {
     ApiResponse.error(req, res, err);
   }
