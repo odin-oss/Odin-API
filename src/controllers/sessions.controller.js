@@ -8,6 +8,10 @@ import { ParameterMisformed } from '../utils/errors.util.js';
 import * as token from '../utils/token.util.js';
 import { ApiResponse } from '../utils/response.util.js';
 import Guard from '../utils/guard.util.js';
+import z from 'zod';
+import CONFIG from '../config/config.js';
+import moment from 'moment-timezone';
+
 /**
  * Controller that checks parameters and create a new session.
  * @param {*} req HTTP request.
@@ -38,51 +42,28 @@ export const create = async (
       'professors',
       'users',
     ]);
-
-    if (!Guard.check_id(req.body.id_environment))
-      throw new ParameterMisformed(
-        'The req.body.id_environment parameter is misformed.'
-      );
-    if (!Guard.check_id(req.body.id_datacenter))
-      throw new ParameterMisformed(
-        'The req.body.id_datacenter parameter is misformed.'
-      );
-
-    if (!Guard.check_ids(JSON.parse(req.body.professors)))
-      throw new ParameterMisformed(
-        'The req.body.professors parameter is misformed.'
-      );
-    if (!Guard.check_ids(JSON.parse(req.body.users)))
-      throw new ParameterMisformed(
-        'The req.body.users parameter is misformed.'
-      );
-    if (!Guard.check_date(req.body.begin_date))
-      throw new ParameterMisformed(
-        'The req.body.begin_date parameter is misformed.'
-      );
-    if (!Guard.check_date(req.body.end_date))
-      throw new ParameterMisformed(
-        'The req.body.end_date parameter is misformed.'
-      );
-    if (typeof req.body.label_session !== 'string')
-      throw new ParameterMisformed(
-        'The req.body.label_session parameter is misformed.'
-      );
-    if (typeof req.body.label_application !== 'string')
-      throw new ParameterMisformed(
-        'The req.body.label_application parameter is misformed.'
-      );
-
+    const schema = z.object({
+      id_environment: z.coerce.number().positive(),
+      id_datacenter: z.coerce.number().positive(),
+      professors: z.preprocess((val) => {return JSON.parse(val)}, z.array(z.coerce.number().int().positive()).default([])),
+      users: z.preprocess((val) => {return JSON.parse(val)}, z.array(z.coerce.number().int().positive()).default([])),
+      begin_date: z
+        .refine((val) => moment(val).isValid(), {
+          message: 'Invalid date format',
+        })
+        .transform((val) => moment(val).tz(CONFIG.APP_TZ)),
+      end_date: z
+        .refine((val) => moment(val).isValid(), {
+          message: 'Invalid date format',
+        })
+        .transform((val) => moment(val).tz(CONFIG.APP_TZ)),
+      label_session: z.string().default('n/a'),
+      label_application: z.string().default('n/a')
+    });
+    const data = Guard.validateProps(schema, req.body)
     await fns
       .session_create({
-        label_session: req.body.label_session,
-        label_application: req.body.label_application,
-        begin_date: req.body.begin_date,
-        end_date: req.body.end_date,
-        id_environment: req.body.id_environment,
-        id_datacenter: req.body.id_datacenter,
-        users: JSON.parse(req.body.users),
-        professors: JSON.parse(req.body.professors),
+        ...data
       })
       .then((session) =>
         ApiResponse.success(
@@ -154,14 +135,13 @@ export const get = async (
   //Request
   try {
     Guard.check_query(req, ['id_session']);
-
-    if (!Guard.check_id(req.query.id_session))
-      throw new ParameterMisformed(
-        'The req.query.id_session parameter is misformed.'
-      );
+    const schema = z.object({
+      id_session: z.coerce.number().int().positive()
+    });
+    const data = Guard.validateProps(schema, req.query);
     const id_user = token.getUserId({ token: req.headers['authorization'] });
     await fns
-      .session_get({ id_session: req.query.id_session, id_user })
+      .session_get({ id_session: data.id_session, id_user })
       .then((session) =>
         ApiResponse.success(
           req,

@@ -157,8 +157,6 @@ export const create = async function (
         ApiResponse.success(req, res, u.public_format(), 201, 'User created.')
       );
   } catch (err) {
-
-        console.log(err)
     ApiResponse.error(req, res, err);
   }
 };

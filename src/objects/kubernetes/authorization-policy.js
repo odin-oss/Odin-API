@@ -15,7 +15,7 @@ export const create = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
   const body = {
@@ -73,7 +73,7 @@ export const deletion = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
   const url = `/apis/security.istio.io/v1/namespaces/cirrus/authorizationpolicies/istio-ap-cirrus-kafka-n${data.hash}`;

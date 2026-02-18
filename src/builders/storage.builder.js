@@ -56,7 +56,7 @@ export const create = async function (props) {
 export const get = async function (props) {
   try {
     const schema = z.object({
-      id_export: z.number().positive(),
+      id_export: z.coerce.number().positive(),
     });
     const data = Guard.validateProps(schema, props);
     return await dbManager.models.APPLICATION_EXPORT.findOne({
@@ -70,7 +70,9 @@ export const get = async function (props) {
         id_enum_export_state: r.id_enum_export_state,
       });
       return new Application_export({
-        ...r,
+        ...r.dataValues,
+        init_date: moment(r.init_date).format(),
+        expiration_date: moment(r.expiration_date).format(),
         status: status,
       });
     });
@@ -105,13 +107,7 @@ export const getLatestStorage = async function (props) {
         if (r === null)
           return new Application_export({
             ...r,
-            init_date: null,
             id_application: props.id_application,
-            expiration_date: null,
-            id_provider: null,
-            download_link: null,
-            id_enum_export_state: null,
-            status: null,
           });
         const status = await getStatusFromId({
           id_enum_export_state: r.id_enum_export_state,
@@ -159,16 +155,7 @@ export const getNonErrorApplicationStorage = async function (props) {
           });
           return new Application_export({ ...r, status });
         }
-        return new Application_export({
-          id_export: null,
-          init_date: null,
-          id_application: null,
-          expiration_date: null,
-          id_provider: null,
-          download_link: null,
-          id_enum_export_state: null,
-          status: null,
-        });
+        return new Application_export({});
       }
     );
   } catch (err) {
@@ -286,11 +273,13 @@ export const getIdsEnumStates = async function (props) {
   });
   const data = Guard.validateProps(schema, props);
   const opt_state = {
+    distinct: true,
     where: { status: data.statuses },
   };
   return await dbManager.models.ENUM_EXPORT_STATE.findAll(opt_state).then(
     (results) => {
-      if (results.length !== data.statuses.length) {
+      const res_statuses = results.map(state => state.dataValues.status);
+      if ((new Set(res_statuses)).size !== data.statuses.length) {
         const foundStatuses = results.map((r) => r.status);
         const missingStatuses = data.statuses.filter(
           (s) => !foundStatuses.includes(s)
@@ -299,7 +288,7 @@ export const getIdsEnumStates = async function (props) {
           `The state(s) "${missingStatuses.join(', ')}" could not be found.`
         );
       }
-      return results.map((r) => r.id_enum_export_state);
+      return Array.from(new Set(res_statuses)).map((r) => r.id_enum_export_state);
     }
   );
 };

@@ -8,6 +8,7 @@ export const list = async function () {
   const dictionary = new RandomDictionary();
   return await dbManager.models.RANDOM_DICTIONARY.findAll()
     .then((r) => r.map((word) => dictionary.add(word.word)))
+    .then(() => dictionary)
     .catch((err) => {
       throw dbManager.sequelizeErrorManagement(err);
     });

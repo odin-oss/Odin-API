@@ -29,7 +29,7 @@ export const getStorage = async function (
   }
 ) {
   const schema = z.object({
-    id_application: z.number().positive(),
+    id_application: z.coerce.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
   const promises = [fns.get_storage({ ...data })];
@@ -57,7 +57,7 @@ export const exportStorage = async function (
   }
 ) {
   const schema = z.object({
-    id_application: z.number().positive(),
+    id_application: z.coerce.number().positive(),
     delete_existing_export: z.boolean().optional(),
     app_deletion: z.boolean().default(false),
   });
@@ -124,7 +124,7 @@ export const exportStorage = async function (
         fns
           .exec_smash_export({
             hash: application.hash,
-            upload_id: application_export.id_export.toString(),
+            upload_id: application_export.id_export?.toString(),
             label: selectedInterface?.label?.toLowerCase(),
             app_deletion: data.app_deletion,
             folder_path: `/home/${application.username}/`,
@@ -173,16 +173,14 @@ export const deleteStorage = async function (
   }
 ) {
   const schema = z.object({
-    id_application: z.number().positive(),
-    id_export: z.number().positive(),
+    id_application: z.coerce.number().positive(),
+    id_export: z.coerce.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
   const application_export = await fns.export_get({ ...data });
-
   const application = await fns.application_get({
     id_application: application_export.id_application,
   });
-
   if (data.id_application.toString() !== application.id_application.toString())
     throw new ParameterMisformed(
       'The data.id_application parameter does not match the export id.'

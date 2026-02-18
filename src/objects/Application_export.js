@@ -29,27 +29,27 @@ export class Application_export {
 
   // Zod Schema for object validation
   static schema = z.object({
-    id_export: z.number().int().optional().nullable(),
-    id_application: z.number().int().optional(),
+    id_export: z.coerce.number().int().default(null),
+    id_application: z.coerce.number().int().default(null),
     init_date: z
       .string()
       .refine((val) => moment(val).isValid(), {
         message: 'Invalid date format',
       })
       .transform((val) => moment(val).tz(CONFIG.APP_TZ))
-      .nullable(),
+      .default(null),
     expiration_date: z
       .string()
       .refine((val) => moment(val).isValid(), {
         message: 'Invalid date format',
       })
       .transform((val) => moment(val).tz(CONFIG.APP_TZ))
-      .nullable(),
-    id_provider: z.number().int().optional(),
-    id_enum_export_state: z.number().int().optional(),
-    status: z.string().min(1).nullable(),
-    download_link: z.string().min(1).nullable(),
-    previous_export_deleted: z.boolean().optional(),
+      .default(null),
+    id_provider: z.number().int().nullable().default(null),
+    id_enum_export_state: z.number().int().default(null),
+    status: z.string().min(1).default(null),
+    download_link: z.string().min(1).nullable().default(null),
+    previous_export_deleted: z.boolean().default(null),
   });
 
   // Getters
@@ -130,8 +130,8 @@ export class Application_export {
     const format = {
       id_export: this.#id_export,
       id_application: this.#id_application,
-      init_date: this.#init_date.format(),
-      expiration_date: this.#expiration_date.format(),
+      init_date: this.#init_date?.format(),
+      expiration_date: this.#expiration_date?.format(),
       id_enum_export_state: this.#id_enum_export_state,
       status: this.#status,
       download_link: this.#download_link,
@@ -144,8 +144,8 @@ export class Application_export {
     return {
       id_export: this.#id_export,
       id_application: this.#id_application,
-      init_date: this.#init_date.format(),
-      expiration_date: this.#expiration_date.format(),
+      init_date: this.#init_date?.format(),
+      expiration_date: this.#expiration_date?.format(),
       id_provider: this.#id_provider,
       id_enum_export_state: this.#id_enum_export_state,
       status: this.#status,

@@ -22,9 +22,9 @@ import Guard from '../utils/guard.util.js';
 export const get = async function (props) {
   try {
     const schema = z.object({
-      id_application: z.number().positive().optional(),
+      id_application: z.coerce.number().positive().optional(),
       key: z.string().optional(),
-      hash: z.string().min(8).max(8).optional(),
+      hash: z.string().min(6).max(6).optional(),
     });
     if (!props.id_application && !props.key && !props.hash)
       throw new MissingArgumentError(
@@ -48,9 +48,7 @@ export const get = async function (props) {
       options.where.id_application = data.id_application;
     if (data.key !== undefined) options.where.generated_label = data.key;
     if (data.hash !== undefined) options.where.hash = data.hash;
-    return await Promise.resolve(
-      dbManager.models.APPLICATION.findOne(options)
-    ).then((r) => {
+    return await dbManager.models.APPLICATION.findOne(options).then((r) => {
       if (r === null)
         throw new DBObjectNotFound(
           `The element id_application = '${data.id_application}' could not be found.`
@@ -95,14 +93,9 @@ export const list = async function (props) {
       r.map(
         (app) =>
           new Application({
-            ...app,
+            ...app.dataValues,
             state_application: app.ENUM_STATE_APPLICATION.label,
-            datacenter: new Datacenter({
-              id_datacenter: app.id_datacenter,
-              label: '',
-              city: '',
-              provider: '',
-            }),
+            datacenter: new Datacenter({ id_datacenter: app.id_datacenter }),
             environment: new Environment(app.ENVIRONMENT),
           })
       )
@@ -176,60 +169,56 @@ export const create = async function (props) {
       id_datacenter: z.number().positive(),
       custom_label: z.string().min(1),
       generated_label: z.string().min(8),
-      hash: z.string().min(8).max(8),
+      hash: z.string().min(6).max(6),
       username: z.string().min(1),
       password: z.string().min(1),
       state_changed_date: z
-        .string()
         .refine((val) => moment(val).isValid(), {
           message: 'Invalid date format',
         })
-        .transform((val) => moment(val).tz(CONFIG.APP_TZ)),
+        .transform((val) => moment(val).tz(CONFIG.APP_TZ))
+        .default(moment.tz(CONFIG.APP_TZ)),
     });
     const data = Guard.validateProps(schema, props);
     // We find the state from different parameters.
-    let creation_state = 'Scheduled';
     const esp_options = {
-      where: { label: creation_state },
+      where: { label: 'Scheduled' },
     };
-    const id_enum_state_application =
+    const state_application =
       await dbManager.models.ENUM_STATE_APPLICATION.findOne(esp_options).then(
         (r) => {
           if (r == null)
             throw new DBObjectNotFound('The state could not be found.');
-          return r.id_enum_state_application;
+          return r;
         }
       );
 
     // We prepare the creation of the application
     const options = {
       ...data,
-      id_enum_state_application: id_enum_state_application,
+      state_changed_date: data.state_changed_date.utc().format(),
+      id_enum_state_application: state_application.id_enum_state_application,
       custom_label:
         data.custom_label === '' ? data.generated_label : data.custom_label,
       creation_date: moment.tz(CONFIG.APP_TZ).utc().format(),
-      programming_shutdown_date:
-        creation_state === 'Ready'
-          ? moment(data.state_changed_date)
-              .tz(CONFIG.APP_TZ)
-              .clone()
-              .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 's')
-              .utc()
-              .format()
-          : null,
+      programming_shutdown_date: moment(data.state_changed_date)
+        .tz(CONFIG.APP_TZ)
+        .clone()
+        .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 's')
+        .utc()
+        .format(),
     };
-    return await dbManager.models.APPLICATION.create(options).then(
-      (r) =>
-        new Application({
-          ...data,
-          datacenter: undefined,
-          environment: new Environment({
-            id_environment: r.id_environment,
-            label: '',
-            icon: '',
-          }),
-        })
-    );
+    return await dbManager.models.APPLICATION.create(options).then((r) => {
+      return new Application({
+        ...data,
+        id_application: r.id_application,
+        datacenter: undefined,
+        state_application: state_application.label,
+        environment: new Environment({
+          id_environment: r.id_environment,
+        }),
+      });
+    });
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -247,7 +236,7 @@ export const is_owner = async function (props) {
     const schema = z.object({
       id_user: z.number().positive(),
       key: z.string().min(2).optional(),
-      id_application: z.number().positive(),
+      id_application: z.coerce.number().positive().optional(),
     });
     const data = Guard.validateProps(schema, props);
     const whereOpt =
@@ -305,7 +294,7 @@ export const nameExists = async (props) => {
 export const hashExists = async (props) => {
   try {
     const schema = z.object({
-      hash: z.string().min(8).max(8),
+      hash: z.string().min(6).max(6),
     });
     const data = Guard.validateProps(schema, props);
     const options = {

@@ -19,11 +19,10 @@ export class Record {
 
   // Zod Schema for object validation
   static schema = z.object({
-    id_user: z.number().int().positive(),
-    id_application: z.number().int().positive(),
-    id_history: z.number().int().positive(),
+    id_user: z.number().int().positive().optional(),
+    id_application: z.number().int().positive().optional(),
+    id_history: z.number().int().positive().optional(),
     datetime: z
-      .string()
       .refine((val) => moment(val).isValid(), {
         message: 'Invalid date format',
       })
@@ -80,7 +79,7 @@ export class Record {
 export class History {
   #records;
 
-  constructor(props) {
+  constructor(props = {}) {
     const data = Guard.validateProps(History.schema, props);
     this.#records = data.records;
   }

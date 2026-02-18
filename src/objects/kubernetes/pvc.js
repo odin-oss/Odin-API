@@ -17,7 +17,7 @@ export const create = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     label: z.string(),
   });
   const data = Guard.validateProps(schema, props);
@@ -39,7 +39,7 @@ export const create = async function (
  */
 const execute_creation = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     label: z.string(),
   });
   const data = Guard.validateProps(schema, props);

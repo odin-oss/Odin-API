@@ -22,7 +22,7 @@ export class ApiResponse {
     this.message = validated.message;
     this.data = validated.data;
     this.error = validated.error;
-    this.timestamp = moment.tz(CONFIG.APP_TZ);
+    this.timestamp = moment.tz(CONFIG.APP_TZ).utc().format();
   }
 
   // Zod Schema for object validation
@@ -37,7 +37,7 @@ export class ApiResponse {
    * Static helper for 2xx responses
    */
   static success(req, res, data, status = 200, message = 'Request successful') {
-    logs.info(`[${req.method}][${req.status}] ${req.originalUrl} : ${message}`);
+    logs.info(`[${req.method}][${status}] ${req.originalUrl} : ${message}`);
     res.status(status).json(new ApiResponse(true, data, null, message));
   }
 
@@ -51,7 +51,7 @@ export class ApiResponse {
       message: err.message || 'An unexpected error occurred',
     };
     logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
+      `[${req.method}][${status}][${err.name || 'Error'}] ${req.originalUrl} : ${err.message}`
     );
     res
       .status(status)

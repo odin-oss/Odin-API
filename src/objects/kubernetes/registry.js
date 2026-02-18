@@ -11,7 +11,7 @@ import Guard from '../../utils/guard.util.js';
  */
 export const deletion = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
   const url = `/api/v1/namespaces/n${data.hash}/secrets/registryhub`;
@@ -30,7 +30,7 @@ export const deletion = async function (props, fetch = kapi.fetch) {
  */
 export const create = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
   });
   const data_checks = Guard.validateProps(schema, props);
   const data = {

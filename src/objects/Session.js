@@ -39,24 +39,22 @@ export class Session {
     id_session: z.number().int().optional(),
     label: z.string().min(1).trim(),
     begin_date: z
-      .string()
       .refine((val) => moment(val).isValid(), {
         message: 'Invalid date format',
       })
       .transform((val) => moment(val).tz(CONFIG.APP_TZ))
       .nullable(),
     end_date: z
-      .string()
       .refine((val) => moment(val).isValid(), {
         message: 'Invalid date format',
       })
       .transform((val) => moment(val).tz(CONFIG.APP_TZ))
       .nullable(),
-    environment: z.instanceof(Environment),
+    environment: z.instanceof(Environment).default(undefined),
     applications: z.array(z.instanceof(Application)).default([]),
     users: z.array(z.instanceof(User)).default([]),
     professors: z.array(z.instanceof(User)).default([]),
-    datacenter: z.instanceof(Datacenter),
+    datacenter: z.instanceof(Datacenter).default(undefined),
   });
 
   // Getters
@@ -158,7 +156,7 @@ export class Session {
       applications: this.#applications.map((app) => app.public_format()),
       users: this.#users.map((user) => user.public_format()),
       professors: this.#professors.map((prof) => prof.public_format()),
-      datacenter: this.#datacenter.public_format(),
+      datacenter: this.#datacenter?.public_format(),
     };
   }
 }

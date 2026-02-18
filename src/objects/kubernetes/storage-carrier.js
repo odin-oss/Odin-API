@@ -27,7 +27,7 @@ import Guard from '../../utils/guard.util.js';
  */
 export const smashExport = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     upload_id: z.string(),
     label: z.string(),
     app_deletion: z.boolean().default(false),

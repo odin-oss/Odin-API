@@ -19,7 +19,7 @@ export const deletion = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
   const list = await fns
@@ -44,7 +44,7 @@ export const scale = async function (
   fns = { get_deployment: get, put_deployment: put }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     replicas: z.number().default(0),
   });
   const data = Guard.validateProps(schema, props);
@@ -95,7 +95,7 @@ export const scale = async function (
  */
 export const create = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     image: z.string(),
     image_tag: z.string(),
     username: z.string(),
@@ -333,7 +333,7 @@ const add_service_commands = function (props) {
 const add_arguments = function (props) {
   const schema = z.object({
     args: z.array().default([]),
-    hash: z.string().min(8).max(8).default(''),
+    hash: z.string().min(6).max(6).default(''),
     generated_label: z.string().default(''),
     username: z.string().default(''),
     password: z.string().default(''),
@@ -401,7 +401,7 @@ const add_ports = function (props) {
  */
 const add_envs = function (props) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     body: z.json(),
     envs: z.array().default([]),
     username: z.string().default(''),
@@ -457,7 +457,7 @@ const add_compute_gpu = function (props) {
  */
 const add_storage = function (props) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     body: z.json(),
     username: z.string().default(''),
     label: z.string().default(''),
@@ -500,7 +500,7 @@ const add_storage = function (props) {
  */
 const get = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     onlyShutable: z.boolean().default(false),
   });
   const data = Guard.validateProps(schema, props);
@@ -524,7 +524,7 @@ const get = async function (props, fetch = kapi.fetch) {
  */
 const del = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     name: z.string(),
   });
   const data = Guard.validateProps(schema, props);
@@ -548,7 +548,7 @@ const del = async function (props, fetch = kapi.fetch) {
  */
 const put = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     name: z.string(),
     replicas: z.number().default(1),
   });

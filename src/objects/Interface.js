@@ -55,8 +55,8 @@ export class Interface {
 
   // Zod Schema for object validation
   static schema = z.object({
-    id_interface: z.number().int(),
-    id_type: z.number().int(),
+    id_interface: z.number().int().optional(),
+    id_type: z.number().int().optional(),
     label: z.string().default(''),
     default_label: z.string().default(''),
     registry_link: z.string().default(''),

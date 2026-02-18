@@ -3,6 +3,7 @@ import * as environment_builder from '../builders/environment.builder.js';
 import * as user_builder from '../builders/user.builder.js';
 import * as datacenter_builder from '../builders/datacenter.builder.js';
 import * as history_builder from '../builders/history.builder.js';
+import { list as dictionary_list } from '../builders/randomdictionary.builder.js';
 import {
   exec_shutdown,
   exec_start,
@@ -42,7 +43,7 @@ export const get = async (
   }
 ) => {
   const schema = z.object({
-    id_application: z.number().positive().optional(),
+    id_application: z.coerce.number().positive().optional(),
     key: z.string().optional(),
   });
   const data = Guard.validateProps(schema, props);
@@ -95,8 +96,7 @@ export const list = async function (
   }
   promises = [
     ...promises,
-    ...applications.map((app) =>
-      fns.history_get_last_record({
+    ...applications.map((app) => fns.history_get_last_record({
         id_user: data.id_user,
         id_application: app.id_application,
       })
@@ -142,7 +142,7 @@ export const update_state = async function (
   }
 ) {
   const schema = z.object({
-    id_application: z.number().positive(),
+    id_application: z.coerce.number().positive(),
     state_application: z.enum(['Off', 'Ready']),
   });
   const data = Guard.validateProps(schema, props);
@@ -198,7 +198,7 @@ export const deletion = async function (
   }
 ) {
   const schema = z.object({
-    id_application: z.number().positive(),
+    id_application: z.coerce.number().positive(),
     backup_storage: z.boolean().default(true),
   });
   const data = Guard.validateProps(schema, props);
@@ -222,7 +222,6 @@ export const deletion = async function (
     );
     promises.push(
       fns.exec_shutdown({ hash: app.hash, datacenter }).then(() => {
-        console.log('Application shutdown completed');
         return fns.export_storage({
           id_application: data.id_application,
           delete_existing_export: true,
@@ -258,20 +257,20 @@ export const create = async function (
   fns = {
     user_get: user_builder.get,
     password_generate: generate_label,
-    generate_unique_label: generate_unique_label,
+    generate_unique_label,
     unique_hash_generate: generate_unique_hash,
     environment_get: environment_builder.get,
     application_create: application_builder.create,
     datacenter_get: datacenter_builder.get,
+    dictionary_list,
   }
 ) {
   const schema = z.object({
     id_user: z.number().positive(),
-    id_environment: z.number().positive(),
-    id_datacenter: z.number().positive(),
-    label: z.string().min(1),
+    id_environment: z.coerce.number().positive(),
+    id_datacenter: z.coerce.number().positive(),
+    label: z.string().min(1).optional(),
     state_changed_date: z
-      .string()
       .refine((val) => moment(val).isValid(), {
         message: 'Invalid date format',
       })
@@ -280,20 +279,26 @@ export const create = async function (
   });
   const data = Guard.validateProps(schema, props);
   const infos = await fns.user_get({ id_user: data.id_user });
-  const pwd = await fns.password_generate({ count: 3 });
-  const randomName = await fns.generate_unique_label({ count: 3 });
-  const hash = await fns.unique_hash_generate();
-  const environment = await fns.environment_get({
-    id_environment: data.id_environment,
-  });
-  const datacenter = await fns.datacenter_get({
-    id_datacenter: data.id_datacenter,
-  });
-  const promises = [
-    fns.application_create({
+  const dictionary = await fns.dictionary_list();
+  const password = fns.password_generate({ count: 3, dictionary });
+
+  const [generated_label, hash, environment, datacenter] = await Promise.all([
+    fns.generate_unique_label({ count: 3, dictionary }),
+    fns.unique_hash_generate(),
+    fns.environment_get({
+      id_environment: data.id_environment,
+    }),
+    fns.datacenter_get({
+      id_datacenter: data.id_datacenter,
+    }),
+  ]);
+
+  return await fns
+    .application_create({
       ...data,
-      generated_label: randomName,
-      hash: hash,
+      generated_label,
+      custom_label: data.label || generated_label,
+      hash,
       username:
         infos.firstname[0].toLowerCase() +
         '_' +
@@ -302,13 +307,11 @@ export const create = async function (
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
           .replace(/[^a-z0-9]/g, ''),
-      password: pwd,
-    }),
-  ];
-
-  return await Promise.all(promises).then((r) => {
-    r[0].environment = environment;
-    r[0].datacenter = datacenter;
-    return r[0];
-  });
+      password,
+    })
+    .then((r) => {
+      r.environment = environment;
+      r.datacenter = datacenter;
+      return r;
+    });
 };

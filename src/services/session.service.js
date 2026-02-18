@@ -2,14 +2,12 @@ import * as application_service from '../services/applications.service.js';
 import * as session_builder from '../builders/session.builder.js';
 import * as user_service from '../services/user.service.js';
 import * as user_builder from '../builders/user.builder.js';
-import {
-  MissingArgumentError,
-  ParameterMisformed,
-  UserIsNeitherProfOrAdmin,
-} from '../utils/errors.util.js';
+import {UserIsNeitherProfOrAdmin} from '../utils/errors.util.js';
 import { Session } from '../objects/Session.js';
 import Guard from '../utils/guard.util.js';
 import z from 'zod';
+import moment from 'moment-timezone';
+import CONFIG from '../config/config.js';
 
 /**
  * Service that execute the creation workflow of an application.
@@ -40,19 +38,17 @@ export const create = async function (
     label_session: z.string(),
     label_application: z.string(),
     begin_date: z
-      .string()
       .refine((val) => moment(val).isValid(), {
         message: 'Invalid date format',
       })
       .transform((val) => moment(val).tz(CONFIG.APP_TZ)),
     end_date: z
-      .string()
       .refine((val) => moment(val).isValid(), {
         message: 'Invalid date format',
       })
       .transform((val) => moment(val).tz(CONFIG.APP_TZ)),
-    users: z.array(Number).default([]),
-    professors: z.array(Number).default([]),
+    users: z.array(z.coerce.number().int().positive()).default([]),
+    professors: z.array(z.coerce.number().int().positive()).default([]),
   });
   const data = Guard.validateProps(schema, props);
 
@@ -94,7 +90,8 @@ export const create = async function (
   session.applications.forEach((app) => {
     promises.push(
       fns.session_attribute_user_and_application({
-        ...app,
+        id_user: app.id_user,
+        id_application: app.id_application,
         id_session: session.id_session,
       })
     );
@@ -123,7 +120,7 @@ export const list = async function (
   }
 ) {
   const schema = z.object({
-    id_user: z.number().positive(),
+    id_user: z.coerce.number().int().positive(),
   });
   const data = Guard.validateProps(schema, props);
 
@@ -134,7 +131,7 @@ export const list = async function (
       'The user is neither PROFESSEUR or ADMINISTRATEUR.'
     );
 
-  const sessions = await Promise.resolve(fns.session_list({ ...data }));
+  const sessions = await fns.session_list({ ...data });
   const unique_ids = [
     ...new Set([
       ...sessions.flatMap((session) =>
@@ -182,8 +179,8 @@ export const get = async function (
   }
 ) {
   const schema = z.object({
-    id_application: z.number().positive(),
-    id_session: z.number().positive(),
+    id_user: z.coerce.number().int().positive(),
+    id_session: z.coerce.number().int().positive(),
   });
   const data = Guard.validateProps(schema, props);
   const user_role = await fns.user_get({ ...data });

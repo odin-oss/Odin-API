@@ -19,7 +19,7 @@ export const saveApplication = async function (
   });
   const data = Guard.validateProps(schema, props);
   const schema_app = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
   });
   const data_app = Guard.validateProps(schema_app, props);
   const mdb = await fns.mongodb.getInstance();
@@ -42,7 +42,7 @@ export const updateApplication = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8),
+    hash: z.string().min(6).max(8),
     state: z.enum(['started', 'shutted', 'Getting Ready']),
   });
   const data = Guard.validateProps(schema, props);

@@ -35,7 +35,7 @@ export const exec_deletion = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
   const promises = [
@@ -67,7 +67,7 @@ export const exec_start = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
   const promises = [
@@ -94,7 +94,7 @@ export const exec_shutdown = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
   const promises = [
@@ -134,7 +134,7 @@ export const create = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     interfaces: z.array(z.instanceof(Interface)).default([]),
     generated_label: z.string(),
     username: z.string(),

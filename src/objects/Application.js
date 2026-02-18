@@ -44,39 +44,36 @@ export class Application {
 
   // Zod Schema for object validation
   static schema = z.object({
-    id_application: z.number(),
-    custom_label: z.string(),
-    generated_label: z.string(),
+    id_application: z.number().optional(),
+    custom_label: z.string().optional(),
+    generated_label: z.string().optional(),
     creation_date: z
-      .string()
       .refine((val) => moment(val).isValid(), {
         message: 'Invalid date format',
       })
-      .transform((val) => moment(val).tz(CONFIG.APP_TZ)),
-    hash: z.string(),
-    username: z.string(),
-    password: z.string(),
-    id_user: z.number(),
-    id_environment: z.number(),
-    state_application: z.string(),
+      .transform((val) => moment(val).tz(CONFIG.APP_TZ))
+      .optional(),
+    hash: z.string().optional(),
+    username: z.string().optional(),
+    password: z.string().optional(),
+    id_user: z.number().optional(),
+    id_environment: z.number().optional(),
+    state_application: z.string().optional(),
     state_changed_date: z
-      .string()
       .refine((val) => moment(val).isValid(), {
         message: 'Invalid date format',
       })
-      .transform((val) => moment(val).tz(CONFIG.APP_TZ)),
+      .transform((val) => moment(val).tz(CONFIG.APP_TZ))
+      .optional(),
     programming_shutdown_date: z
-      .string()
-      .nullable()
       .refine((val) => val === null || moment(val).isValid(), {
         message: 'Invalid date format',
       })
-      .transform((val) =>
-        val === null ? null : moment(val).tz(CONFIG.APP_TZ)
-      ),
-    environment: z.instanceof(Environment),
-    datacenter: z.instanceof(Datacenter),
-    history: z.instanceof(History),
+      .transform((val) => (val === null ? null : moment(val).tz(CONFIG.APP_TZ)))
+      .nullable(),
+    environment: z.lazy(() => z.instanceof(Environment)).optional(),
+    datacenter: z.lazy(() => z.instanceof(Datacenter)).optional(),
+    history: z.lazy(() => z.instanceof(History)).optional(),
   });
 
   // Getters
@@ -207,7 +204,7 @@ export class Application {
       id_application: this.#id_application,
       environment: this.#environment.label,
       id_environment: this.#environment.id_environment,
-      datacenter: this.#datacenter.public_format(),
+      datacenter: this.#datacenter?.public_format(),
       custom_label: this.#custom_label,
       generated_label: this.#generated_label,
       username: this.#username,
@@ -219,7 +216,7 @@ export class Application {
           ? null
           : moment(this.#programming_shutdown_date).tz(CONFIG.APP_TZ).format(),
       state_application: this.#state_application,
-      history: this.#history.public_format(),
+      history: this.#history?.public_format(),
     };
     for (const int of this.#environment.interfaces) {
       for (const port of int.ports) {
@@ -228,7 +225,7 @@ export class Application {
             label: int.label,
             link: `https://apps.${this.#datacenter.label}.${this.#datacenter.provider}.${CONFIG.APPS_INGRESS_URL}/${
               this.#hash
-            }/${int.label.toLowerCase()}-${port.label.toLowerCase()}/`,
+            }/${int.label?.toLowerCase()}-${port.label?.toLowerCase()}/`,
             service: port.label,
             display_name: port.display_name,
             icon: port.icon,
@@ -244,21 +241,21 @@ export class Application {
       id_application: this.#id_application,
       custom_label: this.#custom_label,
       generated_label: this.#generated_label,
-      creation_date: this.#creation_date.format(),
+      creation_date: moment(this.#creation_date).tz(CONFIG.APP_TZ).format(),
       hash: this.#hash,
       username: this.#username,
       password: this.#password,
       id_user: this.#id_user,
       id_environment: this.#id_environment,
       state_application: this.#state_application,
-      state_changed_date: this.#state_changed_date.format(),
+      state_changed_date: moment(this.#state_changed_date).tz(CONFIG.APP_TZ).format(),
       programming_shutdown_date:
         this.#programming_shutdown_date == null
           ? null
           : moment(this.#programming_shutdown_date).tz(CONFIG.APP_TZ).format(),
-      environment: this.#environment.toJSON(),
-      datacenter: this.#datacenter.toJSON(),
-      history: this.#history.toJSON(),
+      environment: this.#environment?.toJSON(),
+      datacenter: this.#datacenter?.toJSON(),
+      history: this.#history?.toJSON(),
     };
   }
 }

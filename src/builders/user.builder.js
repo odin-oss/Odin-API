@@ -69,7 +69,9 @@ export const list = async function (props) {
       },
     };
     return await dbManager.models.USERS.findAll(options).then((r) =>
-      r.map((user) => new User({ ...user.dataValues, role: user.USER_ROLE.label }))
+      r.map(
+        (user) => new User({ ...user.dataValues, role: user.USER_ROLE.label })
+      )
     );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);

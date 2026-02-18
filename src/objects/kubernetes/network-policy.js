@@ -20,7 +20,7 @@ export const create = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
   // kapi request
@@ -72,7 +72,7 @@ export const deletion = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
   const url = `/apis/networking.k8s.io/v1/namespaces/cirrus/networkpolicies/kubec-np-cirrus-kafka-from-n${data.hash}`;

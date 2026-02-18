@@ -19,9 +19,9 @@ export class Environment {
 
   // Zod Schema for object validation
   static schema = z.object({
-    id_environment: z.number().int().positive(),
-    label: z.string().min(1).trim(),
-    icon: z.string().min(1).trim(),
+    id_environment: z.number().int().positive().optional(),
+    label: z.string().min(1).trim().default(''),
+    icon: z.string().min(1).trim().default(''),
     interfaces: z.array(z.instanceof(Interface)).default([]),
   });
 

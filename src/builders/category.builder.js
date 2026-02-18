@@ -34,10 +34,10 @@ export const list = async function () {
         )
           result.push(
             new Category({
-              ...category.CATEGORY,
+              ...category.CATEGORY.dataValues,
               environments: [
                 new Environment({
-                  ...category.ENVIRONMENT,
+                  ...category.ENVIRONMENT.dataValues,
                 }),
               ],
             })
@@ -49,7 +49,7 @@ export const list = async function () {
             )[0]
             .environments.push(
               new Environment({
-                ...category.ENVIRONMENT,
+                ...category.ENVIRONMENT.dataValues,
                 interfaces: [],
               })
             );

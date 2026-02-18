@@ -97,7 +97,7 @@ export const create = async function (
   fns = {
     bcrypt,
     create: user_builder.create,
-    role_by_label
+    role_by_label,
   }
 ) {
   const schema = z.object({

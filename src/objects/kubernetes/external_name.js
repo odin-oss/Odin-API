@@ -14,7 +14,7 @@ export const deletion = async function (
   fns = { get: get, delete: del }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
   const list = await fns.get({ ...data }).then((r) => r.result);
@@ -33,7 +33,7 @@ export const deletion = async function (
  */
 export const create = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     label: z.string(),
     port_externe: z.number().positive(),
   });
@@ -78,7 +78,7 @@ export const create = async function (props, fetch = kapi.fetch) {
  */
 const get = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     onlyShutable: z.boolean().default(true),
   });
   const data = Guard.validateProps(schema, props);

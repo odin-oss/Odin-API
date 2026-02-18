@@ -4,6 +4,7 @@ import {
   ParameterMisformed,
 } from './errors.util.js';
 import logs from '../middlewares/winston.js';
+import { ZodSchema } from 'zod/v3';
 
 export default class Guard {
   /**

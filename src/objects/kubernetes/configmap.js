@@ -27,7 +27,7 @@ export const create = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     path: z.string(),
     namespace: z.string().min(1),
     name: z.string().min(1),

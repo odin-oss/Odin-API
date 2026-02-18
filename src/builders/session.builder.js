@@ -13,7 +13,7 @@ import { User } from '../objects/User.js';
 import { Application } from '../objects/Application.js';
 import moment from 'moment-timezone';
 import Guard from '../utils/guard.util.js';
-import z from 'zod';
+import z, { int } from 'zod';
 
 /**
  * Attribute the session to a professor in the database
@@ -30,14 +30,12 @@ export const attribute_professor = async function (
 ) {
   try {
     const schema = z.object({
-      id_user: z.number().positive(),
-      id_session: z.number().positive(),
+      id_user: z.coerce.number().int().positive(),
+      id_session: z.coerce.number().int().positive()
     });
     const data = Guard.validateProps(schema, props);
     const user = await Promise.resolve(fns.user_get({ id_user: data.id_user }));
-    return await dbManager.models.SESSION_HAS_PROFESSOR.create({
-      ...data,
-    }).then((r) => ({ id_session: r.id_session, user }));
+    return await dbManager.models.SESSION_HAS_PROFESSOR.create({ ...data }).then((r) => ({ id_session: r.id_session, user }));
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -60,9 +58,9 @@ export const attribute_user_and_application = async function (
 ) {
   try {
     const schema = z.object({
-      id_user: z.number().positive(),
-      id_session: z.number().positive(),
-      id_application: z.number().positive(),
+      id_user: z.coerce.number().int().positive(),
+      id_session: z.coerce.number().int().positive(),
+      id_application: z.coerce.number().int().positive(),
     });
     const data = Guard.validateProps(schema, props);
     await fns.application_get({ id_application: data.id_application });
@@ -90,14 +88,12 @@ export const create = async function (props) {
       id_environment: z.number().positive().optional(),
       label: z.string(),
       begin_date: z
-        .string()
         .refine((val) => moment(val).isValid(), {
           message: 'Invalid date format',
         })
         .transform((val) => moment(val).tz(CONFIG.APP_TZ).utc().format()),
 
       end_date: z
-        .string()
         .refine((val) => moment(val).isValid(), {
           message: 'Invalid date format',
         })
@@ -105,9 +101,8 @@ export const create = async function (props) {
     });
     const data = Guard.validateProps(schema, props);
     return await dbManager.models.SESSION.create({ ...data }).then(
-      (r) =>
-        new Session({
-          ...r,
+      (r) => new Session({
+          ...r.dataValues,
           label: data.label,
           begin_date: moment(data.begin_date).tz(CONFIG.APP_TZ),
           id_environment: data.id_environment,
@@ -216,7 +211,7 @@ export const list = async function (
         let result;
         const source = user_role.role === 'PROFESSEUR' ? item.SESSION : item;
         result = {
-          ...source,
+          ...source.dataValues,
           environment: new Environment(source.ENVIRONMENT),
           users: source.SESSION_HAS_USERs.map((user) => new User(user)),
           applications: source.SESSION_HAS_USERs.map(
@@ -234,7 +229,6 @@ export const list = async function (
           app.environment = result.environment;
           result.datacenter = app.datacenter;
         }
-
         tmp.push(new Session(result));
       }
       return tmp;
@@ -374,13 +368,13 @@ export const get_on_administrateur = async function (props) {
   return await promise
     .then((result) => {
       const session = new Session({
-        ...result,
-        environment: new Environment(result.ENVIRONMENT),
-        users: result.SESSION_HAS_USERs.map((user) => new User(user)),
+        ...result.dataValues,
+        environment: new Environment(result.ENVIRONMENT.dataValues),
+        users: result.SESSION_HAS_USERs.map((user) => new User(user.dataValues)),
         applications: result.SESSION_HAS_USERs.map(
-          (app) => new Application(app.APPLICATION)
+          (app) => new Application(app.APPLICATION.dataValues)
         ),
-        professors: result.SESSION_HAS_PROFESSORs.map((user) => new User(user)),
+        professors: result.SESSION_HAS_PROFESSORs.map((user) => new User(user.dataValues)),
       });
       for (const [i, app] of session.applications.entries()) {
         app.datacenter = new Datacenter(

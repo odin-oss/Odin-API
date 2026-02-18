@@ -4,13 +4,13 @@ import Guard from '../utils/guard.util.js';
 export class RandomDictionary {
   #words;
 
-  constructor(props) {
+  constructor(props = {}) {
     const data = Guard.validateProps(RandomDictionary.schema, props);
     this.#words = data.words;
   }
 
   static schema = z.object({
-    words: z.array(z.string().min(1)),
+    words: z.array(z.string()).default([]),
   });
 
   // Getters

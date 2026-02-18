@@ -18,7 +18,7 @@ export const addInKong = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
     ports: z.array().default([]),
     label: z.string(),
   });
@@ -93,7 +93,7 @@ export const deleteFromKong = async function (
   }
 ) {
   const schema = z.object({
-    hash: z.string().min(8).max(8),
+    hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
   let promises = [];
