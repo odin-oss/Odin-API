@@ -1,11 +1,20 @@
+import z from 'zod';
+
 export class ImageType {
   #id_type;
   #label;
 
-  constructor({ id_type = null, label = null } = {}) {
-    this.#id_type = id_type;
-    this.#label = label;
+  constructor(props) {
+    const data = Guard.validateProps(ImageType.schema, props);
+    this.#id_type = data.id_type;
+    this.#label = data.label;
   }
+
+  // Zod Schema for object validation
+  static schema = z.object({
+    id_type: z.number().int().positive(),
+    label: z.string().max(255),
+  });
 
   // Getters
   get id_type() {

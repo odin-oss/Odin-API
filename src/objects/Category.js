@@ -1,20 +1,28 @@
+import z from 'zod';
+import Guard from '../utils/guard.util.js';
+import { Environment } from './Environment.js';
+
 export class Category {
   #id_category;
   #label;
   #google_material_icon;
   #environments;
 
-  constructor({
-    id_category = null,
-    label = null,
-    environments = [],
-    google_material_icon = '',
-  } = {}) {
-    this.#id_category = id_category;
-    this.#label = label;
-    this.#google_material_icon = google_material_icon;
-    this.#environments = environments;
+  constructor(props) {
+    const data = Guard.validateProps(Category.schema, props);
+    this.#id_category = data.id_category;
+    this.#label = data.label;
+    this.#google_material_icon = data.google_material_icon;
+    this.#environments = data.environments;
   }
+
+  // Zod Schema for object validation
+  static schema = z.object({
+    id_category: z.number().int().positive(),
+    label: z.string().min(1).trim(),
+    google_material_icon: z.string().min(1).trim(),
+    environments: z.array(z.instanceof(Environment)).default([]),
+  });
 
   // Getters
   get id_category() {

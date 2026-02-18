@@ -1,65 +1,40 @@
+import z from 'zod';
 import dbManager from '../config/db.config.js';
 import { Environment } from '../objects/Environment.js';
 import { Interface } from '../objects/Interface.js';
-import {
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../utils/errors.service.js';
-import * as parametres from '../../src/utils/parametres.service.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Builder that list all the environments in database.
- * @param {*} fns
- * @returns
+ * @returns {Array<Environment>}
  */
 export const list = async function () {
-  try {
-    const queryOptions = {
-      include: [
-        {
-          model: dbManager.models.ENVIRONMENT,
-          required: true,
-        },
-        {
-          model: dbManager.models.INTERFACE,
-          required: true,
-          include: [
-            {
-              model: dbManager.models.IMAGE_TYPE,
-              required: true,
-            },
-          ],
-        },
-      ],
-    };
-    return await Promise.resolve(
-      dbManager.models.ENVIRONMENT_HAS_INTERFACE.findAll(queryOptions)
-    ).then((r) => {
+  const queryOptions = {
+    include: [
+      {
+        model: dbManager.models.ENVIRONMENT,
+        required: true,
+      },
+      {
+        model: dbManager.models.INTERFACE,
+        required: true,
+        include: [
+          {
+            model: dbManager.models.IMAGE_TYPE,
+            required: true,
+          },
+        ],
+      },
+    ],
+  };
+  return await dbManager.models.ENVIRONMENT_HAS_INTERFACE.findAll(queryOptions)
+    .then((r) => {
       let result = [];
       for (let env of r) {
         const options = {
-          id_interface: env.INTERFACE.id_interface,
-          label: env.label,
-          default_label: env.INTERFACE.label,
-          registry_link: env.INTERFACE.registry_link,
-          exec_command: env.INTERFACE.exec_command,
-          service_command: env.INTERFACE.service_command,
-          privileged: env.INTERFACE.privileged,
-          readiness_probe_initial_delay:
-            env.INTERFACE.readiness_probe_initial_delay,
-          liveness_probe_initial_delay:
-            env.INTERFACE.liveness_probe_initial_delay,
-          readiness_probe_period: env.INTERFACE.readiness_probe_period,
-          liveness_probe_period: env.INTERFACE.liveness_probe_period,
-          need_compute_gpu: env.INTERFACE.need_compute_gpu,
-          need_graphical_rendering_gpu:
-            env.INTERFACE.need_graphical_rendering_gpu,
-          ram_limit: env.INTERFACE.ram_limit,
-          ram_request: env.INTERFACE.ram_request,
-          cpu_limit: env.INTERFACE.cpu_limit,
-          cpu_request: env.INTERFACE.cpu_request,
-          id_type: env.INTERFACE.IMAGE_TYPE.id_type,
+          ...env.INTERFACE.dataValues,
           label_type_image: env.INTERFACE.IMAGE_TYPE.label,
+          label: env.label,
           args: [],
           node_selectors: [],
           ports: [],
@@ -71,8 +46,7 @@ export const list = async function () {
         ) {
           result.push(
             new Environment({
-              id_environment: env.id_environment,
-              label: env.label,
+              ...env.dataValues,
               icon: env.ENVIRONMENT.icon,
               interfaces: [new Interface(options)],
             })
@@ -84,38 +58,25 @@ export const list = async function () {
         }
       }
       return result;
+    })
+    .catch((err) => {
+      throw dbManager.sequelizeErrorManagement(err);
     });
-  } catch (err) {
-    throw dbManager.sequelizeErrorManagement(err);
-  }
 };
 
 /**
  * Builder that fetch all the informations of one environment.
- * @param {*} props
- * @param {*} fns
- * @returns
+ * @param {Number} id_environment id of the environment.
+ * @returns {Environment}
  */
-export const get = async function (
-  props = {
-    id_environment: undefined,
-  }
-) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_environment: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_environment))
-    throw new ParameterMisformed(
-      'The props.id_environment parameter is misformed.'
-    );
+export const get = async function (props) {
   try {
+    const schema = z.object({
+      id_environment: z.number().positive().optional(),
+    });
+    const data = Guard.validateProps(schema, props);
     const queryOptions = {
-      where: { id_environment: props.id_environment },
+      where: { id_environment: data.id_environment },
       include: [
         {
           model: dbManager.models.ENVIRONMENT,
@@ -166,8 +127,8 @@ export const get = async function (
         },
       ],
     };
-    return await Promise.resolve(
-      dbManager.models.ENVIRONMENT_HAS_INTERFACE.findAll(queryOptions)
+    return await dbManager.models.ENVIRONMENT_HAS_INTERFACE.findAll(
+      queryOptions
     ).then((r) => {
       let result;
       for (let env of r) {

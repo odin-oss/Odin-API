@@ -1,6 +1,6 @@
 import express from 'express';
 import * as applications_controller from '../controllers/applications.controller.js';
-import { isTokenValid, isOwner, isAdmin } from '../utils/token.service.js';
+import { isTokenValid, isOwner, isAdmin } from '../utils/token.util.js';
 
 const router = express.Router();
 

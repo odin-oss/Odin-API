@@ -1,4 +1,7 @@
+import z from 'zod';
 import * as environment_builder from '../builders/environment.builder.js';
+import Guard from '../utils/guard.util.js';
+import { Interface } from './Interface.js';
 
 export class Environment {
   #id_environment;
@@ -6,17 +9,21 @@ export class Environment {
   #icon;
   #interfaces;
 
-  constructor({
-    id_environment = null,
-    label = '',
-    interfaces = [],
-    icon = '',
-  } = {}) {
-    this.#id_environment = id_environment;
-    this.#label = label;
-    this.#interfaces = interfaces;
-    this.#icon = icon;
+  constructor(props) {
+    const data = Guard.validateProps(Environment.schema, props);
+    this.#id_environment = data.id_environment;
+    this.#label = data.label;
+    this.#interfaces = data.interfaces;
+    this.#icon = data.icon;
   }
+
+  // Zod Schema for object validation
+  static schema = z.object({
+    id_environment: z.number().int().positive().optional(),
+    label: z.string().min(1).trim().default(''),
+    icon: z.string().min(1).trim().default(''),
+    interfaces: z.array(z.instanceof(Interface)).default([]),
+  });
 
   // Getters
   get id_environment() {

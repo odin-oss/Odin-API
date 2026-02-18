@@ -1,5 +1,4 @@
 import express from 'express';
-import moment from 'moment-timezone';
 import fs from 'fs';
 import {
   health_client,
@@ -7,6 +6,7 @@ import {
   counter_get,
 } from '../middlewares/prometheus.js';
 import CONFIG from '../config/config.js';
+import { ApiResponse } from '../utils/response.util.js';
 
 const router = express.Router();
 /**
@@ -43,17 +43,22 @@ const router = express.Router();
  *           type: object
  *           $ref: '#/definitions/base'
  */
-router.get('/', function (req, res, next) {
+router.get('/', function (req, res) {
   counter.inc();
   counter_get.inc();
-  res.send({
-    result: {
-      timezone: CONFIG.timezone,
-      date: moment.tz(CONFIG.timezone).format(),
-      message: 'Odin (by Caelus) is working well.',
-      version: JSON.parse(fs.readFileSync('package.json', 'utf8')).version,
+  ApiResponse.success(
+    req,
+    res,
+    {
+      result: {
+        timezone: CONFIG.APP_TZ,
+        message: 'Odin (by Caelus) is working well.',
+        version: JSON.parse(fs.readFileSync('package.json', 'utf8')).version,
+      },
     },
-  });
+    200,
+    'Odin (by Caelus) is working well.'
+  );
 });
 
 /**
@@ -69,12 +74,9 @@ router.get('/', function (req, res, next) {
  *       200:
  *         description: Application's metrics for Prometheus.
  */
-router.get('/metrics', async function (req, res, next) {
+router.get('/metrics', async function (req, res) {
   res.set('Content-Type', health_client.register.contentType);
-  const result = health_client.register.metrics();
-  return await Promise.resolve(result).then((r) => {
-    res.end(r);
-  });
+  return await health_client.register.metrics().then((r) => res.end(r));
 });
 
 export default router;

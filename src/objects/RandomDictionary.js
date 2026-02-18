@@ -1,9 +1,17 @@
+import z from 'zod';
+import Guard from '../utils/guard.util.js';
+
 export class RandomDictionary {
   #words;
 
-  constructor({ words = [] } = {}) {
-    this.#words = words;
+  constructor(props = {}) {
+    const data = Guard.validateProps(RandomDictionary.schema, props);
+    this.#words = data.words;
   }
+
+  static schema = z.object({
+    words: z.array(z.string()).default([]),
+  });
 
   // Getters
   get words() {

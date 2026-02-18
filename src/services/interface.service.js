@@ -1,37 +1,23 @@
+import z from 'zod';
 import * as interface_builder from '../builders/interface.builder.js';
-import {
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../utils/errors.service.js';
-import * as parametres from '../utils/parametres.service.js';
+import Guard from '../utils/guard.service.js';
+import { Interface } from '../objects/Interface.js';
 
 /**
  * Service that will get a specific interface infos and send back an Interface object.
- * @param {*} props {id_interface}
- * @param {*} fns overwriting functions for tests
- * @returns Interface {}
+ * @param {Number} id_interface id of the interface we want to get.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Interface}
  */
 export const get = async function (
-  props = { id_interface: undefined },
+  props,
   fns = {
     interface_get: interface_builder.get,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_interface: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_interface))
-    throw new ParameterMisformed(
-      'The props.id_interface parameter is misformed.'
-    );
-  return await Promise.resolve(
-    fns.interface_get({ id_interface: props.id_interface })
-  ).then((int) => {
-    return int;
+  const schema = z.object({
+    id_interface: z.number().positive(),
   });
+  const data = Guard.validateProps(schema, props);
+  return await fns.interface_get({ ...data });
 };

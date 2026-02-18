@@ -1,7 +1,21 @@
 services:
+
+  mongo_db:
+    image: mongo:8.2.5-noble
+    container_name: odin-oss-mdb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: odin
+      MONGO_INITDB_ROOT_PASSWORD: odin
+      MONGO_INITDB_DATABASE: odin
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/var/lib/postgresql/data
+
   postgres_db:
     image: postgres:15-alpine
-    container_name: odin-oss-db
+    container_name: odin-oss-psql
     restart: always
     environment:
       POSTGRES_USER: odin
@@ -11,5 +25,38 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  kong-migrations:
+    image: kong:latest
+    command: kong migrations bootstrap
+    depends_on:
+      - postgres_db
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: postgres_db
+      KONG_PG_USER: odin
+      KONG_PG_PASSWORD: odin
+      KONG_PG_DATABASE: odin
+
+  kong:
+    image: kong:latest
+    container_name: kong-gateway
+    restart: unless-stopped
+    depends_on:
+      - postgres_db
+      - kong-migrations
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: postgres_db
+      KONG_PG_USER: odin
+      KONG_PG_PASSWORD: odin
+      KONG_PG_DATABASE: odin
+      KONG_PROXY_LISTEN: 0.0.0.0:8000, 0.0.0.0:8443 ssl
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    ports:
+      - "80:8000" # Proxy
+      - "443:8443" # Proxy
+      - "8001:8001"
+
 volumes:
   postgres_data:
+  mongodb_data:

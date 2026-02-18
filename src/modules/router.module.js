@@ -1,19 +1,15 @@
-/**
- * Package module
- *
- * Module servant de base aux différentes routes.
- */
 import AUTH from '../routes/auth.route.js';
 import BASE from '../routes/base.route.js';
 import APPLICATION from '../routes/applications.route.js';
-import APPLICATION_STORAGE from '../routes/application/storage.route.js';
+import APPLICATION_STORAGE from '../routes/storage.route.js';
 import DATACENTER from '../routes/datacenter.route.js';
 import ENVIRONMENT from '../routes/environment.route.js';
 import CATEGORY from '../routes/category.route.js';
 import IMAGES from '../routes/images.route.js';
 import USER from '../routes/user.route.js';
 import SESSION from '../routes/sessions.route.js';
-import logs from '../middlewares/winston.js';
+import { ApiResponse } from '../utils/response.util.js';
+import { URLNotFound } from '../utils/errors.util.js';
 
 export default (app) => {
   app.use('/application', APPLICATION);
@@ -26,8 +22,7 @@ export default (app) => {
   app.use('/session', SESSION);
   app.use('/user', USER);
   app.use('/', BASE);
-  app.use('/*', function (req, res) {
-    logs.error(`[404] : ${req.originalUrl} n'existe pas.`);
-    return res.status(404).json({ result: "L'adresse demandée n'existe pas." });
-  });
+  app.use('/*', (req, res) =>
+    ApiResponse.error(req, res, new URLNotFound('URL not found.'))
+  );
 };

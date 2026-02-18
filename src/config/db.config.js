@@ -8,7 +8,7 @@ import {
   DBConnexionRefused,
   DBForeignKeyConstraintError,
   DBObjectNotFound,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 import logger from '../middlewares/winston.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -25,13 +25,13 @@ class DBManager {
     if (this.sequelize) return this.sequelize;
 
     this.sequelize = new Sequelize(
-      CONFIG.db_name,
-      CONFIG.db_user,
-      CONFIG.db_password,
+      CONFIG.DB_NAME,
+      CONFIG.DB_USER,
+      CONFIG.DB_PASSWORD,
       {
-        host: CONFIG.db_host,
-        port: CONFIG.db_port,
-        dialect: CONFIG.db_dialect,
+        host: CONFIG.DB_HOST,
+        port: CONFIG.DB_PORT,
+        dialect: CONFIG.DB_DIALECT,
         pool: { max: 30, min: 0, idle: 30000, acquire: 200000 },
         define: {
           underscored: false,
@@ -49,7 +49,7 @@ class DBManager {
           },
         },
         logging: CONFIG.NODE_ENV === 'development',
-        timezone: CONFIG.timezone,
+        timezone: CONFIG.APP_TZ,
       }
     );
     return this.sequelize;
@@ -57,21 +57,14 @@ class DBManager {
 
   async executeInitScript(filePath) {
     const sequelize = this.getSequelize();
-    try {
-      const sql = fs.readFileSync(filePath, 'utf8');
+    const sql = fs.readFileSync(filePath, 'utf8');
 
-      // Split by semicolon if you have multiple statements,
-      // or just run the whole blob if your dialect supports it.
-      await sequelize.query(sql);
-      logger.info(
-        `[SYSTEM][200] / : Initial SQL script executed successfully (${filePath}).`
-      );
-    } catch (error) {
-      logger.info(
-        `[SYSTEM][200] / : Initial SQL script executed successfully (${filePath}).`
-      );
-      throw error;
-    }
+    // Split by semicolon if you have multiple statements,
+    // or just run the whole blob if your dialect supports it.
+    await sequelize.query(sql);
+    logger.info(
+      `[SYSTEM][200] / : Initial SQL script executed successfully (${filePath}).`
+    );
   }
 
   async initModels() {
@@ -85,13 +78,13 @@ class DBManager {
     }
 
     const auto = new SequelizeAuto(
-      CONFIG.db_name,
-      CONFIG.db_user,
-      CONFIG.db_password,
+      CONFIG.DB_NAME,
+      CONFIG.DB_USER,
+      CONFIG.DB_PASSWORD,
       {
-        host: CONFIG.db_host,
-        dialect: CONFIG.db_dialect,
-        port: CONFIG.db_port,
+        host: CONFIG.DB_HOST,
+        dialect: CONFIG.DB_DIALECT,
+        port: CONFIG.DB_PORT,
         logging: false,
         caseModel: 'u',
         caseFile: 'u',

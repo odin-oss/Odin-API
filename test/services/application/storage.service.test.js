@@ -184,7 +184,7 @@ describe('storage.service.exportStorage()', () => {
           id_application: 1,
           custom_label: 'Wow ça marche',
           generated_label: 'ulfi-blacky-donkey',
-          creation_date: moment.tz(CONFIG.timezone),
+          creation_date: moment.tz(CONFIG.APP_TZ),
           hash: 'hash12',
           username: 'b_lefebvre',
           password: 'louis-daphne-peheux',
@@ -197,11 +197,9 @@ describe('storage.service.exportStorage()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Off',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.timezone
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             icon: 'ereteret',
@@ -345,7 +343,7 @@ describe('storage.service.exportStorage()', () => {
   //         id_application: 1,
   //         custom_label: 'Wow ça marche',
   //         generated_label: 'ulfi-blacky-donkey',
-  //         creation_date: moment.tz(CONFIG.timezone),
+  //         creation_date: moment.tz(CONFIG.APP_TZ),
   //         hash: 'hash12',
   //         username: 'b_lefebvre',
   //         password: 'louis-daphne-peheux',
@@ -359,10 +357,10 @@ describe('storage.service.exportStorage()', () => {
   //         id_environment: 1,
   //         state_application: 'Off',
   //         state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-  //           CONFIG.timezone
+  //           CONFIG.APP_TZ
   //         ),
   //         programming_shutdown_date: moment('2199-08-23T12:00:00Z')
-  //           .tz(CONFIG.timezone)
+  //           .tz(CONFIG.APP_TZ)
   //           .add(CONFIG.expiration, 's'),
   //         environment: new Environment({
   //           icon: 'ereteret',
@@ -563,7 +561,7 @@ describe('storage.service.exportStorage()', () => {
           id_application: 1,
           custom_label: 'Wow ça marche',
           generated_label: 'ulfi-blacky-donkey',
-          creation_date: moment.tz(CONFIG.timezone),
+          creation_date: moment.tz(CONFIG.APP_TZ),
           hash: 'hash12',
           username: 'b_lefebvre',
           password: 'louis-daphne-peheux',
@@ -576,11 +574,9 @@ describe('storage.service.exportStorage()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Ready',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.timezone
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             icon: 'ereteret',
@@ -681,7 +677,7 @@ describe('storage.service.exportStorage()', () => {
           id_application: 1,
           custom_label: 'Wow ça marche',
           generated_label: 'ulfi-blacky-donkey',
-          creation_date: moment.tz(CONFIG.timezone),
+          creation_date: moment.tz(CONFIG.APP_TZ),
           hash: 'hash12',
           username: 'b_lefebvre',
           password: 'louis-daphne-peheux',
@@ -694,11 +690,9 @@ describe('storage.service.exportStorage()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Off',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.timezone
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             icon: 'ereteret',
@@ -857,7 +851,7 @@ describe('storage.service.exportStorage()', () => {
           id_application: 1,
           custom_label: 'Wow ça marche',
           generated_label: 'ulfi-blacky-donkey',
-          creation_date: moment.tz(CONFIG.timezone),
+          creation_date: moment.tz(CONFIG.APP_TZ),
           hash: 'hash12',
           username: 'b_lefebvre',
           password: 'louis-daphne-peheux',
@@ -870,11 +864,9 @@ describe('storage.service.exportStorage()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Off',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.timezone
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             icon: 'ereteret',
@@ -944,7 +936,7 @@ describe('storage.service.exportStorage()', () => {
           id_application: 1,
           custom_label: 'Wow ça marche',
           generated_label: 'ulfi-blacky-donkey',
-          creation_date: moment.tz(CONFIG.timezone),
+          creation_date: moment.tz(CONFIG.APP_TZ),
           hash: 'hash12',
           username: 'b_lefebvre',
           password: 'louis-daphne-peheux',
@@ -957,11 +949,9 @@ describe('storage.service.exportStorage()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Off',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.timezone
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             icon: 'ereteret',
@@ -1039,7 +1029,7 @@ describe('storage.service.exportStorage()', () => {
           id_application: 1,
           custom_label: 'Wow ça marche',
           generated_label: 'ulfi-blacky-donkey',
-          creation_date: moment.tz(CONFIG.timezone),
+          creation_date: moment.tz(CONFIG.APP_TZ),
           hash: 'hash12',
           username: 'b_lefebvre',
           password: 'louis-daphne-peheux',
@@ -1052,11 +1042,9 @@ describe('storage.service.exportStorage()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Off',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.timezone
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             icon: 'ereteret',
@@ -1167,7 +1155,7 @@ describe('storage.service.exportStorage()', () => {
           id_application: 1,
           custom_label: 'Wow ça marche',
           generated_label: 'ulfi-blacky-donkey',
-          creation_date: moment.tz(CONFIG.timezone),
+          creation_date: moment.tz(CONFIG.APP_TZ),
           hash: 'hash12',
           username: 'b_lefebvre',
           password: 'louis-daphne-peheux',
@@ -1180,11 +1168,9 @@ describe('storage.service.exportStorage()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Off',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.timezone
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             icon: 'ereteret',

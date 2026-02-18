@@ -1,6 +1,6 @@
 import express from 'express';
 import * as environment_controller from '../controllers/environment.controller.js';
-import { isTokenValid } from '../utils/token.service.js';
+import { isTokenValid } from '../utils/token.util.js';
 const router = express.Router();
 
 /**

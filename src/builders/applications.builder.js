@@ -1,49 +1,36 @@
 import { Op } from 'sequelize';
+import moment from 'moment-timezone';
+import z from 'zod';
 import CONFIG from '../config/config.js';
 import dbManager from '../config/db.config.js';
-import moment from 'moment-timezone';
-import * as parametres from '../utils/parametres.service.js';
 import {
   DBObjectNotFound,
   MissingArgumentError,
-  ParameterMisformed,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 import { Application } from '../objects/Application.js';
 import { Environment } from '../objects/Environment.js';
 import { Datacenter } from '../objects/Datacenter.js';
+import Guard from '../utils/guard.util.js';
 
 /**
- * Get the application from id.
- * @param integer id_application id of application.
- * @returns hash
+ * Get a specific application from its id || key || hash.
+ * @param {Number} id_application id of the application to get.
+ * @param {Number} key key of the application to get.
+ * @param {Number} hash hash of the application to get.
+ * @returns {Application}
  */
-export const get = async function (
-  props = {
-    id_application: undefined,
-    key: undefined,
-    hash: undefined,
-  }
-) {
-  if (
-    props.id_application === undefined &&
-    props.key === undefined &&
-    props.hash === undefined
-  )
-    throw new MissingArgumentError(
-      `One or multiple arguments (id_application,key,hash) are missing.`
-    );
-  if (
-    props.id_application !== undefined &&
-    !parametres.check_id(props.id_application)
-  )
-    throw new ParameterMisformed(
-      'The props.id_application parameter is misformed.'
-    );
-  if (props.key !== undefined && !parametres.check_key(props.key))
-    throw new ParameterMisformed('The props.key parameter is misformed.');
-  if (props.hash !== undefined && !parametres.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
+export const get = async function (props) {
   try {
+    const schema = z.object({
+      id_application: z.coerce.number().positive().optional(),
+      key: z.string().optional(),
+      hash: z.string().min(6).max(6).optional(),
+    });
+    if (!props.id_application && !props.key && !props.hash)
+      throw new MissingArgumentError(
+        'Either id_application, key, hash must be sent.'
+      );
+    const data = Guard.validateProps(schema, props);
     const options = {
       where: {},
       include: [
@@ -57,39 +44,20 @@ export const get = async function (
         },
       ],
     };
-    if (props.id_application !== undefined)
-      options.where.id_application = props.id_application;
-    if (props.key !== undefined) options.where.generated_label = props.key;
-    if (props.hash !== undefined) options.where.hash = props.hash;
-    return await Promise.resolve(
-      dbManager.models.APPLICATION.findOne(options)
-    ).then((r) => {
+    if (data.id_application !== undefined)
+      options.where.id_application = data.id_application;
+    if (data.key !== undefined) options.where.generated_label = data.key;
+    if (data.hash !== undefined) options.where.hash = data.hash;
+    return await dbManager.models.APPLICATION.findOne(options).then((r) => {
       if (r === null)
         throw new DBObjectNotFound(
-          `The element id_application = '${props.id_application}' could not be found.`
+          `The element id_application = '${data.id_application}' could not be found.`
         );
       return new Application({
-        id_application: r.id_application,
-        custom_label: r.custom_label,
-        generated_label: r.generated_label,
-        creation_date: moment(r.creation_date).tz(CONFIG.timezone),
-        hash: r.hash,
-        username: r.username,
-        password: r.password,
-        id_user: r.id_user,
-        id_environment: r.id_environment,
+        ...r.dataValues,
         state_application: r.ENUM_STATE_APPLICATION.label,
-        state_changed_date: moment(r.state_changed_date).tz(CONFIG.timezone),
-        programming_shutdown_date:
-          r.programming_shutdown_date == null
-            ? null
-            : moment(r.programming_shutdown_date).tz(CONFIG.timezone),
-        datacenter: new Datacenter({ id_datacenter: r.id_datacenter }),
-        environment: new Environment({
-          id_environment: r.ENVIRONMENT.id_environment,
-          label: r.ENVIRONMENT.label,
-          icon: r.ENVIRONMENT.icon,
-        }),
+        datacenter: new Datacenter(r),
+        environment: new Environment(r.ENVIRONMENT),
       });
     });
   } catch (err) {
@@ -99,27 +67,17 @@ export const get = async function (
 
 /**
  * Get the Application list from id_user.
- * @param integer id_user id of user.
- * @returns [Application {}, ...]
+ * @param {Number} id_user id of the user.
+ * @returns {Array<Application>}
  */
-export const list = async function (
-  props = {
-    id_user: undefined,
-  }
-) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_user: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_user))
-    throw new ParameterMisformed('The props.id_user parameter is misformed.');
+export const list = async function (props) {
   try {
+    const schema = z.object({
+      id_user: z.number().positive(),
+    });
+    const data = Guard.validateProps(schema, props);
     const options = {
-      where: { id_user: props.id_user },
+      where: { id_user: data.id_user },
       include: [
         {
           model: dbManager.models.ENUM_STATE_APPLICATION,
@@ -131,87 +89,47 @@ export const list = async function (
         },
       ],
     };
-    return await Promise.resolve(
-      dbManager.models.APPLICATION.findAll(options)
-    ).then((r) => {
-      return r.map(
+    return await dbManager.models.APPLICATION.findAll(options).then((r) =>
+      r.map(
         (app) =>
           new Application({
-            id_application: app.id_application,
-            custom_label: app.custom_label,
-            generated_label: app.generated_label,
-            creation_date: moment(app.creation_date).tz(CONFIG.timezone),
-            hash: app.hash,
-            username: app.username,
-            password: app.password,
-            id_user: app.id_user,
-            id_environment: app.id_environment,
+            ...app.dataValues,
             state_application: app.ENUM_STATE_APPLICATION.label,
-            state_changed_date: moment(app.state_changed_date).tz(
-              CONFIG.timezone
-            ),
-            programming_shutdown_date:
-              app.programming_shutdown_date == null
-                ? null
-                : moment(app.programming_shutdown_date).tz(CONFIG.timezone),
-            datacenter: new Datacenter({
-              id_datacenter: app.id_datacenter,
-              label: '',
-              city: '',
-              provider: '',
-            }),
-            environment: new Environment({
-              id_environment: app.ENVIRONMENT.id_environment,
-              label: app.ENVIRONMENT.label,
-              icon: app.ENVIRONMENT.icon,
-              interfaces: [],
-            }),
+            datacenter: new Datacenter({ id_datacenter: app.id_datacenter }),
+            environment: new Environment(app.ENVIRONMENT),
           })
-      );
-    });
+      )
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
 };
 
 /**
- * Renew the application expiration date using the constant CONFIG.expiration
- * @param {*} props
+ * Renew the application expiration date using the constant CONFIG.USER_APPS_EXPIRATION_HOURS
+ * @param {Number} id_application id of the application to renew
+ * @returns {Application}
  */
-export const renew_expiration = async function (
-  props = {
-    id_application: undefined,
-  }
-) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_application: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_application))
-    throw new ParameterMisformed(
-      'The props.id_application parameter is misformed.'
-    );
+export const renew_expiration = async function (props) {
   try {
+    const schema = z.object({
+      id_application: z.number().positive(),
+    });
+    const data = Guard.validateProps(schema, props);
     const options = {
       where: {
-        id_application: props.id_application,
+        id_application: data.id_application,
       },
     };
-    const application = await Promise.resolve(
-      dbManager.models.APPLICATION.findOne(options)
-    );
+    const application = await dbManager.models.APPLICATION.findOne(options);
     if (application == null)
       throw new DBObjectNotFound('The application could not be found.');
 
     const opt_update = {
       programming_shutdown_date: moment
-        .tz(CONFIG.timezone)
+        .tz(CONFIG.APP_TZ)
         .clone()
-        .add(CONFIG.expiration, 's')
+        .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 's')
         .utc()
         .format(),
     };
@@ -221,11 +139,10 @@ export const renew_expiration = async function (
       },
     };
 
-    return await Promise.resolve(
-      dbManager.models.APPLICATION.update(opt_update, opt_condition)
-    ).then((response) => {
-      return 'The application expiration have been renewed.';
-    });
+    return await dbManager.models.APPLICATION.update(
+      opt_update,
+      opt_condition
+    ).then(() => 'The application expiration have been renewed.');
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -233,122 +150,72 @@ export const renew_expiration = async function (
 
 /**
  * Create an application in the database
- * @param {*} props
- * @param {*} fns
- * @returns
+ * @param {Number} id_user id of the user.
+ * @param {Number} id_environment id of the environment.
+ * @param {Number} id_datacenter id of the datacenter.
+ * @param {String} custom_label custom label of the application.
+ * @param {String} generated_label generated label of the application.
+ * @param {String} hash unique hash of the application.
+ * @param {String} username username of the application.
+ * @param {String} password password of the application.
+ * @param {String || moment} state_changed_date datatime when the application is started // scheduled - last update of state.
+ * @returns { Application }
  */
-export const create = async function (
-  props = {
-    id_user: undefined,
-    id_environment: undefined,
-    id_datacenter: undefined,
-    custom_label: undefined,
-    generated_label: undefined,
-    hash: undefined,
-    username: undefined,
-    password: undefined,
-    state_changed_date: undefined,
-  }
-) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_user: undefined,
-    id_environment: undefined,
-    id_datacenter: undefined,
-    custom_label: undefined,
-    generated_label: undefined,
-    hash: undefined,
-    username: undefined,
-    password: undefined,
-    state_changed_date: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_user))
-    throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  if (!parametres.check_id(props.id_environment))
-    throw new ParameterMisformed(
-      'The props.id_environment parameter is misformed.'
-    );
-  if (!parametres.check_id(props.id_datacenter))
-    throw new ParameterMisformed(
-      'The props.id_datacenter parameter is misformed.'
-    );
-  if (!parametres.check_key(props.generated_label))
-    throw new ParameterMisformed(
-      'The props.generated_label parameter is misformed.'
-    );
-  if (!parametres.check_key(props.password))
-    throw new ParameterMisformed('The props.password parameter is misformed.');
+export const create = async function (props) {
   try {
-    // We find the state from different parameters.
-    let creation_state = 'Scheduled';
-    if (!CONFIG.ms_deployment_activated) creation_state = 'Ready';
-
-    const esp_options = {
-      where: { label: creation_state },
-    };
-    const id_enum_state_application = await Promise.resolve(
-      dbManager.models.ENUM_STATE_APPLICATION.findOne(esp_options)
-    ).then((r) => {
-      if (r == null)
-        throw new DBObjectNotFound('The state could not be found.');
-      return r.id_enum_state_application;
+    const schema = z.object({
+      id_user: z.number().positive(),
+      id_environment: z.number().positive(),
+      id_datacenter: z.number().positive(),
+      custom_label: z.string().min(1),
+      generated_label: z.string().min(8),
+      hash: z.string().min(6).max(6),
+      username: z.string().min(1),
+      password: z.string().min(1),
+      state_changed_date: z
+        .refine((val) => moment(val).isValid(), {
+          message: 'Invalid date format',
+        })
+        .transform((val) => moment(val).tz(CONFIG.APP_TZ))
+        .default(moment.tz(CONFIG.APP_TZ)),
     });
+    const data = Guard.validateProps(schema, props);
+    // We find the state from different parameters.
+    const esp_options = {
+      where: { label: 'Scheduled' },
+    };
+    const state_application =
+      await dbManager.models.ENUM_STATE_APPLICATION.findOne(esp_options).then(
+        (r) => {
+          if (r == null)
+            throw new DBObjectNotFound('The state could not be found.');
+          return r;
+        }
+      );
 
     // We prepare the creation of the application
     const options = {
-      id_user: props.id_user,
-      id_enum_state_application: id_enum_state_application,
-      id_environment: props.id_environment,
-      id_datacenter: props.id_datacenter,
+      ...data,
+      state_changed_date: data.state_changed_date.utc().format(),
+      id_enum_state_application: state_application.id_enum_state_application,
       custom_label:
-        props.custom_label === '' ? props.generated_label : props.custom_label,
-      generated_label: props.generated_label,
-      creation_date: moment.tz(CONFIG.timezone).utc().format(),
-      hash: props.hash,
-      username: props.username,
-      password: props.password,
-      state_changed_date: moment(props.state_changed_date)
-        .tz(CONFIG.timezone)
+        data.custom_label === '' ? data.generated_label : data.custom_label,
+      creation_date: moment.tz(CONFIG.APP_TZ).utc().format(),
+      programming_shutdown_date: moment(data.state_changed_date)
+        .tz(CONFIG.APP_TZ)
+        .clone()
+        .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 's')
         .utc()
         .format(),
-      programming_shutdown_date:
-        creation_state !== 'Ready'
-          ? null
-          : moment(props.state_changed_date)
-              .tz(CONFIG.timezone)
-              .clone()
-              .add(CONFIG.expiration, 's')
-              .utc()
-              .format(),
     };
-    return await Promise.resolve(
-      dbManager.models.APPLICATION.create(options)
-    ).then((r) => {
+    return await dbManager.models.APPLICATION.create(options).then((r) => {
       return new Application({
+        ...data,
         id_application: r.id_application,
-        custom_label: r.custom_label,
-        generated_label: r.generated_label,
-        creation_date: moment(r.creation_date).tz(CONFIG.timezone),
-        hash: r.hash,
-        username: r.username,
-        password: r.password,
-        id_user: r.id_user,
-        id_environment: r.id_environment,
-        state_application: creation_state,
-        state_changed_date: moment(r.state_changed_date).tz(CONFIG.timezone),
-        programming_shutdown_date:
-          r.programming_shutdown_date == null
-            ? null
-            : moment(r.programming_shutdown_date).tz(CONFIG.timezone),
         datacenter: undefined,
+        state_application: state_application.label,
         environment: new Environment({
           id_environment: r.id_environment,
-          label: '',
-          icon: '',
         }),
       });
     });
@@ -359,61 +226,37 @@ export const create = async function (
 
 /**
  * Check if the user is the owner of the application.
- * @param {*} param0
- * @returns
+ * @param {Number} id_user id of the user
+ * @param {String} key unique key of the application.(optionnal)
+ * @param {Number} id_application id of the application
+ * @returns {Boolean}
  */
-export const is_owner = async function (
-  props = {
-    id_user: undefined,
-    id_application: undefined,
-    key: undefined,
-  }
-) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_user: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_user))
-    throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  if (props.key === undefined && props.id_application === undefined)
-    throw new MissingArgumentError(
-      'You need to pass either id_application or key.'
-    );
-  if (
-    props.id_application !== undefined &&
-    !parametres.check_id(props.id_application)
-  )
-    throw new ParameterMisformed(
-      'The props.id_application parameter is misformed.'
-    );
-  if (props.key !== undefined && !parametres.check_key(props.key))
-    throw new ParameterMisformed('The props.key parameter is misformed.');
-
+export const is_owner = async function (props) {
   try {
+    const schema = z.object({
+      id_user: z.number().positive(),
+      key: z.string().min(2).optional(),
+      id_application: z.coerce.number().positive().optional(),
+    });
+    const data = Guard.validateProps(schema, props);
     const whereOpt =
-      props.key === undefined
+      data.key === undefined
         ? {
             [Op.and]: [
-              { id_application: props.id_application },
-              { id_user: props.id_user },
+              { id_application: data.id_application },
+              { id_user: data.id_user },
             ],
           }
         : {
             [Op.and]: [
-              { generated_label: props.key },
-              { id_user: props.id_user },
+              { generated_label: data.key },
+              { id_user: data.id_user },
             ],
           };
 
-    return await Promise.resolve(
-      dbManager.models.APPLICATION.findOne({ where: whereOpt })
-    ).then((r) => {
-      return r != null;
-    });
+    return await dbManager.models.APPLICATION.findOne({ where: whereOpt }).then(
+      (r) => r != null
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -421,104 +264,69 @@ export const is_owner = async function (
 
 /**
  * Builder used to check if the new key generated is available or already attributed.
- * @param {*} props
- * @param {*} fns
- * @returns
+ * @param {String} name name of the application
+ * @returns {Boolean}
  */
-export const nameExists = async (
-  props = {
-    name: undefined,
-  }
-) => {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    name: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_key(props.name))
-    throw new ParameterMisformed('The props.name parameter is misformed.');
-  const options = {
-    where: {
-      generated_label: props.name,
-    },
-  };
-  return await Promise.resolve(dbManager.models.APPLICATION.findOne(options))
-    .then((r) => {
-      return r != null;
-    })
-    .catch((err) => {
-      throw dbManager.sequelizeErrorManagement(err);
+export const nameExists = async (props) => {
+  try {
+    const schema = z.object({
+      name: z.string().min(2),
     });
+    const data = Guard.validateProps(schema, props);
+    const options = {
+      where: {
+        generated_label: data.name,
+      },
+    };
+    return await dbManager.models.APPLICATION.findOne(options).then(
+      (r) => r != null
+    );
+  } catch (err) {
+    throw dbManager.sequelizeErrorManagement(err);
+  }
 };
 
 /**
  * Builder used to check if the new hash generated is available or already attributed.
- * @param {*} hash
- * @returns
+ * @param {String} hash hash to check
+ * @returns {Boolean}
  */
-export const hashExists = async (
-  props = {
-    hash: undefined,
-  }
-) => {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    hash: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_hash(props.hash))
-    throw new ParameterMisformed('The props.hash parameter is misformed.');
-  const options = {
-    where: { hash: props.hash },
-  };
-  return await Promise.resolve(dbManager.models.APPLICATION.findOne(options))
-    .then((r) => {
-      return r != null;
-    })
-    .catch((err) => {
-      throw dbManager.sequelizeErrorManagement(err);
+export const hashExists = async (props) => {
+  try {
+    const schema = z.object({
+      hash: z.string().min(6).max(6),
     });
+    const data = Guard.validateProps(schema, props);
+    const options = {
+      where: { hash: data.hash },
+    };
+    return await dbManager.models.APPLICATION.findOne(options).then(
+      (r) => r != null
+    );
+  } catch (err) {
+    throw dbManager.sequelizeErrorManagement(err);
+  }
 };
 
 /**
  * Delete an application from the database.
- * @param {*} props
- * @param {*} fns
- * @returns
+ * @param {Number} id_application id of the application to delete.
+ * @returns {Application}
  */
-export const deletion = async function (
-  props = {
-    id_application: undefined,
-  }
-) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_application: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_application))
-    throw new ParameterMisformed(
-      'The props.id_application parameter is misformed.'
-    );
+export const deletion = async function (props) {
   try {
+    const schema = z.object({
+      id_application: z.number().positive(),
+    });
+    const data = Guard.validateProps(schema, props);
     // getting state for label 'Deleted'
     let options = {
       where: { label: 'Deleted' },
     };
-    const id_enum_state_application = await Promise.resolve(
-      dbManager.models.ENUM_STATE_APPLICATION.findOne(options)
-    ).then((r) => {
-      return r.id_enum_state_application;
-    });
+    const id_enum_state_application =
+      await dbManager.models.ENUM_STATE_APPLICATION.findOne(options).then(
+        (r) => r.id_enum_state_application
+      );
 
     const opt_update = {
       id_enum_state_application: id_enum_state_application,
@@ -526,55 +334,35 @@ export const deletion = async function (
 
     options = {
       where: {
-        id_application: props.id_application,
+        id_application: data.id_application,
       },
     };
-    return await Promise.resolve(
-      dbManager.models.APPLICATION.update(opt_update, options)
-    ).then((r) => {
-      return r > 0;
-    });
+    return await dbManager.models.APPLICATION.update(opt_update, options).then(
+      (r) => r > 0
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
 };
 /**
  * Delete an application from the database with a download.
- * @param {Object} props - The properties object.
- * @param {number} props.id_application - The ID of the application to delete.
- * @param {Function} [fns] - Optional callback functions.
- * @returns {Promise<boolean>} - Returns true if the deletion was successful.
- * @throws {MissingArgumentError} - If required arguments are missing.
- * @throws {ParameterMisformed} - If any parameter is malformed.
- * @throws {DBObjectNotFound} - If the application state cannot be found.
+ * @param {Number} id_application id of the application.
+ * @returns {Boolean}
  */
-export const download_deletion = async function (
-  props = {
-    id_application: undefined,
-  }
-) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_application: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_application))
-    throw new ParameterMisformed(
-      'The props.id_application parameter is misformed.'
-    );
+export const download_deletion = async function (props) {
   try {
+    const schema = z.object({
+      id_application: z.number().positive(),
+    });
+    const data = Guard.validateProps(schema, props);
     // getting state for label 'DeletedLaunch'
     let options = {
       where: { label: 'DeletedLaunch' },
     };
-    const id_enum_state_application = await Promise.resolve(
-      dbManager.models.ENUM_STATE_APPLICATION.findOne(options)
-    ).then((r) => {
-      return r.id_enum_state_application;
-    });
+    const id_enum_state_application =
+      await dbManager.models.ENUM_STATE_APPLICATION.findOne(options).then(
+        (r) => r.id_enum_state_application
+      );
 
     const opt_update = {
       id_enum_state_application: id_enum_state_application,
@@ -582,14 +370,12 @@ export const download_deletion = async function (
 
     options = {
       where: {
-        id_application: props.id_application,
+        id_application: data.id_application,
       },
     };
-    return await Promise.resolve(
-      dbManager.models.APPLICATION.update(opt_update, options)
-    ).then((r) => {
-      return r > 0;
-    });
+    return await dbManager.models.APPLICATION.update(opt_update, options).then(
+      (r) => r > 0
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -597,65 +383,47 @@ export const download_deletion = async function (
 
 /**
  * Change the state of the application.
- * @param {*} props
- * @param {*} fns
- * @returns
+ * @param {Number} id_application id of the application to update.
+ * @param {String} state_application state of the application
+ * @returns {Boolean}
  */
-export const update_state = async function (
-  props = {
-    id_application: undefined,
-    state_application: undefined,
-  }
-) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_application: undefined,
-    state_application: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_application))
-    throw new ParameterMisformed(
-      'The props.id_application parameter is misformed.'
-    );
-  if (props.state_application !== 'Off' && props.state_application !== 'Ready')
-    throw new ParameterMisformed(
-      "The props.state_application must be in ['Off','Ready']."
-    );
-
+export const update_state = async function (props) {
   try {
-    const options = {
-      where: { label: props.state_application },
-    };
-    const id_enum_state_application = await Promise.resolve(
-      dbManager.models.ENUM_STATE_APPLICATION.findOne(options)
-    ).then((r) => {
-      return r.id_enum_state_application;
+    const schema = z.object({
+      id_application: z.number().positive(),
+      state_application: z.enum(['Off', 'Ready']),
     });
+    const data = Guard.validateProps(schema, props);
+    const options = {
+      where: { label: data.state_application },
+    };
+    const id_enum_state_application =
+      await dbManager.models.ENUM_STATE_APPLICATION.findOne(options).then(
+        (r) => r.id_enum_state_application
+      );
 
     const opt_update = {
       id_enum_state_application: id_enum_state_application,
-      state_changed_date: moment.tz(CONFIG.timezone).utc().format(),
+      state_changed_date: moment.tz(CONFIG.APP_TZ).utc().format(),
       programming_shutdown_date:
-        props.state_application !== 'Ready'
-          ? null
-          : moment
-              .tz(CONFIG.timezone)
+        data.state_application === 'Ready'
+          ? moment
+              .tz(CONFIG.APP_TZ)
               .clone()
-              .add(CONFIG.expiration, 's')
+              .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 's')
               .utc()
-              .format(),
+              .format()
+          : null,
     };
     const opt_condition = {
       where: {
-        id_application: props.id_application,
+        id_application: data.id_application,
       },
     };
 
-    return await Promise.resolve(
-      dbManager.models.APPLICATION.update(opt_update, opt_condition)
+    return await dbManager.models.APPLICATION.update(
+      opt_update,
+      opt_condition
     ).then((r) => {
       if (r[0] === 0)
         throw new DBObjectNotFound('The application to update does not exist.');

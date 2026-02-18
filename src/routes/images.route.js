@@ -8,9 +8,9 @@ import express from 'express';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import * as images_controller from '../controllers/images.controller.js';
-import * as password_service from '../utils/password.service.js';
-import * as token_service from '../utils/token.service.js';
+import * as token_service from '../utils/token.util.js';
 import multer from 'multer';
+import { generate_unique_hash } from '../services/randomdictonary.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,9 +20,7 @@ const storage = multer.diskStorage({
   },
   filename: async function (req, file, cb) {
     // Custom filename: e.g., timestamp-originalname
-    const uniqueSuffix = await Promise.resolve(
-      password_service.generate_unique_hash()
-    );
+    const uniqueSuffix = await Promise.resolve(generate_unique_hash());
     const ext = path.extname(file.originalname); // preserve original file extension
 
     cb(null, `img-${uniqueSuffix}${ext}`);

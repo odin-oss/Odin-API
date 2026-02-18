@@ -24,28 +24,36 @@ DECLARE
     pwd5 INTEGER;
     pwd6 INTEGER;
 BEGIN
-    INSERT INTO User_role(label) VALUES ('ADMINISTRATEUR');
-    INSERT INTO User_role(label) VALUES ('PROFESSEUR');
-    INSERT INTO User_role(label) VALUES ('ETUDIANT');
+    INSERT INTO User_role(label) VALUES ('ADMINISTRATEUR') ON CONFLICT (label) DO NOTHING;
+    INSERT INTO User_role(label) VALUES ('PROFESSEUR') ON CONFLICT (label) DO NOTHING;
+    INSERT INTO User_role(label) VALUES ('ETUDIANT') ON CONFLICT (label) DO NOTHING;
 
     SELECT id_role INTO roleStudent FROM User_role WHERE label = 'ETUDIANT';
     SELECT id_role INTO roleTeacher FROM User_role WHERE label = 'PROFESSEUR';
     SELECT id_role INTO roleAdmin FROM User_role WHERE label = 'ADMINISTRATEUR';
 
-    INSERT INTO Password(pwd) VALUES ('$2b$11$Pyql88jT8/WgMqiDusg3CeAbbRRT4ajxPmY4.ABIqmDZvoQVMw2Qi');
-    INSERT INTO Password(pwd) VALUES ('$2b$11$DlcOO9.YEAEEaTE4WMZh4.nFDCBJdAgCM3leW3Teyy8NgTwVYPvnW');
-    INSERT INTO Password(pwd) VALUES ('$2b$11$0oHSTJBwaQADSj3M0MfIX.kxiQY6iWs2FqqR4BBxH9u8AvVTNJzE.');
-    INSERT INTO Password(pwd) VALUES ('$2b$11$hJHRakedeGMWeOYzgYWNpe.T1WvHfrSNIB.lZdPApYqg4AvC3xxBO');
-
+    IF NOT EXISTS (SELECT 1 FROM Password WHERE pwd = '$2b$11$Pyql88jT8/WgMqiDusg3CeAbbRRT4ajxPmY4.ABIqmDZvoQVMw2Qi') THEN
+        INSERT INTO Password(pwd) VALUES ('$2b$11$Pyql88jT8/WgMqiDusg3CeAbbRRT4ajxPmY4.ABIqmDZvoQVMw2Qi');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM Password WHERE pwd = '$2b$11$DlcOO9.YEAEEaTE4WMZh4.nFDCBJdAgCM3leW3Teyy8NgTwVYPvnW') THEN
+        INSERT INTO Password(pwd) VALUES ('$2b$11$DlcOO9.YEAEEaTE4WMZh4.nFDCBJdAgCM3leW3Teyy8NgTwVYPvnW');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM Password WHERE pwd = '$2b$11$0oHSTJBwaQADSj3M0MfIX.kxiQY6iWs2FqqR4BBxH9u8AvVTNJzE.') THEN
+        INSERT INTO Password(pwd) VALUES ('$2b$11$0oHSTJBwaQADSj3M0MfIX.kxiQY6iWs2FqqR4BBxH9u8AvVTNJzE.');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM Password WHERE pwd = '$2b$11$hJHRakedeGMWeOYzgYWNpe.T1WvHfrSNIB.lZdPApYqg4AvC3xxBO') THEN
+        INSERT INTO Password(pwd) VALUES ('$2b$11$hJHRakedeGMWeOYzgYWNpe.T1WvHfrSNIB.lZdPApYqg4AvC3xxBO');
+    END IF;
+    
     SELECT id_password INTO pwd1 FROM Password WHERE pwd = '$2b$11$Pyql88jT8/WgMqiDusg3CeAbbRRT4ajxPmY4.ABIqmDZvoQVMw2Qi';
     SELECT id_password INTO pwd2 FROM Password WHERE pwd = '$2b$11$DlcOO9.YEAEEaTE4WMZh4.nFDCBJdAgCM3leW3Teyy8NgTwVYPvnW';
     SELECT id_password INTO pwd3 FROM Password WHERE pwd = '$2b$11$0oHSTJBwaQADSj3M0MfIX.kxiQY6iWs2FqqR4BBxH9u8AvVTNJzE.';
     SELECT id_password INTO pwd4 FROM Password WHERE pwd = '$2b$11$hJHRakedeGMWeOYzgYWNpe.T1WvHfrSNIB.lZdPApYqg4AvC3xxBO';
 
-    INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('LEFEBVRE', 'Benoit', 'benoit.lefebvre@getcaelus.cloud', roleAdmin, pwd1);
-    INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('VIEILLARD', 'Louis', 'louis.vieillard@getcaelus.cloud', roleAdmin, pwd2);
-    INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('VETU', 'Paul-Emile', 'paulemile.vetu@getcaelus.cloud', roleAdmin, pwd3);
-    INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('URBANSKI', 'Daphné', 'daphne.urbanski@getcaelus.cloud', roleAdmin, pwd4);
+    INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('LEFEBVRE', 'Benoit', 'benoit.lefebvre@getcaelus.cloud', roleAdmin, pwd1) ON CONFLICT (mail) DO NOTHING;
+    INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('VIEILLARD', 'Louis', 'louis.vieillard@getcaelus.cloud', roleAdmin, pwd2) ON CONFLICT (mail) DO NOTHING;
+    INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('VETU', 'Paul-Emile', 'paulemile.vetu@getcaelus.cloud', roleAdmin, pwd3) ON CONFLICT (mail) DO NOTHING;
+    INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('URBANSKI', 'Daphné', 'daphne.urbanski@getcaelus.cloud', roleAdmin, pwd4) ON CONFLICT (mail) DO NOTHING;
 
     INSERT INTO Random_dictionary(word)
     VALUES ('swamp'),('lord'),('farquaad'),('castle'),('city'),('dragon'),
@@ -91,19 +99,22 @@ BEGIN
     ('martinpecheur'),('amandier'),('saule'),('chene'),('pin'),('erable'),('bouleau'),('acacia'),
     ('cedre'),('rose'),('tulipe'),('iris'),('marguerite'),('lilas'),('narcisse'),('pivoine'),('jonquille'),
     ('chardon'),('trefle'),('lierre'),('mousse'),('fougere'),('champignon'),('epine'),('racine'),('rameau'),('branche')
-    ;
+    ON CONFLICT (word) DO NOTHING;
 
     INSERT INTO Image_type (label)
-    VALUES ('linux'), ('windows'), ('macosx'), ('kasm');
+    VALUES ('linux'), ('windows'), ('macosx'), ('kasm') ON CONFLICT (label) DO NOTHING;
 
     INSERT INTO Enum_state_application (label)
-    VALUES ('Ready'), ('Off'), ('Getting ready'), ('Deleted'), ('Scheduled'), ('Error'), ('EndedSession'), ('DeletedLaunch'), ('DeletedDownload'), ('DeletedDone'), ('DeletedError');
+    VALUES ('Ready'), ('Off'), ('Getting ready'), ('Deleted'), ('Scheduled'), ('Error'), ('EndedSession'), ('DeletedLaunch'), ('DeletedDownload'), ('DeletedDone'), ('DeletedError')
+    ON CONFLICT (label) DO NOTHING;
 
     INSERT INTO Enum_export_state (status)
-    VALUES ('Launched'), ('Exporting'), ('Available'), ('Expired'), ('Revoked'), ('Error');
+    VALUES ('Launched'), ('Exporting'), ('Available'), ('Expired'), ('Revoked'), ('Error')
+    ON CONFLICT (status) DO NOTHING;
 
     INSERT INTO Port_type (label)
-    VALUES ('strip_path'), ('no_strip_path'), ('none');
+    VALUES ('strip_path'), ('no_strip_path'), ('none')
+    ON CONFLICT (label) DO NOTHING;
 
     INSERT INTO Variable_environment (key, value)
     VALUES
@@ -175,7 +186,8 @@ BEGIN
     ('BASEPATHAPP', '<subpath>-app'), /*66*/
     ('BASEPATH', '<subpath>-ingress-port'), /*67*/
     ('SELKIES_TURN_HOST', '152.228.208.84'), /*68*/
-    ('DEFAULT_WORKSPACE', '/home/<username>'); /*69*/
+    ('DEFAULT_WORKSPACE', '/home/<username>')
+    ON CONFLICT (key,value) DO NOTHING; /*69*/
 
     INSERT INTO Category (label, google_material_icon)
     VALUES
@@ -188,7 +200,8 @@ BEGIN
     ('Ops', 'host'),
     ('Informatique', 'computer'),
     ('Windows', 'desktop_cloud'),
-    ('Graphisme', 'deployed_code');
+    ('Graphisme', 'deployed_code')
+    ON CONFLICT (label) DO NOTHING;
 
     INSERT INTO Argument (value)
     VALUES
@@ -200,13 +213,15 @@ BEGIN
     ('--title=<vm_name>'), /*6*/
     ('/bin/sh'),/*7*/
     ('-c'),/*8*/
-    ('tail -f /dev/null'); /*9*/
+    ('tail -f /dev/null')
+    ON CONFLICT (value) DO NOTHING; /*9*/
 
     INSERT INTO Node_selector(key,value)
     VALUES ('node-role.kubernetes.io/odn-default',''), /*1*/
     ('node-role.kubernetes.io/odn-gpu-gr',''), /*2*/
     ('node-role.kubernetes.io/odn-compute',''), /*3*/
     ('node-role.kubernetes.io/odn-gpu-storage',''), /*4*/
-    ('node-role.kubernetes.io/odn-monitoring',''); /*5*/
+    ('node-role.kubernetes.io/odn-monitoring','')
+    ON CONFLICT (key) DO NOTHING; /*5*/
 
 END $$;

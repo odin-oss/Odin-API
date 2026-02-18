@@ -39,26 +39,26 @@ describe('applications.service.get()', () => {
       }),
       custom_label: 'Application de travail super géniale',
       generated_label: 'shrek-fiona-donkey',
-      creation_date: moment.tz(CONFIG.timezone),
+      creation_date: moment.tz(CONFIG.APP_TZ),
       hash: 'hash12',
       username: 'b_lefebvre',
       password: 'shrek-donkey-fiona',
       id_user: null,
       id_environment: 2,
       state_application: 'Ready',
-      state_changed_date: moment.tz(CONFIG.timezone),
+      state_changed_date: moment.tz(CONFIG.APP_TZ),
       history: new History({
         records: [
           new Record({
             id_application: 1,
             id_user: 1,
             id_history: 2,
-            datetime: moment('2025-09-26 11:11:11').tz(CONFIG.timezone),
+            datetime: moment('2025-09-26 11:11:11').tz(CONFIG.APP_TZ),
           }),
         ],
       }),
       programming_shutdown_date: moment
-        .tz(CONFIG.timezone)
+        .tz(CONFIG.APP_TZ)
         .add(CONFIG.expiration, 's'),
       environment: new Environment({
         id_environment: 2,
@@ -124,7 +124,7 @@ describe('applications.service.get()', () => {
           id_user: 1,
           id_application: 1,
           id_history: 2,
-          datetime: moment('2025-09-26 11:11:11').tz(CONFIG.timezone),
+          datetime: moment('2025-09-26 11:11:11').tz(CONFIG.APP_TZ),
         },
       ])
     );
@@ -199,16 +199,16 @@ describe('applications.service.get()', () => {
       }),
       custom_label: 'Application de travail super géniale',
       generated_label: 'shrek-fiona-donkey',
-      creation_date: moment.tz(CONFIG.timezone),
+      creation_date: moment.tz(CONFIG.APP_TZ),
       hash: 'hash12',
       username: 'b_lefebvre',
       password: 'shrek-donkey-fiona',
       id_user: null,
       id_environment: 2,
       state_application: 'Ready',
-      state_changed_date: moment.tz(CONFIG.timezone),
+      state_changed_date: moment.tz(CONFIG.APP_TZ),
       programming_shutdown_date: moment
-        .tz(CONFIG.timezone)
+        .tz(CONFIG.APP_TZ)
         .add(CONFIG.expiration, 's'),
       environment: new Environment({
         id_environment: 2,
@@ -422,16 +422,16 @@ describe('applications.service.list()', () => {
           }),
           custom_label: 'Application de travail super géniale',
           generated_label: 'shrek-fiona-donkey',
-          creation_date: moment.tz(CONFIG.timezone),
+          creation_date: moment.tz(CONFIG.APP_TZ),
           hash: 'hash12',
           username: 'b_lefebvre',
           password: 'shrek-donkey-fiona',
           id_user: 1,
           id_environment: 2,
           state_application: 'Ready',
-          state_changed_date: moment.tz(CONFIG.timezone),
+          state_changed_date: moment.tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             id_environment: 2,
@@ -450,16 +450,16 @@ describe('applications.service.list()', () => {
           }),
           custom_label: 'Application de travail',
           generated_label: 'shrek-donkey-fiona',
-          creation_date: moment.tz(CONFIG.timezone),
+          creation_date: moment.tz(CONFIG.APP_TZ),
           hash: 'hash13',
           username: 'b_lefebvre',
           password: 'shrek-donkey-fiona',
           id_user: 1,
           id_environment: 2,
           state_application: 'Ready',
-          state_changed_date: moment.tz(CONFIG.timezone),
+          state_changed_date: moment.tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             id_environment: 2,
@@ -537,7 +537,7 @@ describe('applications.service.list()', () => {
               id_application: 8,
               id_user: 1,
               id_history: 2,
-              datetime: moment('2025-09-16 11:11:11').tz(CONFIG.timezone),
+              datetime: moment('2025-09-16 11:11:11').tz(CONFIG.APP_TZ),
             }),
           ],
         })
@@ -559,16 +559,16 @@ describe('applications.service.list()', () => {
         id_application: 8,
         custom_label: 'Application de travail super géniale',
         generated_label: 'shrek-fiona-donkey',
-        creation_date: moment.tz(CONFIG.timezone),
+        creation_date: moment.tz(CONFIG.APP_TZ),
         hash: 'hash12',
         username: 'b_lefebvre',
         password: 'shrek-donkey-fiona',
         id_user: 1,
         id_environment: 2,
         state_application: 'Ready',
-        state_changed_date: moment.tz(CONFIG.timezone),
+        state_changed_date: moment.tz(CONFIG.APP_TZ),
         programming_shutdown_date: moment
-          .tz(CONFIG.timezone)
+          .tz(CONFIG.APP_TZ)
           .add(CONFIG.expiration, 's'),
         history: new History({
           records: [
@@ -576,7 +576,7 @@ describe('applications.service.list()', () => {
               id_application: 8,
               id_user: 1,
               id_history: 2,
-              datetime: moment('2025-09-16 11:11:11').tz(CONFIG.timezone),
+              datetime: moment('2025-09-16 11:11:11').tz(CONFIG.APP_TZ),
             }),
           ],
         }),
@@ -630,17 +630,17 @@ describe('applications.service.list()', () => {
         id_application: 9,
         custom_label: 'Application de travail',
         generated_label: 'shrek-donkey-fiona',
-        creation_date: moment.tz(CONFIG.timezone),
+        creation_date: moment.tz(CONFIG.APP_TZ),
         hash: 'hash13',
         username: 'b_lefebvre',
         password: 'shrek-donkey-fiona',
         id_user: 1,
         id_environment: 2,
         state_application: 'Ready',
-        state_changed_date: moment.tz(CONFIG.timezone),
+        state_changed_date: moment.tz(CONFIG.APP_TZ),
         history: new History(),
         programming_shutdown_date: moment
-          .tz(CONFIG.timezone)
+          .tz(CONFIG.APP_TZ)
           .add(CONFIG.expiration, 's'),
         environment: new Environment({
           id_environnement: 2,
@@ -768,16 +768,14 @@ describe('applications.service.update_state()', () => {
           }),
           custom_label: 'Application de travail super géniale',
           generated_label: 'shrek-fiona-donkey',
-          creation_date: moment('1999-08-23T12:00:00Z').tz(CONFIG.timezone),
+          creation_date: moment('1999-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           hash: 'hash12',
           username: 'b_lefebvre',
           password: 'shrek-donkey-fiona',
           id_user: 1,
           id_environment: 2,
           state_application: 'Off',
-          state_changed_date: moment('1999-08-23T12:00:00Z').tz(
-            CONFIG.timezone
-          ),
+          state_changed_date: moment('1999-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: null,
           environment: new Environment({
             id_environment: 2,
@@ -858,18 +856,16 @@ describe('applications.service.update_state()', () => {
           }),
           custom_label: 'Application de travail super géniale',
           generated_label: 'shrek-fiona-donkey',
-          creation_date: moment('1999-08-23T12:00:01Z').tz(CONFIG.timezone),
+          creation_date: moment('1999-08-23T12:00:01Z').tz(CONFIG.APP_TZ),
           hash: 'hash12',
           username: 'b_lefebvre',
           password: 'shrek-donkey-fiona',
           id_user: 1,
           id_environment: 2,
           state_application: 'Ready',
-          state_changed_date: moment('1999-08-23T12:00:01Z').tz(
-            CONFIG.timezone
-          ),
+          state_changed_date: moment('1999-08-23T12:00:01Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('1999-08-23T12:00:01Z')
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             id_environment: 2,
@@ -899,16 +895,16 @@ describe('applications.service.update_state()', () => {
         id_application: 8,
         custom_label: 'Application de travail super géniale',
         generated_label: 'shrek-fiona-donkey',
-        creation_date: moment('1999-08-23T12:00:01Z').tz(CONFIG.timezone),
+        creation_date: moment('1999-08-23T12:00:01Z').tz(CONFIG.APP_TZ),
         hash: 'hash12',
         username: 'b_lefebvre',
         password: 'shrek-donkey-fiona',
         id_user: 1,
         id_environment: 2,
         state_application: 'Ready',
-        state_changed_date: moment('1999-08-23T12:00:01Z').tz(CONFIG.timezone),
+        state_changed_date: moment('1999-08-23T12:00:01Z').tz(CONFIG.APP_TZ),
         programming_shutdown_date: moment('1999-08-23T12:00:01Z')
-          .tz(CONFIG.timezone)
+          .tz(CONFIG.APP_TZ)
           .add(CONFIG.expiration, 's'),
         environment: new Environment({
           id_environnement: 2,
@@ -975,7 +971,7 @@ describe('applications.service.update_state()', () => {
           id_application: 8,
           custom_label: 'Application de travail super géniale',
           generated_label: 'shrek-fiona-donkey',
-          creation_date: moment('1999-08-23T12:00:01Z').tz(CONFIG.timezone),
+          creation_date: moment('1999-08-23T12:00:01Z').tz(CONFIG.APP_TZ),
           hash: 'hash12',
           datacenter: new Datacenter({
             id_datacenter: 1,
@@ -985,11 +981,9 @@ describe('applications.service.update_state()', () => {
           id_user: 1,
           id_environment: 2,
           state_application: 'Ready',
-          state_changed_date: moment('1999-08-23T12:00:01Z').tz(
-            CONFIG.timezone
-          ),
+          state_changed_date: moment('1999-08-23T12:00:01Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('1999-08-23T12:00:01Z')
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             id_environment: 2,
@@ -1017,7 +1011,7 @@ describe('applications.service.update_state()', () => {
           id_application: 8,
           custom_label: 'Application de travail super géniale',
           generated_label: 'shrek-fiona-donkey',
-          creation_date: moment('1999-08-23T12:00:02Z').tz(CONFIG.timezone),
+          creation_date: moment('1999-08-23T12:00:02Z').tz(CONFIG.APP_TZ),
           hash: 'hash12',
           username: 'b_lefebvre',
           password: 'shrek-donkey-fiona',
@@ -1027,9 +1021,7 @@ describe('applications.service.update_state()', () => {
           id_user: 1,
           id_environment: 2,
           state_application: 'Off',
-          state_changed_date: moment('1999-08-23T12:00:02Z').tz(
-            CONFIG.timezone
-          ),
+          state_changed_date: moment('1999-08-23T12:00:02Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: null,
           environment: new Environment({
             id_environment: 2,
@@ -1058,14 +1050,14 @@ describe('applications.service.update_state()', () => {
         id_application: 8,
         custom_label: 'Application de travail super géniale',
         generated_label: 'shrek-fiona-donkey',
-        creation_date: moment('1999-08-23T12:00:02Z').tz(CONFIG.timezone),
+        creation_date: moment('1999-08-23T12:00:02Z').tz(CONFIG.APP_TZ),
         hash: 'hash12',
         username: 'b_lefebvre',
         password: 'shrek-donkey-fiona',
         id_user: 1,
         id_environment: 2,
         state_application: 'Off',
-        state_changed_date: moment('1999-08-23T12:00:02Z').tz(CONFIG.timezone),
+        state_changed_date: moment('1999-08-23T12:00:02Z').tz(CONFIG.APP_TZ),
         programming_shutdown_date: null,
         environment: new Environment({
           id_environment: 2,
@@ -1274,7 +1266,7 @@ describe('applications.service.deletion()', () => {
           id_application: 8,
           custom_label: 'Application de travail super géniale',
           generated_label: 'shrek-fiona-donkey',
-          creation_date: moment.tz(CONFIG.timezone),
+          creation_date: moment.tz(CONFIG.APP_TZ),
           hash: 'hash12',
           datacenter: new Datacenter({
             id_datacenter: 1,
@@ -1284,9 +1276,9 @@ describe('applications.service.deletion()', () => {
           id_user: null,
           id_environment: 2,
           state_application: 'Ready',
-          state_changed_date: moment.tz(CONFIG.timezone),
+          state_changed_date: moment.tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             id_environment: 2,
@@ -1325,7 +1317,7 @@ describe('applications.service.deletion()', () => {
         id_application: 8,
         custom_label: 'Application de travail super géniale',
         generated_label: 'shrek-fiona-donkey',
-        creation_date: moment.tz(CONFIG.timezone),
+        creation_date: moment.tz(CONFIG.APP_TZ),
         hash: 'hash12',
         datacenter: new Datacenter({
           id_datacenter: 1,
@@ -1338,9 +1330,9 @@ describe('applications.service.deletion()', () => {
         id_user: null,
         id_environment: 2,
         state_application: 'Ready',
-        state_changed_date: moment.tz(CONFIG.timezone),
+        state_changed_date: moment.tz(CONFIG.APP_TZ),
         programming_shutdown_date: moment
-          .tz(CONFIG.timezone)
+          .tz(CONFIG.APP_TZ)
           .add(CONFIG.expiration, 's'),
         environment: new Environment({
           id_environment: 2,
@@ -1360,7 +1352,7 @@ describe('applications.service.deletion()', () => {
           id_application: 8,
           custom_label: 'Application de travail super géniale',
           generated_label: 'shrek-fiona-donkey',
-          creation_date: moment.tz(CONFIG.timezone),
+          creation_date: moment.tz(CONFIG.APP_TZ),
           hash: 'hash12',
           datacenter: new Datacenter({
             id_datacenter: 1,
@@ -1370,9 +1362,9 @@ describe('applications.service.deletion()', () => {
           id_user: null,
           id_environment: 2,
           state_application: 'Ready',
-          state_changed_date: moment.tz(CONFIG.timezone),
+          state_changed_date: moment.tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             id_environment: 2,
@@ -1418,7 +1410,7 @@ describe('applications.service.deletion()', () => {
         id_application: 8,
         custom_label: 'Application de travail super géniale',
         generated_label: 'shrek-fiona-donkey',
-        creation_date: moment.tz(CONFIG.timezone),
+        creation_date: moment.tz(CONFIG.APP_TZ),
         hash: 'hash12',
         datacenter: new Datacenter({
           id_datacenter: 1,
@@ -1431,9 +1423,9 @@ describe('applications.service.deletion()', () => {
         id_user: null,
         id_environment: 2,
         state_application: 'Ready',
-        state_changed_date: moment.tz(CONFIG.timezone),
+        state_changed_date: moment.tz(CONFIG.APP_TZ),
         programming_shutdown_date: moment
-          .tz(CONFIG.timezone)
+          .tz(CONFIG.APP_TZ)
           .add(CONFIG.expiration, 's'),
         environment: new Environment({
           id_environment: 2,
@@ -1534,7 +1526,7 @@ describe('applications.service.deletion()', () => {
           id_application: 8,
           custom_label: 'Application de travail super géniale',
           generated_label: 'shrek-fiona-donkey',
-          creation_date: moment.tz(CONFIG.timezone),
+          creation_date: moment.tz(CONFIG.APP_TZ),
           hash: 'hash12',
           datacenter: new Datacenter({
             id_datacenter: 1,
@@ -1544,9 +1536,9 @@ describe('applications.service.deletion()', () => {
           id_user: null,
           id_environment: 2,
           state_application: 'Deleted',
-          state_changed_date: moment.tz(CONFIG.timezone),
+          state_changed_date: moment.tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             id_environment: 2,
@@ -1652,16 +1644,16 @@ describe('applications.service.create()', () => {
           id_application: 1,
           custom_label: 'Wow ça marche',
           generated_label: 'ulfi-blacky-donkey',
-          creation_date: moment.tz(CONFIG.timezone),
+          creation_date: moment.tz(CONFIG.APP_TZ),
           hash: 'hash12',
           username: 'b_lefebvre',
           password: 'louis-daphne-peheux',
           id_user: 1,
           id_environment: 1,
           state_application: 'Scheduled',
-          state_changed_date: moment.tz(CONFIG.timezone),
+          state_changed_date: moment.tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             id_environment: 1,
@@ -1693,7 +1685,7 @@ describe('applications.service.create()', () => {
         id_application: 1,
         custom_label: 'Wow ça marche',
         generated_label: 'ulfi-blacky-donkey',
-        creation_date: moment.tz(CONFIG.timezone),
+        creation_date: moment.tz(CONFIG.APP_TZ),
         hash: 'hash12',
         username: 'b_lefebvre',
         password: 'louis-daphne-peheux',
@@ -1706,9 +1698,9 @@ describe('applications.service.create()', () => {
           provider: 'prov',
           city: 'paradise',
         }),
-        state_changed_date: moment.tz(CONFIG.timezone),
+        state_changed_date: moment.tz(CONFIG.APP_TZ),
         programming_shutdown_date: moment
-          .tz(CONFIG.timezone)
+          .tz(CONFIG.APP_TZ)
           .add(CONFIG.expiration, 's'),
         environment: new Environment({
           icon: 'ereteret',
@@ -1739,7 +1731,7 @@ describe('applications.service.create()', () => {
       hash: 'hash12',
       username: 'b_lefebvre',
       password: 'louis-daphne-peheux',
-      state_changed_date: moment.tz(CONFIG.timezone),
+      state_changed_date: moment.tz(CONFIG.APP_TZ),
     });
   });
   it('called with good args and should schedule the deployment of the app.', async () => {
@@ -1785,7 +1777,7 @@ describe('applications.service.create()', () => {
           id_application: 1,
           custom_label: 'Wow ça marche',
           generated_label: 'ulfi-blacky-donkey',
-          creation_date: moment.tz(CONFIG.timezone),
+          creation_date: moment.tz(CONFIG.APP_TZ),
           hash: 'hash12',
           username: 'b_lefebvre',
           password: 'louis-daphne-peheux',
@@ -1798,11 +1790,9 @@ describe('applications.service.create()', () => {
           id_user: 1,
           id_environment: 1,
           state_application: 'Ready',
-          state_changed_date: moment('2199-08-23T12:00:00Z').tz(
-            CONFIG.timezone
-          ),
+          state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
           programming_shutdown_date: moment('2199-08-23T12:00:00Z')
-            .tz(CONFIG.timezone)
+            .tz(CONFIG.APP_TZ)
             .add(CONFIG.expiration, 's'),
           environment: new Environment({
             icon: 'ereteret',
@@ -1842,12 +1832,12 @@ describe('applications.service.create()', () => {
     chai.expect(application.state_application).to.be.equal('Ready');
     chai
       .expect(application.state_changed_date)
-      .to.deep.equal(moment('2199-08-23T12:00:00Z').tz(CONFIG.timezone));
+      .to.deep.equal(moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ));
     chai
       .expect(application.programming_shutdown_date)
       .to.deep.equal(
         moment('2199-08-23T12:00:00Z')
-          .tz(CONFIG.timezone)
+          .tz(CONFIG.APP_TZ)
           .add(CONFIG.expiration, 's')
       );
     chai.expect(application.environment).to.deep.equal(
@@ -1879,7 +1869,7 @@ describe('applications.service.create()', () => {
       hash: 'hash12',
       username: 'b_lefebvre',
       password: 'louis-daphne-peheux',
-      state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.timezone),
+      state_changed_date: moment('2199-08-23T12:00:00Z').tz(CONFIG.APP_TZ),
     });
   });
   it('called with missing arguments and should reject with MissingArgument error.', async () => {

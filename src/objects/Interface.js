@@ -1,3 +1,6 @@
+import z from 'zod';
+import Guard from '../utils/guard.util.js';
+
 export class Interface {
   #id_interface;
   #label;
@@ -23,55 +26,59 @@ export class Interface {
   #ports;
   #envs;
 
-  constructor({
-    id_interface = null,
-    label = '',
-    default_label = '',
-    registry_link = '',
-    exec_command = '',
-    service_command = '',
-    privileged = false,
-    readiness_probe_initial_delay = 0,
-    liveness_probe_initial_delay = 0,
-    readiness_probe_period = 0,
-    liveness_probe_period = 0,
-    id_type = null,
-    label_type_image = '',
-    need_compute_gpu = false,
-    need_graphical_rendering_gpu = false,
-    ram_request = '',
-    ram_limit = '',
-    cpu_request = '',
-    cpu_limit = '',
-    args = [],
-    node_selectors = [],
-    ports = [],
-    envs = [],
-  } = {}) {
-    this.#id_interface = id_interface;
-    this.#label = label;
-    this.#default_label = default_label;
-    this.#registry_link = registry_link;
-    this.#exec_command = exec_command;
-    this.#service_command = service_command;
-    this.#privileged = privileged;
-    this.#readiness_probe_initial_delay = readiness_probe_initial_delay;
-    this.#liveness_probe_initial_delay = liveness_probe_initial_delay;
-    this.#readiness_probe_period = readiness_probe_period;
-    this.#liveness_probe_period = liveness_probe_period;
-    this.#id_type = id_type;
-    this.#label_type_image = label_type_image;
-    this.#need_compute_gpu = need_compute_gpu;
-    this.#need_graphical_rendering_gpu = need_graphical_rendering_gpu;
-    this.#ram_request = ram_request;
-    this.#ram_limit = ram_limit;
-    this.#cpu_request = cpu_request;
-    this.#cpu_limit = cpu_limit;
-    this.#args = args;
-    this.#node_selectors = node_selectors;
-    this.#ports = ports;
-    this.#envs = envs;
+  constructor(props) {
+    const data = Guard.validateProps(Interface.schema, props);
+    this.#id_interface = data.id_interface;
+    this.#label = data.label;
+    this.#default_label = data.default_label;
+    this.#registry_link = data.registry_link;
+    this.#exec_command = data.exec_command;
+    this.#service_command = data.service_command;
+    this.#privileged = data.privileged;
+    this.#readiness_probe_initial_delay = data.readiness_probe_initial_delay;
+    this.#liveness_probe_initial_delay = data.liveness_probe_initial_delay;
+    this.#readiness_probe_period = data.readiness_probe_period;
+    this.#liveness_probe_period = data.liveness_probe_period;
+    this.#id_type = data.id_type;
+    this.#label_type_image = data.label_type_image;
+    this.#need_compute_gpu = data.need_compute_gpu;
+    this.#need_graphical_rendering_gpu = data.need_graphical_rendering_gpu;
+    this.#ram_request = data.ram_request;
+    this.#ram_limit = data.ram_limit;
+    this.#cpu_request = data.cpu_request;
+    this.#cpu_limit = data.cpu_limit;
+    this.#args = data.args;
+    this.#node_selectors = data.node_selectors;
+    this.#ports = data.ports;
+    this.#envs = data.envs;
   }
+
+  // Zod Schema for object validation
+  static schema = z.object({
+    id_interface: z.number().int().optional(),
+    id_type: z.number().int().optional(),
+    label: z.string().default(''),
+    default_label: z.string().default(''),
+    registry_link: z.string().default(''),
+    exec_command: z.string().default(''),
+    service_command: z.string().default(''),
+    label_type_image: z.string().default(''),
+    ram_request: z.string().default(''),
+    ram_limit: z.string().default(''),
+    cpu_request: z.string().default(''),
+    cpu_limit: z.string().default(''),
+    privileged: z.boolean().default(false),
+    need_compute_gpu: z.boolean().default(false),
+    need_graphical_rendering_gpu: z.boolean().default(false),
+    readiness_probe_initial_delay: z.number().nonnegative().default(0),
+    liveness_probe_initial_delay: z.number().nonnegative().default(0),
+    readiness_probe_period: z.number().nonnegative().default(0),
+    liveness_probe_period: z.number().nonnegative().default(0),
+    args: z.array(z.string()).default([]),
+    node_selectors: z.array(z.any()).default([]),
+    ports: z.array(z.any()).default([]),
+    envs: z.array(z.any()).default([]),
+  });
 
   // Getters
   get id_interface() {

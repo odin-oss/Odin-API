@@ -1,13 +1,14 @@
 import fs from 'fs/promises';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import * as parameters_service from '../utils/parametres.service.js';
 import logs from '../middlewares/winston.js';
 import {
   ImageNotFound,
   NoImageReceived,
   ReadingImageError,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
+import { ApiResponse } from '../utils/response.util.js';
+import Guard from '../utils/guard.util.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -19,7 +20,7 @@ const __dirname = dirname(__filename);
  */
 export const get = async function (req, res) {
   try {
-    parameters_service.check_params(req, ['key']);
+    Guard.check_params(req, ['key']);
     const imagePath = path.join(
       __dirname,
       '../../images/img-' + req.params.key + '.png'
@@ -36,15 +37,7 @@ export const get = async function (req, res) {
       else throw new ReadingImageError(err.message);
     }
   } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
-    );
-    res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+    ApiResponse.error(req, res, err);
   }
 };
 /**
@@ -61,23 +54,9 @@ export const list = async function (req, res) {
       .filter((file) => file.startsWith('img-') && file.endsWith('.png'))
       .map((file) => file.slice(4, -4));
 
-    logs.info(
-      `[${req.method}][200] ${req.originalUrl} : List of images transmitted.`
-    );
-
-    res.status(200).json({
-      result: keys,
-    });
+    ApiResponse.success(req, res, keys, 200, 'List of images transmitted.');
   } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
-    );
-    res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+    ApiResponse.error(req, res, err);
   }
 };
 /**
@@ -91,17 +70,8 @@ export const upload = function (req, res) {
       throw new NoImageReceived('No image received by the controller.');
     const result = req.file;
     result.hash = req.file.filename.replace('.png', '').replace('img-', '');
-    logs.info(`[${req.method}][200] ${req.originalUrl} : Image uploaded.`);
-    res.status(200).json({ result: req.file });
+    ApiResponse.success(req, res, req.file, 200, 'Image uploaded.');
   } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
-    );
-    res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+    ApiResponse.error(req, res, err);
   }
 };

@@ -1,8 +1,6 @@
-import logs from '../middlewares/winston.js';
 import moment from 'moment-timezone';
 import * as applications_service from '../services/applications.service.js';
-import * as token from '../utils/token.service.js';
-import * as parametres from '../utils/parametres.service.js';
+import * as token from '../utils/token.util.js';
 import {
   counter_delete,
   counter_get,
@@ -14,8 +12,9 @@ import CONFIG from '../config/config.js';
 import {
   MissingArgumentError,
   ParameterMisformed,
-} from '../utils/errors.service.js';
-import UniformResponse from '../objects/UniformResponse.js';
+} from '../utils/errors.util.js';
+import { ApiResponse } from '../utils/response.util.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Controllers that checks parameters and return the list of all applications in public format.
@@ -34,24 +33,17 @@ export const list = async (
   const id_user = token.getUserId({ token: req.headers['authorization'] });
   await fns
     .applications_list({ id_user })
-    .then((applications) => {
-      logs.info(
-        `[${req.method}][200] ${req.originalUrl} : List of applications transmitted.`
-      );
-      return res
-        .status(200)
-        .json({ result: applications.map((app) => app.public_format()) });
-    })
+    .then((applications) =>
+      ApiResponse.success(
+        req,
+        res,
+        applications.map((app) => app.public_format()),
+        200,
+        'List of applications transmitted.'
+      )
+    )
     .catch((err) => {
-      logs.error(
-        `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
-      );
-      return res.status(err.code).json({
-        result: {
-          error: err.name,
-          message: err.message,
-        },
-      });
+      ApiResponse.error(req, res, err);
     });
 };
 
@@ -86,22 +78,19 @@ export const get = async (
     if (req.query.id_application)
       options.id_application = req.query.id_application;
     if (req.query.key) options.key = req.query.key;
-    return await Promise.resolve(fns.application_get(options)).then((app) => {
-      logs.info(
-        `[${req.method}][200] ${req.originalUrl} : Application transmitted.`
+    await fns
+      .application_get(options)
+      .then((app) =>
+        ApiResponse.success(
+          req,
+          res,
+          app.public_format(),
+          200,
+          'Application information transmitted.'
+        )
       );
-      return res.status(200).json({ result: app.public_format() });
-    });
   } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}]{${err.name}} ${req.originalUrl} : ${err.message}`
-    );
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+    ApiResponse.error(req, res, err);
   }
 };
 
@@ -125,28 +114,23 @@ export const start = async (
 
   //Request
   try {
-    parametres.check_query(req, ['id_application']);
-    return await Promise.resolve(
-      fns.application_start({
+    Guard.check_query(req, ['id_application']);
+    await fns
+      .application_start({
         id_application: req.query.id_application,
         state_application: 'Ready',
       })
-    ).then((application) => {
-      logs.info(
-        `[${req.method}][200] ${req.originalUrl} : Application started.`
+      .then((application) =>
+        ApiResponse.success(
+          req,
+          res,
+          application.public_format(),
+          200,
+          'Application started.'
+        )
       );
-      return res.status(200).json({ result: application.public_format() });
-    });
   } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
-    );
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+    ApiResponse.error(req, res, err);
   }
 };
 
@@ -169,29 +153,21 @@ export const stop = async (
   counter.inc();
 
   //Request
-  try {
-    return await Promise.resolve(
-      fns.application_stop({
-        id_application: req.query.id_application,
-        state_application: 'Off',
-      })
-    ).then((application) => {
-      logs.info(
-        `[${req.method}][200] ${req.originalUrl} : Application stopped.`
-      );
-      return res.status(200).json({ result: application.public_format() });
-    });
-  } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
-    );
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
-  }
+  await fns
+    .application_stop({
+      id_application: req.query.id_application,
+      state_application: 'Off',
+    })
+    .then((application) =>
+      ApiResponse.success(
+        req,
+        res,
+        application.public_format(),
+        200,
+        'Application stopped.'
+      )
+    )
+    .catch((err) => ApiResponse.error(req, res, err));
 };
 
 /**
@@ -214,7 +190,7 @@ export const deletion = async (
 
   //Request
   try {
-    parametres.check_query(req, ['id_application']);
+    Guard.check_query(req, ['id_application']);
 
     // Validate backup_storage parameter
     if (req.body.backup_storage !== undefined) {
@@ -227,27 +203,22 @@ export const deletion = async (
       req.body.backup_storage = backupStorage === 'true';
     }
 
-    return await Promise.resolve(
-      fns.application_delete({
+    await fns
+      .application_delete({
         id_application: req.query.id_application,
         backup_storage: req.body.backup_storage ?? true,
       })
-    ).then((application) => {
-      logs.info(
-        `[${req.method}][200] ${req.originalUrl} : Application stopped and deleted.`
+      .then((application) =>
+        ApiResponse.success(
+          req,
+          res,
+          application.public_format(),
+          200,
+          'Application stopped and deleted.'
+        )
       );
-      return res.status(200).json({ result: application.public_format() });
-    });
   } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
-    );
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+    ApiResponse.error(req, res, err);
   }
 };
 
@@ -256,7 +227,6 @@ export const deletion = async (
  * @param {*} req HTTP request.
  * @param {*} res HTTP response.
  * @param {*} fns overwriting functions for tests.
- * @returns
  */
 export const create = async (
   req,
@@ -271,36 +241,26 @@ export const create = async (
 
   //Request
   try {
-    parametres.check_body(req, ['id_environment', 'id_datacenter']);
+    Guard.check_body(req, ['id_environment', 'id_datacenter']);
     const id_user = token.getUserId({ token: req.headers['authorization'] });
-    return await Promise.resolve(
-      fns.application_create({
-        id_user,
-        id_datacenter: req.body.id_datacenter,
-        id_environment: req.body.id_environment,
-        label: req.body.label === undefined ? '' : req.body.label,
-        state_changed_date:
-          req.body.state_changed_date === undefined
-            ? moment.tz(CONFIG.timezone)
-            : moment(req.body.state_changed_date).tz(CONFIG.timezone),
-      })
-    ).then((application) => {
-      logs.info(
-        `[${req.method}][200] ${req.originalUrl} : Application started.`
-      );
-      return res.status(200).json({
-        result: application.public_format(),
-      });
+    const response = await fns.application_create({
+      id_user,
+      id_datacenter: req.body.id_datacenter,
+      id_environment: req.body.id_environment,
+      label: req.body.label === undefined ? '' : req.body.label,
+      state_changed_date:
+        req.body.state_changed_date === undefined
+          ? moment.tz(CONFIG.APP_TZ)
+          : moment(req.body.state_changed_date).tz(CONFIG.APP_TZ),
     });
-  } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
+    ApiResponse.success(
+      req,
+      res,
+      response.public_format(),
+      200,
+      'Application created.'
     );
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+  } catch (err) {
+    ApiResponse.error(req, res, err);
   }
 };

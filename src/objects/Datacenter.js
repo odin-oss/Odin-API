@@ -1,20 +1,27 @@
+import z from 'zod';
+import Guard from '../utils/guard.util.js';
+
 export class Datacenter {
   #id_datacenter;
   #label;
   #provider;
   #city;
 
-  constructor({
-    id_datacenter = null,
-    label = null,
-    provider = null,
-    city = null,
-  } = {}) {
-    this.#id_datacenter = id_datacenter;
-    this.#label = label;
-    this.#provider = provider;
-    this.#city = city;
+  constructor(props) {
+    const data = Guard.validateProps(Datacenter.schema, props);
+    this.#id_datacenter = data.id_datacenter;
+    this.#label = data.label;
+    this.#provider = data.provider;
+    this.#city = data.city;
   }
+
+  // Zod Schema for object validation
+  static schema = z.object({
+    id_datacenter: z.number().int().positive().optional(),
+    label: z.string().min(1).trim().default(''),
+    provider: z.string().min(1).trim().default(''),
+    city: z.string().min(1).trim().default(''),
+  });
 
   // Getters
   get id_datacenter() {

@@ -72,7 +72,7 @@ describe('applications.builder.get()', () => {
         custom_label: 'Un vrai react',
         generated_label: 'colibri-dore-man',
         creation_date: moment(new Date('2025-01-10T15:49:06.000Z')).tz(
-          CONFIG.timezone
+          CONFIG.APP_TZ
         ),
         hash: 'e3ea6f',
         username: 'b_lefebvre',
@@ -81,11 +81,11 @@ describe('applications.builder.get()', () => {
         id_environment: 3,
         state_application: 'Prête',
         state_changed_date: moment(new Date('2025-01-11T15:49:06.000Z')).tz(
-          CONFIG.timezone
+          CONFIG.APP_TZ
         ),
         programming_shutdown_date: moment(
           new Date('2025-01-10T15:49:06.000Z')
-        ).tz(CONFIG.timezone),
+        ).tz(CONFIG.APP_TZ),
         environment: new Environment({
           id_environment: 1,
           label: 'Linux Alpine',
@@ -140,7 +140,7 @@ describe('applications.builder.get()', () => {
         custom_label: 'Un vrai react',
         generated_label: 'colibri-dore-man',
         creation_date: moment(new Date('2025-01-10T15:49:06.000Z')).tz(
-          CONFIG.timezone
+          CONFIG.APP_TZ
         ),
         hash: 'e3ea6f',
         username: 'b_lefebvre',
@@ -149,11 +149,11 @@ describe('applications.builder.get()', () => {
         id_environment: 3,
         state_application: 'Prête',
         state_changed_date: moment(new Date('2025-01-11T15:49:06.000Z')).tz(
-          CONFIG.timezone
+          CONFIG.APP_TZ
         ),
         programming_shutdown_date: moment(
           new Date('2025-01-10T15:49:06.000Z')
-        ).tz(CONFIG.timezone),
+        ).tz(CONFIG.APP_TZ),
         environment: new Environment({
           id_environment: 1,
           label: 'Linux Alpine',
@@ -211,7 +211,7 @@ describe('applications.builder.get()', () => {
         custom_label: 'Un vrai react',
         generated_label: 'colibri-dore-man',
         creation_date: moment(new Date('2025-01-10T15:49:06.000Z')).tz(
-          CONFIG.timezone
+          CONFIG.APP_TZ
         ),
         hash: 'e3ea6f',
         username: 'b_lefebvre',
@@ -220,11 +220,11 @@ describe('applications.builder.get()', () => {
         id_environment: 3,
         state_application: 'Prête',
         state_changed_date: moment(new Date('2025-01-11T15:49:06.000Z')).tz(
-          CONFIG.timezone
+          CONFIG.APP_TZ
         ),
         programming_shutdown_date: moment(
           new Date('2025-01-10T15:49:06.000Z')
-        ).tz(CONFIG.timezone),
+        ).tz(CONFIG.APP_TZ),
         environment: new Environment({
           id_environment: 1,
           label: 'Linux Alpine',
@@ -343,7 +343,7 @@ describe('applications.builder.get()', () => {
         custom_label: 'Un vrai react',
         generated_label: 'colibri-dore-man',
         creation_date: moment(new Date('2025-01-10T15:49:06.000Z')).tz(
-          CONFIG.timezone
+          CONFIG.APP_TZ
         ),
         hash: 'e3ea6f',
         username: 'b_lefebvre',
@@ -352,11 +352,11 @@ describe('applications.builder.get()', () => {
         id_environment: 3,
         state_application: 'Prête',
         state_changed_date: moment(new Date('2025-01-11T15:49:06.000Z')).tz(
-          CONFIG.timezone
+          CONFIG.APP_TZ
         ),
         programming_shutdown_date: moment(
           new Date('2025-01-10T15:49:06.000Z')
-        ).tz(CONFIG.timezone),
+        ).tz(CONFIG.APP_TZ),
         environment: new Environment({
           id_environment: 1,
           label: 'Linux Alpine',
@@ -439,7 +439,7 @@ describe('applications.builder.list()', () => {
         custom_label: 'Un vrai react',
         generated_label: 'colibri-dore-man',
         creation_date: moment(new Date('2025-01-10T15:49:06.000Z')).tz(
-          CONFIG.timezone
+          CONFIG.APP_TZ
         ),
         hash: 'e3ea6f',
         username: 'b_lefebvre',
@@ -448,11 +448,11 @@ describe('applications.builder.list()', () => {
         id_environment: 3,
         state_application: 'Prête',
         state_changed_date: moment(new Date('2025-01-11T15:49:06.000Z')).tz(
-          CONFIG.timezone
+          CONFIG.APP_TZ
         ),
         programming_shutdown_date: moment(
           new Date('2025-01-10T15:49:06.000Z')
-        ).tz(CONFIG.timezone),
+        ).tz(CONFIG.APP_TZ),
         environment: new Environment({
           id_environment: 1,
           label: 'Linux Alpine',
@@ -552,7 +552,7 @@ describe('applications.builder.create()', () => {
       hash: 'hash12',
       username: 'b_lefebvre',
       password: 'shrek-donkey-fiona',
-      state_changed_date: moment.tz(CONFIG.timezone),
+      state_changed_date: moment.tz(CONFIG.APP_TZ),
     };
     fakeEnumStateAppFindOne.resolves(
       Promise.resolve({
@@ -564,7 +564,7 @@ describe('applications.builder.create()', () => {
         id_application: 8,
         custom_label: 'Application de travail super géniale',
         generated_label: 'shrek-fiona-donkey',
-        creation_date: moment.tz(CONFIG.timezone),
+        creation_date: moment.tz(CONFIG.APP_TZ),
         hash: 'hash12',
         username: 'b_lefebvre',
         password: 'shrek-donkey-fiona',
@@ -572,8 +572,8 @@ describe('applications.builder.create()', () => {
         id_user: 1,
         id_environment: 2,
         state_application: 'Ready',
-        state_changed_date: moment.tz(CONFIG.timezone),
-        programming_shutdown_date: moment.tz(CONFIG.timezone),
+        state_changed_date: moment.tz(CONFIG.APP_TZ),
+        programming_shutdown_date: moment.tz(CONFIG.APP_TZ),
       })
     );
     const result = await application_builder.create(props);
@@ -581,15 +581,15 @@ describe('applications.builder.create()', () => {
       id_application: 8,
       custom_label: 'Application de travail super géniale',
       generated_label: 'shrek-fiona-donkey',
-      creation_date: moment.tz(CONFIG.timezone),
+      creation_date: moment.tz(CONFIG.APP_TZ),
       hash: 'hash12',
       username: 'b_lefebvre',
       password: 'shrek-donkey-fiona',
       id_user: 1,
       id_environment: 2,
       state_application: 'Ready',
-      state_changed_date: moment.tz(CONFIG.timezone),
-      programming_shutdown_date: moment.tz(CONFIG.timezone),
+      state_changed_date: moment.tz(CONFIG.APP_TZ),
+      programming_shutdown_date: moment.tz(CONFIG.APP_TZ),
       environment: new Environment({
         id_environnement: 2,
         label: '',
@@ -626,7 +626,7 @@ describe('applications.builder.create()', () => {
       hash: 'hash12',
       username: 'b_lefebvre',
       password: 'shrek-donkey-fiona',
-      state_changed_date: moment.tz(CONFIG.timezone),
+      state_changed_date: moment.tz(CONFIG.APP_TZ),
     };
     fakeEnumStateAppFindOne.resolves(
       Promise.resolve({
@@ -638,15 +638,15 @@ describe('applications.builder.create()', () => {
         id_application: 8,
         custom_label: 'Application de travail super géniale',
         generated_label: 'shrek-fiona-donkey',
-        creation_date: moment.tz(CONFIG.timezone),
+        creation_date: moment.tz(CONFIG.APP_TZ),
         hash: 'hash12',
         username: 'b_lefebvre',
         password: 'shrek-donkey-fiona',
         id_user: 1,
         id_environment: 2,
         state_application: 'Scheduled',
-        state_changed_date: moment.tz(CONFIG.timezone),
-        programming_shutdown_date: moment.tz(CONFIG.timezone),
+        state_changed_date: moment.tz(CONFIG.APP_TZ),
+        programming_shutdown_date: moment.tz(CONFIG.APP_TZ),
       })
     );
     const result = await application_builder.create(props);
@@ -654,15 +654,15 @@ describe('applications.builder.create()', () => {
       id_application: 8,
       custom_label: 'Application de travail super géniale',
       generated_label: 'shrek-fiona-donkey',
-      creation_date: moment.tz(CONFIG.timezone),
+      creation_date: moment.tz(CONFIG.APP_TZ),
       hash: 'hash12',
       username: 'b_lefebvre',
       password: 'shrek-donkey-fiona',
       id_user: 1,
       id_environment: 2,
       state_application: 'Scheduled',
-      state_changed_date: moment.tz(CONFIG.timezone),
-      programming_shutdown_date: moment.tz(CONFIG.timezone),
+      state_changed_date: moment.tz(CONFIG.APP_TZ),
+      programming_shutdown_date: moment.tz(CONFIG.APP_TZ),
       environment: new Environment({
         id_environnement: 2,
         label: '',
@@ -690,9 +690,7 @@ describe('applications.builder.create()', () => {
   });
   it('called with the good arguments and ms_deployment_activated and schedule date in 11min and should create an application.', async () => {
     CONFIG.ms_deployment_activated = true;
-    const scheduled_creation_date = moment
-      .tz(CONFIG.timezone)
-      .add(11, 'minutes');
+    const scheduled_creation_date = moment.tz(CONFIG.APP_TZ).add(11, 'minutes');
     const props = {
       id_user: 1,
       id_environment: 2,
@@ -714,7 +712,7 @@ describe('applications.builder.create()', () => {
         id_application: 8,
         custom_label: 'Application de travail super géniale',
         generated_label: 'shrek-fiona-donkey',
-        creation_date: moment.tz(CONFIG.timezone),
+        creation_date: moment.tz(CONFIG.APP_TZ),
         hash: 'hash12',
         username: 'b_lefebvre',
         password: 'shrek-donkey-fiona',
@@ -730,7 +728,7 @@ describe('applications.builder.create()', () => {
       id_application: 8,
       custom_label: 'Application de travail super géniale',
       generated_label: 'shrek-fiona-donkey',
-      creation_date: moment.tz(CONFIG.timezone),
+      creation_date: moment.tz(CONFIG.APP_TZ),
       hash: 'hash12',
       username: 'b_lefebvre',
       password: 'shrek-donkey-fiona',
@@ -795,7 +793,7 @@ describe('applications.builder.create()', () => {
         hash: 'hash12',
         username: 'b_lefebvre',
         password: 'shrek-donkey-fiona',
-        state_changed_date: moment.tz(CONFIG.timezone),
+        state_changed_date: moment.tz(CONFIG.APP_TZ),
       };
       await application_builder.create(props);
       chai.expect.fail(
@@ -821,7 +819,7 @@ describe('applications.builder.create()', () => {
         hash: 'hash12',
         username: 'b_lefebvre',
         password: 'shrek-donkey-fiona',
-        state_changed_date: moment.tz(CONFIG.timezone),
+        state_changed_date: moment.tz(CONFIG.APP_TZ),
       };
       await application_builder.create(props);
       chai.expect.fail(
@@ -847,7 +845,7 @@ describe('applications.builder.create()', () => {
         hash: 'hash12',
         username: 'b_lefebvre',
         password: 'shrek-donkey-fiona',
-        state_changed_date: moment.tz(CONFIG.timezone),
+        state_changed_date: moment.tz(CONFIG.APP_TZ),
       };
       await application_builder.create(props);
       chai.expect.fail(
@@ -874,7 +872,7 @@ describe('applications.builder.create()', () => {
         hash: 'hash12',
         username: 'b_lefebvre',
         password: 'shrek-donkey-fiona',
-        state_changed_date: moment.tz(CONFIG.timezone),
+        state_changed_date: moment.tz(CONFIG.APP_TZ),
       };
       fakeEnumStateAppFindOne.resolves(
         Promise.reject(new Sequelize.ConnectionRefusedError('error'))
@@ -1374,7 +1372,7 @@ describe('applications.builder.update_state()', () => {
     chai.expect(fakeUpdate).to.have.been.calledOnceWithExactly(
       {
         id_enum_state_application: 2,
-        state_changed_date: moment.tz(CONFIG.timezone).utc().format(),
+        state_changed_date: moment.tz(CONFIG.APP_TZ).utc().format(),
         programming_shutdown_date: null,
       },
       {
@@ -1405,9 +1403,9 @@ describe('applications.builder.update_state()', () => {
     chai.expect(fakeUpdate).to.have.been.calledOnceWithExactly(
       {
         id_enum_state_application: 1,
-        state_changed_date: moment.tz(CONFIG.timezone).utc().format(),
+        state_changed_date: moment.tz(CONFIG.APP_TZ).utc().format(),
         programming_shutdown_date: moment
-          .tz(CONFIG.timezone)
+          .tz(CONFIG.APP_TZ)
           .clone()
           .utc()
           .add(CONFIG.expiration, 's')

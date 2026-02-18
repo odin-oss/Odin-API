@@ -3,7 +3,6 @@ import * as application_builder from '../builders/applications.builder.js';
 import * as auth_service from '../services/auth.service.js';
 import * as history_builder from '../builders/history.builder.js';
 import jwt from 'jsonwebtoken';
-import * as parametres from '../utils/parametres.service.js';
 import CONFIG from '../config/config.js';
 import {
   BadContentTokenError,
@@ -13,105 +12,89 @@ import {
   UserIsNotAdmin,
   UserIsNotOwner,
   UserIsNotProfessor,
-} from './errors.service.js';
-const { sign, decode, verify, TokenExpiredError } = jwt;
+} from './errors.util.js';
+import Guard from './guard.util.js';
+import z from 'zod';
+import { ApiResponse } from './response.util.js';
+const { sign, decode, verify } = jwt;
 
 /**
  * Method used to generate a new token for user.
- * @param {*} props {id_user}
- * @param {*} fns overwriting functions for tests.
- * @returns token
+ * @param {Number} id_user id of the user we need to generate a token for.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {String}
  */
 export const generateToken = function (
-  props = {
-    id_user: undefined,
-  },
+  props,
   fns = {
     jwt_sign: sign,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_user: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_user))
-    throw new ParameterMisformed('The props.id_user parameter is misformed.');
+  const schema = z.object({
+    id_user: z.number().positive(),
+  });
+  const data = Guard.validateProps(schema, props);
   return fns.jwt_sign(
     {
-      id_user: props.id_user,
+      ...data,
     },
-    CONFIG.jwt_token,
+    CONFIG.APP_TOKEN_KEYPASS,
     {
-      expiresIn: CONFIG.duration_token,
+      expiresIn: CONFIG.APP_TOKEN_EXPIRATION_HOURS + 'h',
     }
   );
 };
 
 /**
  * Method used to decode the user's token.
- * @param {*} props {token}
- * @param {*} fns overwriting function for tests.
- * @returns {id_user}
+ * @param {String} token token to decode.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Number}
  */
 export const decodeToken = function (
-  props = {
-    token: undefined,
-  },
+  props,
   fns = {
     jwt_decode: decode,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    token: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (props.token.slice(0, 7) !== 'Bearer ')
-    throw new ParameterMisformed('The props.token parameter is misformed.');
-  return fns.jwt_decode(props.token.slice(7));
+  const schema = z.object({
+    token: z
+      .string()
+      .startsWith('Bearer ', { message: 'The token should begin with Bearer.' })
+      .transform((val) => val.slice(7)),
+  });
+  const data = Guard.validateProps(schema, props);
+  return fns.jwt_decode(data.token);
 };
 
 /**
  * Get id_user from the token.
- * @param {*} props {token}
- * @param {*} fns overwriting functions for tests.
- * @returns id_user
+ * @param {String} token token to decode.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Number}
  */
 export const getUserId = function (
-  props = {
-    token: undefined,
-  },
+  props,
   fns = {
     decode_token: decodeToken,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    token: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (props.token.slice(0, 7) !== 'Bearer ')
-    throw new ParameterMisformed('The props.token parameter is misformed.');
-  return fns.decode_token({ token: props.token }).id_user;
+  const schema = z.object({
+    token: z.string().startsWith('Bearer ', {
+      message: 'The token should begin with Bearer.',
+    }),
+  });
+  const data = Guard.validateProps(schema, props);
+  return fns.decode_token({ ...data }).id_user;
 };
 
 /**
  * Method that checks if the token is valid.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} next HTTP next method.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {NextFunction} next HTTP next method.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Boolean}
  */
 export const isTokenValid = async (
   req,
@@ -129,7 +112,7 @@ export const isTokenValid = async (
       throw new ParameterMisformed('The props.token parameter is misformed.');
 
     const token = req.headers['authorization'].slice(7);
-    const verifiedToken = fns.jwt_verify(token, CONFIG.jwt_token);
+    const verifiedToken = fns.jwt_verify(token, CONFIG.APP_TOKEN_KEYPASS);
     if (!verifiedToken.id_user)
       throw new BadContentTokenError(
         'The token does not have proper attribute.'
@@ -141,25 +124,17 @@ export const isTokenValid = async (
     res.set('authorization', 'Bearer ' + regeneratedToken);
     next();
   } catch (error) {
-    logs.error(
-      `[${req.method}][401][${error.name}] ${req.originalUrl} : ${error.message}`
-    );
-    return res.status(401).json({
-      result: {
-        error: error.name,
-        message: error.message,
-      },
-    });
+    ApiResponse.error(req, res, new BadContentTokenError(error.message));
   }
 };
 
 /**
  * Checks if the User's application.
  * First, it looks for token in headers[OdinToken] and if nothing is found, it goes on token parameters.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Boolean}
  */
 export const app_access_granted = async (
   req,
@@ -181,7 +156,7 @@ export const app_access_granted = async (
     const token = req.headers['authorization'].slice(7);
 
     // lets verify token
-    const verifiedToken = fns.jwt_verify(token, CONFIG.jwt_token);
+    const verifiedToken = fns.jwt_verify(token, CONFIG.APP_TOKEN_KEYPASS);
     if (!verifiedToken.id_user)
       throw new BadContentTokenError(
         'The token does not have proper attribute.'
@@ -229,11 +204,11 @@ export const app_access_granted = async (
 
 /**
  * Check is the User is an admin or a prof.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} next HTTP next.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {NextFunction} next HTTP next.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Boolean}
  */
 export const isProfOrAdmin = async function (
   req,
@@ -248,30 +223,25 @@ export const isProfOrAdmin = async function (
     const id_user = fns.getUserId({
       token: req.headers['authorization'],
     });
-    return await Promise.resolve(fns.getRole({ id_user })).then((role) => {
-      if (role !== 'ADMINISTRATEUR' && role !== 'PROFESSEUR')
+    return await fns.getRole({ id_user }).then((role) => {
+      if (!['ADMINISTRATEUR', 'PROFESSEUR'].includes(role))
         throw new UserIsNeitherProfOrAdmin(
           'The user is neither PROFESSEUR or ADMINISTRATEUR.'
         );
       else next();
     });
   } catch (error) {
-    return res.status(error.code).json({
-      result: {
-        error: error.name,
-        message: error.message,
-      },
-    });
+    ApiResponse.error(req, res, error);
   }
 };
 
 /**
  * Check is the User is an admin or not.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} next HTTP next.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {NextFunction} next HTTP next.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Boolean}
  */
 export const isAdmin = async function (
   req,
@@ -292,22 +262,17 @@ export const isAdmin = async function (
       else next();
     });
   } catch (error) {
-    return res.status(error.code).json({
-      result: {
-        error: error.name,
-        message: error.message,
-      },
-    });
+    ApiResponse.error(req, res, error);
   }
 };
 
 /**
  * Check is the User is a prof or not.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} next HTTP next.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {NextFunction} next HTTP next.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Boolean}
  */
 export const isProf = async function (
   req,
@@ -328,22 +293,17 @@ export const isProf = async function (
       else next();
     });
   } catch (error) {
-    return res.status(error.code).json({
-      result: {
-        error: error.name,
-        message: error.message,
-      },
-    });
+    ApiResponse.error(req, res, error);
   }
 };
 
 /**
  * Method to check if the application is owned by the user.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} next HTTP next.
- * @param {*} fns overwriting function for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {NextFunction} next HTTP next.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Boolean}
  */
 export const isOwner = async (
   req,
@@ -366,12 +326,12 @@ export const isOwner = async (
     });
     const promises = [
       fns.isOwner(
-        req.query.key !== undefined
-          ? { id_user: id_user, key: req.query.key }
-          : {
+        req.query.key === undefined
+          ? {
               id_user: id_user,
               id_application: req.query.id_application,
             }
+          : { id_user: id_user, key: req.query.key }
       ),
       fns.getRole({ id_user }),
     ];
@@ -383,11 +343,6 @@ export const isOwner = async (
         );
     });
   } catch (err) {
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+    ApiResponse.error(req, res, err);
   }
 };

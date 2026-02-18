@@ -4,8 +4,8 @@
  * @module route/auth
  */
 import express from 'express';
-import * as auth_controller from '../controllers/auth.controller.js';
-import { app_access_granted } from '../utils/token.service.js';
+import { connect } from '../controllers/auth.controller.js';
+import { app_access_granted } from '../utils/token.util.js';
 import { counter, counter_get } from '../middlewares/prometheus.js';
 
 const router = express.Router();
@@ -42,29 +42,6 @@ router.get('/:hash/*', function (req, res) {
   counter_get.inc();
   app_access_granted(req, res);
 });
-
-/**
- * @swagger
- * /auth/options:
- *  get:
- *    tags:
- *     - Authentication
- *    produces:
- *     - application/json
- *    description: Get all the different options of connexion.
- *    responses:
- *      200:
- *        description: Types of connexion available.
- *        schema:
- *          type: object
- *          properties:
- *            result:
- *              type: array
- *              items:
- *                type: string
- *                example: "credentials"
- */
-router.get('/options', auth_controller.login_options);
 
 /**
  * @swagger
@@ -114,9 +91,7 @@ router.get('/options', auth_controller.login_options);
  *           $ref: '#/definitions/DBConnexionRefused'
  *
  */
-router.post('/connect_by_credentials', (req, res) =>
-  auth_controller.connect(req, res)
-);
+router.post('/connect_by_credentials', (req, res) => connect(req, res));
 
 export default router;
 

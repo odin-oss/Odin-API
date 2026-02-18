@@ -1,78 +1,38 @@
+import z from 'zod';
 import dbManager from '../config/db.config.js';
 import { Datacenter } from '../objects/Datacenter.js';
-import {
-  DBObjectNotFound,
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../utils/errors.service.js';
-import * as parametres from '../utils/parametres.service.js';
+import { DBObjectNotFound } from '../utils/errors.util.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Builder that fetchs all the dcs in the database.
- * @param {*} fns
- * @returns
+ * @returns {Array<Datacenter>}
  */
 export const list = async function () {
-  try {
-    return await Promise.resolve(dbManager.models.DATACENTER.findAll()).then(
-      (dcs) => {
-        return dcs.map(
-          (dc) =>
-            new Datacenter({
-              id_datacenter: dc.id_datacenter,
-              label: dc.label,
-              provider: dc.provider,
-              city: dc.city,
-            })
-        );
-      }
-    );
-  } catch (err) {
-    throw dbManager.sequelizeErrorManagement(err);
-  }
+  return await dbManager.models.DATACENTER.findAll()
+    .then((dcs) => dcs.map((dc) => new Datacenter({ ...dc.dataValues })))
+    .catch((err) => {
+      throw dbManager.sequelizeErrorManagement(err);
+    });
 };
 
 /**
  * Builder that gets the specific datacenter in database.
- * @param {*} props
- * @param {*} fns
- * @returns
+ * @param {Number} id_datacenter id of the datacenter to get.*
+ * @returns {Datacenter}
  */
-export const get = async function (
-  props = {
-    id_datacenter: undefined,
-  }
-) {
-  const expected_props = {
-    id_datacenter: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_datacenter))
-    throw new ParameterMisformed(
-      'The props.id_datacenter parameter is misformed.'
-    );
-  try {
-    const datacenter_opt = {
-      where: {
-        id_datacenter: props.id_datacenter,
-      },
-    };
-    return await Promise.resolve(
-      dbManager.models.DATACENTER.findOne(datacenter_opt)
-    ).then((r) => {
+export const get = async function (props) {
+  const schema = z.object({
+    id_datacenter: z.number().positive(),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await dbManager.models.DATACENTER.findOne({ where: { ...data } })
+    .then((r) => {
       if (r == null)
         throw new DBObjectNotFound('The datacenter could not be found.');
-      return new Datacenter({
-        id_datacenter: r.id_datacenter,
-        label: r.label,
-        provider: r.provider,
-        city: r.city,
-      });
+      return new Datacenter({ ...r.dataValues });
+    })
+    .catch((err) => {
+      throw dbManager.sequelizeErrorManagement(err);
     });
-  } catch (err) {
-    throw dbManager.sequelizeErrorManagement(err);
-  }
 };

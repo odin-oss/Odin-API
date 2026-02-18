@@ -1,11 +1,21 @@
+import z from 'zod';
+import Guard from '../utils/guard.util.js';
+
 export class UserRole {
   #id_role;
   #label;
 
-  constructor({ id_role = undefined, label = undefined } = {}) {
-    this.#id_role = id_role;
-    this.#label = label;
+  constructor(props) {
+    const data = Guard.validateProps(UserRole.schema, props);
+    this.#id_role = data.id_role;
+    this.#label = data.label;
   }
+
+  // Zod Schema for object validation
+  static schema = z.object({
+    id_role: z.number().int().positive().optional(),
+    label: z.string().min(1).optional(),
+  });
 
   // Getters
   get id_role() {

@@ -1,14 +1,13 @@
-import logs from '../../middlewares/winston.js';
-import * as storage_service from '../../services/application/storage.service.js';
-import * as token from '../../utils/token.service.js';
-import * as parametres from '../../utils/parametres.service.js';
+import * as storage_service from '../services/storage.service.js';
+import * as token from '../utils/token.util.js';
 import {
   counter_delete,
   counter_get,
   counter,
-  counter_put,
-} from '../../middlewares/prometheus.js';
-import { MissingArgumentError } from '../../utils/errors.service.js';
+} from '../middlewares/prometheus.js';
+import { MissingArgumentError } from '../utils/errors.util.js';
+import { ApiResponse } from '../utils/response.util.js';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Controller that checks parameters and create the export.
@@ -30,11 +29,11 @@ export const exportStorage = async (
 
   //Request
   try {
-    parametres.check_query(req, ['id_application']);
-    parametres.check_body(req, ['export_platform']);
+    Guard.check_query(req, ['id_application']);
+    Guard.check_body(req, ['export_platform']);
     const id_user = token.getUserId({ token: req.headers['authorization'] });
-    return await Promise.resolve(
-      fns.storage_export({
+    await fns
+      .storage_export({
         id_user,
         id_application: req.query.id_application,
         export_platform: req.body.export_platform,
@@ -47,22 +46,17 @@ export const exportStorage = async (
           return req.body.delete_existing_export;
         })(),
       })
-    ).then((application_export) => {
-      logs.info(`[${req.method}][200] ${req.originalUrl} : Export launched.`);
-      return res.status(200).json({
-        result: application_export.public_format(),
-      });
-    });
+      .then((application_export) =>
+        ApiResponse.success(
+          req,
+          res,
+          application_export.public_format(),
+          200,
+          'Storage export created.'
+        )
+      );
   } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
-    );
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+    ApiResponse.error(req, res, err);
   }
 };
 
@@ -86,32 +80,21 @@ export const deleteStorage = async (
 
   //Request
   try {
-    parametres.check_query(req, ['id_application']);
-    parametres.check_body(req, ['id_export', 'export_platform']);
+    Guard.check_query(req, ['id_application']);
+    Guard.check_body(req, ['id_export', 'export_platform']);
     const id_user = token.getUserId({ token: req.headers['authorization'] });
-    return await Promise.resolve(
-      fns.storage_delete({
+    await fns
+      .storage_delete({
         id_user,
         id_application: req.query.id_application,
         id_export: req.body.id_export,
         export_platform: req.body.export_platform,
       })
-    ).then((export_deletion) => {
-      logs.info(`[${req.method}][200] ${req.originalUrl} : Storage deleted.`);
-      return res.status(200).json({
-        result: export_deletion, //.public_format(),
-      });
-    });
+      .then((export_deletion) =>
+        ApiResponse.success(req, res, export_deletion, 200, 'Storage deleted.')
+      );
   } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
-    );
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+    ApiResponse.error(req, res, err);
   }
 };
 
@@ -137,23 +120,16 @@ export const getStorage = async (
       fns.storage_get({
         id_application: req.query.id_application,
       })
-    ).then((storage_information) => {
-      logs.info(
-        `[${req.method}][200] ${req.originalUrl} : Storage informations.`
-      );
-      return res.status(200).json({
-        result: storage_information.public_format(),
-      });
-    });
-  } catch (err) {
-    logs.error(
-      `[${req.method}][${err.code}][${err.name}] ${req.originalUrl} : ${err.message}`
+    ).then((storage_information) =>
+      ApiResponse.success(
+        req,
+        res,
+        storage_information.public_format(),
+        200,
+        'Storage informations.'
+      )
     );
-    return res.status(err.code).json({
-      result: {
-        error: err.name,
-        message: err.message,
-      },
-    });
+  } catch (err) {
+    ApiResponse.error(req, res, err);
   }
 };

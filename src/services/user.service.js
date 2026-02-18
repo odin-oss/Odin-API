@@ -1,172 +1,132 @@
 import * as user_builder from '../builders/user.builder.js';
 import { User } from '../objects/User.js';
-import {
-  BadCredentials,
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../utils/errors.service.js';
-import * as parametres from '../utils/parametres.service.js';
+import { BadCredentials } from '../utils/errors.util.js';
 import bcrypt from 'bcrypt';
 import { role_by_label } from '../builders/auth.builder.js';
+import z from 'zod';
+import Guard from '../utils/guard.util.js';
 
 /**
  * Service used to get the User object from the id_user.
- * @param {*} props {id_user}
- * @param {*} fns overwriting functions for test
- * @returns User
+ * @param {Number} id_user id of the user we want to get the infos.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {User}
  */
 export const get = async function (
-  props = {
-    id_user: undefined,
-  },
+  props,
   fns = {
     user_get: user_builder.get,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_user: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_user))
-    throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  return await Promise.resolve(fns.user_get({ id_user: props.id_user })).then(
-    (user) => {
-      return user;
-    }
-  );
+  const schema = z.object({
+    id_user: z.number().positive(),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns.user_get({ ...data });
 };
 
 /**
  * Service used to get the list of all User on a specific user_role.
- * @param {*} props {user_role}
- * @param {*} fns overwriting functions for test
- * @returns [User {}, ...]
+ * @param {String} role role we want the list of Users.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Array<User>}
  */
 export const list_by_role = async function (
-  props = {
-    user_role: undefined,
-  },
+  props,
   fns = {
     user_list: user_builder.list,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    user_role: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_user_role(props.user_role))
-    throw new ParameterMisformed('The props.user_role parameter is misformed.');
-  return await Promise.resolve(fns.user_list({ role: props.user_role })).then(
-    (users) => {
-      return users;
-    }
-  );
+  const schema = z.object({
+    user_role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns.user_list(data);
 };
 
 /**
  * Service used to get the User object from the id_user.
- * @param {*} props {id_user}
- * @param {*} fns overwriting functions for test
- * @returns User
+ * @param {Number} id_user id of the user to update the password to.
+ * @param {String} password new password to set to the user.
+ * @param {String} old_password old password of the user.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
  */
 export const update_password = async function (
-  props = {
-    id_user: undefined,
-    password: undefined,
-    old_password: undefined,
-  },
+  props,
   fns = {
     user_update_password: user_builder.update_password,
     user_get: user_builder.get,
     bcrypt: bcrypt,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_user: undefined,
-    password: undefined,
-    old_password: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_user))
-    throw new ParameterMisformed('The props.id_user parameter is misformed.');
-
-  const user = await Promise.resolve(fns.user_get({ id_user: props.id_user }));
-  if (!fns.bcrypt.compareSync(props.old_password, user.pwd))
+  const schema = z.object({
+    id_user: z.number().positive(),
+    password: z
+      .string()
+      .min(8, { message: 'The password must contains at least 8 characters.' })
+      .refine((val) => /[0-9]/.test(val), {
+        message: 'The password must contains at least 1 number.',
+      })
+      .refine((val) => /[!@#$%^&*(),.?":{}|<>]/.test(val), {
+        message: 'The password must contains at least 1 special char.',
+      }),
+    old_password: z.string(),
+  });
+  const data = Guard.validateProps(schema, props);
+  const user = await fns.user_get({ ...data });
+  if (!fns.bcrypt.compareSync(data.old_password, user.pwd))
     throw new BadCredentials('The old password is not correct.');
-  parametres.check_password(props.password);
-
-  return await Promise.resolve(
-    fns.user_update_password({
-      id_user: props.id_user,
-      hashed_password: fns.bcrypt.hashSync(props.password, 11),
-    })
-  ).then((response) => {
-    return user;
+  return await fns.user_update_password({
+    id_user: data.id_user,
+    hashed_password: fns.bcrypt.hashSync(data.password, 11),
   });
 };
 /**
  * Service used to create a new User object.
- * @param {*} props {User}
- * @param {*} fns overwriting functions for test
- * @returns User
+ * @param {String} pwd password of the new User.
+ * @param {String} mail mail of the new User.
+ * @param {String} role role of the new User.
+ * @param {String} lastname lastname of the new User.
+ * @param {String} firstname firstname of the new User.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {User}
  */
 export const create = async function (
-  props = {
-    mail: undefined,
-    pwd: undefined,
-    role: undefined,
-    lastname: undefined,
-    firstname: undefined,
-  },
+  props,
   fns = {
-    bcrypt: bcrypt,
+    bcrypt,
     create: user_builder.create,
-    role_by_label: role_by_label,
+    role_by_label,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    mail: undefined,
-    pwd: undefined,
-    role: undefined,
-    lastname: undefined,
-    firstname: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_email(props.mail))
-    throw new ParameterMisformed('The props.mail parameter is misformed.');
-  if (!parametres.check_password(props.pwd))
-    throw new ParameterMisformed('The props.pwd parameter is misformed.');
-  if (!parametres.check_user_role(props.role))
-    throw new ParameterMisformed('The props.role parameter is misformed.');
-  const hashed_password = fns.bcrypt.hashSync(props.pwd, 11);
-  const role = await fns.role_by_label({ label: props.role });
-  return await Promise.resolve(
-    fns.create({
-      firstname: props.firstname,
-      lastname: props.lastname,
-      mail: props.mail,
+  const schema = z.object({
+    pwd: z
+      .string()
+      .min(8, { message: 'The password must contains at least 8 characters.' })
+      .refine((val) => /[0-9]/.test(val), {
+        message: 'The password must contains at least 1 number.',
+      })
+      .refine((val) => /[!@#$%^&*(),.?":{}|<>]/.test(val), {
+        message: 'The password must contains at least 1 special char.',
+      }),
+    mail: z.email(),
+    role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
+    lastname: z.string().min(1),
+    firstname: z.string().min(1),
+  });
+  const data = Guard.validateProps(schema, props);
+  const hashed_password = fns.bcrypt.hashSync(data.pwd, 11);
+  const role = await fns.role_by_label({ label: data.role });
+  return await fns
+    .create({
+      ...data,
       id_role: role.id_role,
       hashed_password: hashed_password,
     })
-  ).then((user) => {
-    user.role = role.label;
-    user.pwd = props.pwd;
-    return user;
-  });
+    .then((user) => {
+      user.role = role.label;
+      user.pwd = data.pwd;
+      return user;
+    });
 };

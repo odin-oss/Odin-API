@@ -3,34 +3,38 @@ import * as environment_builder from '../builders/environment.builder.js';
 import * as user_builder from '../builders/user.builder.js';
 import * as datacenter_builder from '../builders/datacenter.builder.js';
 import * as history_builder from '../builders/history.builder.js';
+import { list as dictionary_list } from '../builders/randomdictionary.builder.js';
 import {
   exec_shutdown,
   exec_start,
   exec_deletion,
-} from '../modules/ms-deployment.module.js';
-import * as storage_service from './application/storage.service.js';
+} from './deployment.service.js';
+import * as storage_service from '../services/storage.service.js';
 import moment from 'moment-timezone';
-import * as password from '../utils/password.service.js';
 import CONFIG from '../config/config.js';
-import * as parametres from '../utils/parametres.service.js';
 import {
   MissingArgumentError,
-  ParameterMisformed,
   ApplicationInvalidStateError,
-} from '../utils/errors.service.js';
+} from '../utils/errors.util.js';
 import { History } from '../objects/History.js';
+import Guard from '../utils/guard.util.js';
+import {
+  generate_label,
+  generate_unique_hash,
+  generate_unique_label,
+} from './randomdictonary.service.js';
+import z from 'zod';
+import { Application } from '../objects/Application.js';
 
 /**
  * Service that will get all the informations about an application.
- * @param {*} props {id_application}
- * @param {*} fns overwriting function for tests
- * @returns Application {}
+ * @param {Number} id_application id of the application we are searching for.
+ * @param {String} key key of the application we are searching for.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Application}
  */
 export const get = async (
-  props = {
-    id_application: undefined,
-    key: undefined,
-  },
+  props,
   fns = {
     application_get: application_builder.get,
     environment_get: environment_builder.get,
@@ -38,26 +42,17 @@ export const get = async (
     history_get_last_record: history_builder.get_last_record,
   }
 ) => {
+  const schema = z.object({
+    id_application: z.coerce.number().positive().optional(),
+    key: z.string().optional(),
+  });
+  const data = Guard.validateProps(schema, props);
   if (props.id_application === undefined && props.key === undefined)
     throw new MissingArgumentError(
-      `One or multiple arguments (id_application,key) are missing.`
-    );
-  if (
-    props.id_application !== undefined &&
-    !parametres.check_id(props.id_application)
-  )
-    throw new ParameterMisformed(
-      'The props.id_application parameter is misformed.'
+      `Either id_application or key must be sent.`
     );
 
-  if (props.key !== undefined && !parametres.check_key(props.key))
-    throw new ParameterMisformed('The props.key parameter is misformed.');
-
-  const options = {};
-  if (props.key) options.key = props.key;
-  if (props.id_application) options.id_application = props.id_application;
-
-  const application = await Promise.resolve(fns.application_get(options));
+  const application = await fns.application_get({ ...data });
   return await Promise.all([
     fns.environment_get({ id_environment: application.id_environment }),
     fns.datacenter_get({ id_datacenter: application.datacenter.id_datacenter }),
@@ -75,14 +70,12 @@ export const get = async (
 
 /**
  * Service that will list all the applications attached to an user.
- * @param {*} props {id_user}
- * @param {*} fns osverwriting functions for test.
- * @returns [Application {}, ... ]
+ * @param {Number} id_user id of the user we want the list of application.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Array<Application>}
  */
 export const list = async function (
-  props = {
-    id_user: undefined,
-  },
+  props,
   fns = {
     application_list: application_builder.list,
     environment_get: environment_builder.get,
@@ -90,21 +83,10 @@ export const list = async function (
     history_get_last_record: history_builder.get_last_record,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_user: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_user))
-    throw new ParameterMisformed('The props.id_user parameter is misformed.');
-
-  const applications = await Promise.resolve(
-    fns.application_list({ id_user: props.id_user })
-  );
-  const datacenters = await Promise.resolve(fns.datacenter_list());
+  const schema = z.object({ id_user: z.number().positive() });
+  const data = Guard.validateProps(schema, props);
+  const applications = await fns.application_list({ id_user: data.id_user });
+  const datacenters = await fns.datacenter_list();
   const environments_ids = Array.from(
     new Set(applications.map((obj) => obj.id_environment))
   );
@@ -116,7 +98,7 @@ export const list = async function (
     ...promises,
     ...applications.map((app) =>
       fns.history_get_last_record({
-        id_user: props.id_user,
+        id_user: data.id_user,
         id_application: app.id_application,
       })
     ),
@@ -144,15 +126,13 @@ export const list = async function (
 
 /**
  * Start / Shutdown an application that is currently on/off.
- * @param {*} props {id_application, state_application}
- * @param {*} fns overwriting functions for tests
- * @returns Application {}
+ * @param {Number} id_application id of the application we need to update.
+ * @param {String} state_application new state to attribute to this application.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Application}
  */
 export const update_state = async function (
-  props = {
-    id_application: undefined,
-    state_application: undefined,
-  },
+  props,
   fns = {
     application_get: application_builder.get,
     datacenter_get: datacenter_builder.get,
@@ -162,44 +142,30 @@ export const update_state = async function (
     environment_get: environment_builder.get,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_application: undefined,
-    state_application: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_application))
-    throw new ParameterMisformed(
-      'The props.id_application parameter is misformed.'
-    );
-  if (props.state_application !== 'Off' && props.state_application !== 'Ready')
-    throw new ParameterMisformed(
-      "The props.state_application must be in ['Off','Ready']."
-    );
-  // We get the app
-  const application = await Promise.resolve(
-    fns.application_get({ id_application: props.id_application })
-  );
+  const schema = z.object({
+    id_application: z.coerce.number().positive(),
+    state_application: z.enum(['Off', 'Ready']),
+  });
+  const data = Guard.validateProps(schema, props);
+  const application = await fns.application_get({
+    id_application: data.id_application,
+  });
 
   // We get the corresponding datacenter
-  const datacenter = await Promise.resolve(
-    fns.datacenter_get({ id_datacenter: application.datacenter.id_datacenter })
-  );
+  const datacenter = await fns.datacenter_get({
+    id_datacenter: application.datacenter.id_datacenter,
+  });
 
   // we update the app in the db
-  await Promise.resolve(
-    fns.application_update({
-      id_application: props.id_application,
-      state_application: props.state_application,
-    })
-  );
+  await fns.application_update({
+    id_application: data.id_application,
+    state_application: data.state_application,
+  });
+
   const promises = [];
   // We get the updated database
-  promises.push(fns.application_get({ id_application: props.id_application }));
-  if (props.state_application === 'Ready') {
+  promises.push(fns.application_get({ id_application: data.id_application }));
+  if (data.state_application === 'Ready') {
     promises.push(
       fns.environment_get({ id_environment: application.id_environment })
     );
@@ -208,22 +174,20 @@ export const update_state = async function (
     promises.push(fns.exec_shutdown({ hash: application.hash, datacenter }));
   return await Promise.all(promises).then((r) => {
     r[0].datacenter = datacenter;
-    if (props.state_application === 'Ready') r[0].environment = r[1];
+    if (data.state_application === 'Ready') r[0].environment = r[1];
     return r[0];
   });
 };
 
 /**
  * Service that launchs the deletion of the application.
- * @param {*} props {id_application}
- * @param {*} fns overwriting functions for tests
- * @returns Application {}
+ * @param {Number} id_application id of the application we need to update.
+ * @param {Boolean} backup_storage is there storage to backup (optionnal, default true)
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Application}
  */
 export const deletion = async function (
-  props = {
-    id_application: undefined,
-    backup_storage: true,
-  },
+  props,
   fns = {
     application_get: application_builder.get,
     application_delete: application_builder.deletion,
@@ -234,24 +198,13 @@ export const deletion = async function (
     export_storage: storage_service.exportStorage,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_application: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_application))
-    throw new ParameterMisformed(
-      'The props.id_application parameter is misformed.'
-    );
-  if (!parametres.check_boolean(props.backup_storage))
-    throw new ParameterMisformed(
-      'The props.backup_storage parameter is misformed.'
-    );
+  const schema = z.object({
+    id_application: z.coerce.number().positive(),
+    backup_storage: z.boolean().default(true),
+  });
+  const data = Guard.validateProps(schema, props);
   const app = await Promise.resolve(
-    fns.application_get({ id_application: props.id_application })
+    fns.application_get({ id_application: data.id_application })
   );
   if (!['Ready', 'Off'].includes(app.state_application))
     throw new ApplicationInvalidStateError(
@@ -264,22 +217,20 @@ export const deletion = async function (
   );
   const promises = [];
 
-  if (props.backup_storage) {
+  if (data.backup_storage) {
     promises.push(
-      fns.download_deletion({ id_application: props.id_application })
+      fns.download_deletion({ id_application: data.id_application })
     );
     promises.push(
       fns.exec_shutdown({ hash: app.hash, datacenter }).then(() => {
-        console.log('Application shutdown completed');
         return fns.export_storage({
-          id_application: props.id_application,
+          id_application: data.id_application,
           delete_existing_export: true,
           app_deletion: true,
         });
       })
     );
   } else {
-    console.log('oe');
     promises.push(
       fns.application_delete({ id_application: app.id_application })
     );
@@ -294,72 +245,61 @@ export const deletion = async function (
 
 /**
  * Service that execute the creation workflow of an application.
- * @param {*} props {id_user,id_environment,label}
- * @param {*} fns overwriting functions for tests
- * @returns Application {}
+ * @param {Number} id_user id of the user that will be owning this application.
+ * @param {Number} id_environment id of the environment that serves as template for that application.
+ * @param {Number} id_datacenter id of the datacenter that will be hosting this application.
+ * @param {String} label custom label settled by user.
+ * @param {String} state_changed_date date of the change of state. (optional)
+ * @param {Function} fns overwriting functions for tests
+ * @returns {Application}
  */
 export const create = async function (
-  props = {
-    id_user: undefined,
-    id_environment: undefined,
-    id_datacenter: undefined,
-    label: undefined,
-    state_changed_date: undefined,
-  },
+  props,
   fns = {
     user_get: user_builder.get,
-    password_generate: password.generate_label,
-    generate_unique_label: password.generate_unique_label,
-    unique_hash_generate: password.generate_unique_hash,
+    password_generate: generate_label,
+    generate_unique_label,
+    unique_hash_generate: generate_unique_hash,
     environment_get: environment_builder.get,
     application_create: application_builder.create,
     datacenter_get: datacenter_builder.get,
+    dictionary_list,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_user: undefined,
-    id_environment: undefined,
-    id_datacenter: undefined,
-    label: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_user))
-    throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  if (!parametres.check_id(props.id_environment))
-    throw new ParameterMisformed(
-      'The props.id_environment parameter is misformed.'
-    );
-  if (!parametres.check_id(props.id_datacenter))
-    throw new ParameterMisformed(
-      'The props.id_datacenter parameter is misformed.'
-    );
+  const schema = z.object({
+    id_user: z.number().positive(),
+    id_environment: z.coerce.number().positive(),
+    id_datacenter: z.coerce.number().positive(),
+    label: z.string().min(1).optional(),
+    state_changed_date: z
+      .refine((val) => moment(val).isValid(), {
+        message: 'Invalid date format',
+      })
+      .transform((val) => moment(val).tz(CONFIG.APP_TZ))
+      .default(moment.tz(CONFIG.APP_TZ)),
+  });
+  const data = Guard.validateProps(schema, props);
+  const infos = await fns.user_get({ id_user: data.id_user });
+  const dictionary = await fns.dictionary_list();
+  const password = fns.password_generate({ count: 3, dictionary });
 
-  const infos = await fns.user_get({ id_user: props.id_user });
-  const pwd = await fns.password_generate({ count: 3 });
-  const randomName = await fns.generate_unique_label({ count: 3 });
-  const hash = await fns.unique_hash_generate();
-  const environment = await fns.environment_get({
-    id_environment: props.id_environment,
-  });
-  const datacenter = await fns.datacenter_get({
-    id_datacenter: props.id_datacenter,
-  });
-  const launch_date =
-    props.state_changed_date === undefined
-      ? moment.tz(CONFIG.timezone)
-      : moment(props.state_changed_date).tz(CONFIG.timezone);
-  const promises = [
-    fns.application_create({
-      id_user: props.id_user,
-      id_environment: props.id_environment,
-      id_datacenter: props.id_datacenter,
-      custom_label: props.label,
-      generated_label: randomName,
-      hash: hash,
+  const [generated_label, hash, environment, datacenter] = await Promise.all([
+    fns.generate_unique_label({ count: 3, dictionary }),
+    fns.unique_hash_generate(),
+    fns.environment_get({
+      id_environment: data.id_environment,
+    }),
+    fns.datacenter_get({
+      id_datacenter: data.id_datacenter,
+    }),
+  ]);
+
+  return await fns
+    .application_create({
+      ...data,
+      generated_label,
+      custom_label: data.label || generated_label,
+      hash,
       username:
         infos.firstname[0].toLowerCase() +
         '_' +
@@ -368,14 +308,11 @@ export const create = async function (
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
           .replace(/[^a-z0-9]/g, ''),
-      password: pwd,
-      state_changed_date: launch_date,
-    }),
-  ];
-
-  return await Promise.all(promises).then((r) => {
-    r[0].environment = environment;
-    r[0].datacenter = datacenter;
-    return r[0];
-  });
+      password,
+    })
+    .then((r) => {
+      r.environment = environment;
+      r.datacenter = datacenter;
+      return r;
+    });
 };

@@ -1,76 +1,50 @@
 import * as user_builder from '../builders/user.builder.js';
 import bcrypt from 'bcrypt';
-import * as token from '../utils/token.service.js';
-import * as parametres from '../utils/parametres.service.js';
-import {
-  BadCredentials,
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../utils/errors.service.js';
+import * as token from '../utils/token.util.js';
+import { BadCredentials } from '../utils/errors.util.js';
+import Guard from '../utils/guard.util.js';
+import z from 'zod';
 
 /**
  * Service used to test the connexion of the user to the API.
- * @param {*} props {mail,password}
- * @param {*} fns overwriting functions for tests
- * @returns token
+ * @param {String} mail email of the user that is trying to connect.
+ * @param {String} password password entered by the user.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {String}
  */
 export const connect = async function (
-  props = {
-    mail: undefined,
-    password: undefined,
-  },
+  props,
   fns = {
     user_get: user_builder.get,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    mail: undefined,
-    password: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_email(props.mail))
-    throw new ParameterMisformed('The props.mail parameter is misformed.');
-
-  return await Promise.resolve(fns.user_get({ mail: props.mail })).then(
-    (user) => {
-      if (!bcrypt.compareSync(props.password, user.pwd))
-        throw new BadCredentials('The credentials you entered are wrong.');
-      return token.generateToken({ id_user: user.id_user });
-    }
-  );
+  const schema = z.object({
+    mail: z.email(),
+    password: z.string().min(1),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns.user_get({ mail: data.mail }).then((user) => {
+    if (!bcrypt.compareSync(data.password, user.pwd))
+      throw new BadCredentials('The credentials you entered are wrong.');
+    return token.generateToken({ id_user: user.id_user });
+  });
 };
 
 /**
  * Getting the role from the user's informations.
- * @param {*} props
- * @param {*} fns
- * @returns
+ * @param {Number} id_user id of the user we want to get the role.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {String}
  */
 export const role = async function (
-  props = {
-    id_user: undefined,
-  },
+  props,
   fns = {
     user_get: user_builder.get,
   }
 ) {
-  // We check all mandatory props before doing anything
-  const expected_props = {
-    id_user: undefined,
-  };
-  if (parametres.check_props(expected_props, props).length > 0)
-    throw new MissingArgumentError(
-      `One or multiple arguments (${parametres.check_props(expected_props, props)}) are missing.`
-    );
-  if (!parametres.check_id(props.id_user))
-    throw new ParameterMisformed('The props.id_user parameter is misformed.');
-  return await Promise.resolve(fns.user_get({ id_user: props.id_user })).then(
-    (user) => {
-      return user.role;
-    }
-  );
+  const schema = z.object({
+    id_user: z.number().positive(),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns.user_get({ ...data }).then((user) => user.role);
 };
