@@ -29,9 +29,14 @@ if (CONFIG.APP_ENVIRONMENT === 'local') {
   winston.addColors(config.colors);
 }
 
-const myFormat = printf(
-  (info) => `${info.timestamp} [${info.level}]${info.message}`
-);
+const myFormat = printf((info) => {
+  const stack = info.stack ? `\n${info.stack}` : '';
+  const message =
+    typeof info.message === 'object'
+      ? JSON.stringify(info.message, null, 2)
+      : info.message;
+  return `${info.timestamp} [${info.level}]: ${message}${stack}`;
+});
 const appendTimestamp = format((info, opts) => {
   if (opts.tz) info.timestamp = moment().tz(opts.tz).format();
   return info;
@@ -80,7 +85,11 @@ const rotateTransportAll = new transports.DailyRotateFile({
 
 const logs = createLogger({
   levels: config.levels,
-  format: combine(appendTimestamp({ tz: CONFIG.APP_TZ }), myFormat),
+  format: combine(
+    format.errors({ stack: true }),
+    appendTimestamp({ tz: CONFIG.APP_TZ }),
+    myFormat
+  ),
   transports: [consoleTransport, rotateTransportAll],
   exceptionHandlers: [
     rotateTransportExceptions,

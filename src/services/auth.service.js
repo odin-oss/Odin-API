@@ -43,7 +43,7 @@ export const role = async function (
   }
 ) {
   const schema = z.object({
-    id_user: z.number().positive(),
+    id_user: z.coerce.number().int().positive(),
   });
   const data = Guard.validateProps(schema, props);
   return await fns.user_get({ ...data }).then((user) => user.role);

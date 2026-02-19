@@ -1,13 +1,13 @@
 import * as datacenter_service from '../services/datacenter.service.js';
 import { counter_get, counter } from '../middlewares/prometheus.js';
 import { ApiResponse } from '../utils/response.util.js';
+import logs from '../middlewares/winston.js';
 
 /**
  * Controller that checks requets content before fetching all the datacenters in db.
- * @param {*} req
- * @param {*} res
- * @param {*} fns functions for test
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const list = async (
   req,
@@ -32,5 +32,8 @@ export const list = async (
         'List of datacenters transmitted.'
       )
     )
-    .catch((err) => ApiResponse.error(req, res, err));
+    .catch((err) => {
+      logs.debug(err);
+      ApiResponse.error(req, res, err);
+    });
 };

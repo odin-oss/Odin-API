@@ -15,13 +15,13 @@ import {
 } from '../utils/errors.util.js';
 import { ApiResponse } from '../utils/response.util.js';
 import Guard from '../utils/guard.util.js';
+import logs from '../middlewares/winston.js';
 
 /**
  * Controllers that checks parameters and return the list of all applications in public format.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const list = async (
   req,
@@ -43,16 +43,16 @@ export const list = async (
       )
     )
     .catch((err) => {
+      logs.debug(err);
       ApiResponse.error(req, res, err);
     });
 };
 
 /**
  * Controller that checks parameters and return application's informations.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const get = async (
   req,
@@ -90,16 +90,16 @@ export const get = async (
         )
       );
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };
 
 /**
  * Controller that checks parameters and start the application.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting function for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const start = async (
   req,
@@ -130,16 +130,16 @@ export const start = async (
         )
       );
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };
 
 /**
  * Controller that checks parameters and stop the application.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const stop = async (
   req,
@@ -167,15 +167,17 @@ export const stop = async (
         'Application stopped.'
       )
     )
-    .catch((err) => ApiResponse.error(req, res, err));
+    .catch((err) => {
+      logs.debug(err);
+      ApiResponse.error(req, res, err);
+    });
 };
 
 /**
  * Controller that checks parameters and delete an application.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const deletion = async (
   req,
@@ -218,15 +220,16 @@ export const deletion = async (
         )
       );
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };
 
 /**
  * Controller that checks parameters and create an application.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting functions for tests.
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const create = async (
   req,
@@ -261,6 +264,7 @@ export const create = async (
       'Application created.'
     );
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };

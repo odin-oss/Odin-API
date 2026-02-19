@@ -5,12 +5,13 @@ import { ParameterMisformed } from '../utils/errors.util.js';
 import { ApiResponse } from '../utils/response.util.js';
 import Guard from '../utils/guard.util.js';
 import z from 'zod';
+import logs from '../middlewares/winston.js';
 
 /**
  * Controller that checks parameters and return current user's informations.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting service function for tests.
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const me = async function (
   req,
@@ -38,15 +39,16 @@ export const me = async function (
         )
       );
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };
 
 /**
  * Controller that checks parameters and changes user's password.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting service function for tests.
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const update_password = async function (
   req,
@@ -71,16 +73,16 @@ export const update_password = async function (
       })
       .then(() => ApiResponse.success(req, res, {}, 200, 'Password changed.'));
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };
 
 /**
  * Controller that checks parameters and return list of users informations filtered by role.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting service function for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const list = async function (
   req,
@@ -112,15 +114,16 @@ export const list = async function (
         )
       );
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };
 
 /**
- * Controller that checks request before launching creation of demo account. ONLY FOR DEMOS
- * @param {*} req
- * @param {*} req
- * @returns
+ * Controller that checks request before launching creation of a new account.
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const create = async function (
   req,
@@ -157,6 +160,7 @@ export const create = async function (
         ApiResponse.success(req, res, u.public_format(), 201, 'User created.')
       );
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };

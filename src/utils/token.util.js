@@ -256,7 +256,7 @@ export const isAdmin = async function (
     const id_user = fns.getUserId({
       token: req.headers['authorization'],
     });
-    return await Promise.resolve(fns.getRole({ id_user })).then((role) => {
+    return await fns.getRole({ id_user }).then((role) => {
       if (role !== 'ADMINISTRATEUR')
         throw new UserIsNotAdmin('The user is not admin.');
       else next();

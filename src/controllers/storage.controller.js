@@ -8,13 +8,13 @@ import {
 import { MissingArgumentError } from '../utils/errors.util.js';
 import { ApiResponse } from '../utils/response.util.js';
 import Guard from '../utils/guard.util.js';
+import logs from '../middlewares/winston.js';
 
 /**
  * Controller that checks parameters and create the export.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const exportStorage = async (
   req,
@@ -56,16 +56,16 @@ export const exportStorage = async (
         )
       );
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };
 
 /**
  * Controller that checks parameters and deletes the export.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const deleteStorage = async (
   req,
@@ -94,6 +94,7 @@ export const deleteStorage = async (
         ApiResponse.success(req, res, export_deletion, 200, 'Storage deleted.')
       );
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };
@@ -130,6 +131,7 @@ export const getStorage = async (
       )
     );
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };
