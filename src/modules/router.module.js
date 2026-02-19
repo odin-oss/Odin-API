@@ -7,6 +7,7 @@ import CATEGORY from '../routes/category.route.js';
 import DATACENTER from '../routes/datacenter.route.js';
 import ENVIRONMENT from '../routes/environment.route.js';
 import IMAGES from '../routes/images.route.js';
+import IMAGETYPE from '../routes/imageType.route.js';
 import SESSION from '../routes/sessions.route.js';
 import USER from '../routes/user.route.js';
 import { ApiResponse } from '../utils/response.util.js';
@@ -20,6 +21,7 @@ export default (app) => {
   app.use('/category', CATEGORY);
   app.use('/datacenter', DATACENTER);
   app.use('/environment', ENVIRONMENT);
+  app.use('/imageType', IMAGETYPE);
   app.use('/img', IMAGES);
   app.use('/session', SESSION);
   app.use('/user', USER);

@@ -3,6 +3,7 @@ import dbManager from '../config/db.config.js';
 import { Environment } from '../objects/Environment.js';
 import { Interface } from '../objects/Interface.js';
 import Guard from '../utils/guard.util.js';
+import { DBObjectAlreadyExists, DBObjectNotFound } from '../utils/errors.util.js';
 
 /**
  * Builder that list all the environments in database.
@@ -46,8 +47,7 @@ export const list = async function () {
         ) {
           result.push(
             new Environment({
-              ...env.dataValues,
-              icon: env.ENVIRONMENT.icon,
+              ...env.ENVIRONMENT.dataValues,
               interfaces: [new Interface(options)],
             })
           );
@@ -72,103 +72,91 @@ export const list = async function () {
 export const get = async function (props) {
   try {
     const schema = z.object({
-      id_environment: z.number().positive().optional(),
+      id_environment: z.coerce.number().int().positive()
     });
     const data = Guard.validateProps(schema, props);
-    const queryOptions = {
-      where: { id_environment: data.id_environment },
+    return await dbManager.models.ENVIRONMENT.findOne({
+      where: {
+        id_environment: data.id_environment,
+      },
       include: [
         {
-          model: dbManager.models.ENVIRONMENT,
-          required: true,
-        },
-        {
-          model: dbManager.models.INTERFACE,
-          required: true,
+          model: dbManager.models.ENVIRONMENT_HAS_INTERFACE,
           include: [
             {
-              model: dbManager.models.IMAGE_TYPE,
-              required: true,
-            },
-            {
-              model: dbManager.models.INTERFACE_HAS_ARGUMENT,
+              model: dbManager.models.INTERFACE,
               include: [
                 {
-                  model: dbManager.models.ARGUMENT,
-                  order: [['id_argument', 'DESC']],
+                  model: dbManager.models.IMAGE_TYPE,
+                  required: true,
                 },
-              ],
-            },
-            {
-              model: dbManager.models.INTERFACE_HAS_NODE_SELECTOR,
-              include: [
                 {
-                  model: dbManager.models.NODE_SELECTOR,
+                  model: dbManager.models.INTERFACE_HAS_ARGUMENT,
+                  separate: true,
+                  include: [
+                    {
+                      model: dbManager.models.ARGUMENT,
+                      order: [['id_argument', 'DESC']],
+                    },
+                  ],
                 },
-              ],
-            },
-            {
-              model: dbManager.models.INTERFACE_HAS_PORT,
-              include: [
                 {
-                  model: dbManager.models.PORT_TYPE,
+                  model: dbManager.models.INTERFACE_HAS_NODE_SELECTOR,
+                  separate: true,
+                  include: [
+                    {
+                      model: dbManager.models.NODE_SELECTOR,
+                    },
+                  ],
                 },
-              ],
-            },
-            {
-              model: dbManager.models.INTERFACE_HAS_VARIABLE,
-              include: [
                 {
-                  model: dbManager.models.VARIABLE_ENVIRONMENT,
+                  model: dbManager.models.INTERFACE_HAS_PORT,
+                  separate: true,
+                  include: [
+                    {
+                      model: dbManager.models.PORT_TYPE,
+                    },
+                  ],
+                },
+                {
+                  model: dbManager.models.INTERFACE_HAS_VARIABLE,
+                  separate: true,
+                  include: [
+                    {
+                      model: dbManager.models.VARIABLE_ENVIRONMENT,
+                    },
+                  ],
                 },
               ],
             },
           ],
         },
       ],
-    };
-    return await dbManager.models.ENVIRONMENT_HAS_INTERFACE.findAll(
-      queryOptions
-    ).then((r) => {
-      let result;
-      for (let env of r) {
-        const options = {
-          id_interface: env.INTERFACE.id_interface,
-          label: env.label,
-          default_label: env.INTERFACE.label,
-          registry_link: env.INTERFACE.registry_link,
-          exec_command: env.INTERFACE.exec_command,
-          service_command: env.INTERFACE.service_command,
-          privileged: env.INTERFACE.privileged,
-          readiness_probe_initial_delay:
-            env.INTERFACE.readiness_probe_initial_delay,
-          liveness_probe_initial_delay:
-            env.INTERFACE.liveness_probe_initial_delay,
-          readiness_probe_period: env.INTERFACE.readiness_probe_period,
-          liveness_probe_period: env.INTERFACE.liveness_probe_period,
-          need_compute_gpu: env.INTERFACE.need_compute_gpu,
-          need_graphical_rendering_gpu:
-            env.INTERFACE.need_graphical_rendering_gpu,
-          ram_limit: env.INTERFACE.ram_limit,
-          ram_request: env.INTERFACE.ram_request,
-          cpu_limit: env.INTERFACE.cpu_limit,
-          cpu_request: env.INTERFACE.cpu_request,
-          id_type: env.INTERFACE.IMAGE_TYPE.id_type,
-          label_type_image: env.INTERFACE.IMAGE_TYPE.label,
-          args: env.INTERFACE.INTERFACE_HAS_ARGUMENTs.sort(
+      order: [['id_environment', 'ASC']],
+    }).then((env) => {
+      if (env == null)
+        throw new DBObjectNotFound('The environment does not exist.');
+      return new Environment({
+        ...env.dataValues,
+        interfaces: env.ENVIRONMENT_HAS_INTERFACEs.map((inter) => new Interface({
+          ...inter.INTERFACE.dataValues,
+          label: inter.label,
+          id_type: inter.INTERFACE.IMAGE_TYPE.id_type,
+          label_type_image: inter.INTERFACE.IMAGE_TYPE.label,
+          args: inter.INTERFACE.INTERFACE_HAS_ARGUMENTs.sort(
             (a, b) => a.id_argument - b.id_argument
           ).map((arg) => ({
             id_argument: arg.id_argument,
             value: arg.ARGUMENT.value,
           })),
-          node_selectors: env.INTERFACE.INTERFACE_HAS_NODE_SELECTORs.map(
+          node_selectors: inter.INTERFACE.INTERFACE_HAS_NODE_SELECTORs.map(
             (ins) => ({
               id_node_selector: ins.id_node_selector,
               key: ins.NODE_SELECTOR.key,
               value: ins.NODE_SELECTOR.value,
             })
           ),
-          ports: env.INTERFACE.INTERFACE_HAS_PORTs.map((ihp) => ({
+          ports: inter.INTERFACE.INTERFACE_HAS_PORTs.map((ihp) => ({
             id_port_type: ihp.id_port_type,
             port: ihp.port,
             label: ihp.label,
@@ -176,26 +164,257 @@ export const get = async function (props) {
             display_name: ihp.display_name,
             icon: ihp.icon,
           })),
-          envs: env.INTERFACE.INTERFACE_HAS_VARIABLEs.map((ihv) => ({
+          envs: inter.INTERFACE.INTERFACE_HAS_VARIABLEs.map((ihv) => ({
             id_variable_environment: ihv.id_variable_environment,
             key: ihv.VARIABLE_ENVIRONMENT.key,
             value: ihv.VARIABLE_ENVIRONMENT.value,
           })),
-        };
-        if (result === undefined) {
-          result = new Environment({
-            id_environment: env.id_environment,
-            label: env.label,
-            icon: env.ENVIRONMENT.icon,
-            interfaces: [new Interface(options)],
-          });
-        } else {
-          result.interfaces.push(new Interface(options));
-        }
-      }
-      return result;
+        })
+        )
+
+      });
     });
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
+};
+
+/**
+ * Creating a new Environment in database.
+ * @param {String} label label of the new Environment to be created.
+ * @param {String} icon icon of the new Environment to be created.
+ * @returns {Environment}
+ */
+export const create = async function (props) {
+  try {
+    const schema = z.object({
+      label: z.preprocess((val) => String(val).replace(/[^a-zA-Z0-9-]/g, '').toLowerCase(), z.string().min(2)),
+      icon: z.string().min(2)
+    });
+    const data = Guard.validateProps(schema, props);
+    const env = await dbManager.models.ENVIRONMENT.create(data);
+    return await dbManager.models.ENVIRONMENT.findOne({ where: { id_environment: env.id_environment } })
+      .then((result) => new Environment(result));
+  } catch (err) {
+    throw dbManager.sequelizeErrorManagement(err);
+  }
+};
+
+/**
+ * Attaching a new Interface to Environment in database.
+ * @param {String} label label of the new Environment to be created.
+ * @param {String} id_environment id of the environment to attach the interface to.
+ * @param {String} id_interface id of the interface to attach.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Environment}
+ */
+export const attach_interface = async function (props, fns = { get }) {
+  try {
+    const schema = z.object({
+      label: z.preprocess((val) => String(val).replace(/[^a-zA-Z0-9-]/g, '').toLowerCase(), z.string().min(2)),
+      id_environment: z.coerce.number().int().positive(),
+      id_interface: z.coerce.number().int().positive()
+    });
+    const data = Guard.validateProps(schema, props);
+    const environment = await dbManager.models.ENVIRONMENT.findByPk(
+      data.id_environment,
+      {
+        include: [
+          {
+            model: dbManager.models.ENVIRONMENT_HAS_INTERFACE,
+            include: [{ model: dbManager.models.INTERFACE }],
+          },
+        ],
+      }
+    );
+    if (!environment)
+      throw new DBObjectNotFound(`The environment does not exist.`);
+
+    // Checking if the interface is already linked to environment
+    const existingLink = await dbManager.models.ENVIRONMENT_HAS_INTERFACE.findOne({
+      where: {
+        id_environment: data.id_environment,
+        id_interface: data.id_interface,
+      },
+    });
+    if (existingLink)
+      throw new DBObjectAlreadyExists(
+        `The interface is already attached to this environment.`
+      );
+
+    // Attaching the Interface to the environment
+    await dbManager.models.ENVIRONMENT_HAS_INTERFACE.create({
+      id_environment: data.id_environment,
+      id_interface: data.id_interface,
+      label: data.label
+    });
+
+    // Sending the whole Environment
+    return await fns.get(data);
+  } catch (err) {
+    throw dbManager.sequelizeErrorManagement(err);
+  }
+};
+
+/**
+ * Detaching an Interface from an Environment in database.
+ * @param {String} label label of the new Environment to be created.
+ * @param {String} id_environment id of the environment to attach the interface to.
+ * @param {String} id_interface id of the interface to attach.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Environment}
+ */
+export const detach_interface = async function (props, fns = { get }) {
+  try {
+    const schema = z.object({
+      label: z.preprocess((val) => String(val).replace(/[^a-zA-Z0-9-]/g, '').toLowerCase(), z.string().min(2)),
+      id_environment: z.coerce.number().int().positive(),
+      id_interface: z.coerce.number().int().positive()
+    });
+    const data = Guard.validateProps(schema, props);
+    const environment = await dbManager.models.ENVIRONMENT.findByPk(
+      data.id_environment,
+      {
+        include: [
+          {
+            model: dbManager.models.ENVIRONMENT_HAS_INTERFACE,
+            include: [{ model: dbManager.models.INTERFACE }],
+          },
+        ],
+      }
+    );
+    if (!environment)
+      throw new DBObjectNotFound(`The environment does not exist.`);
+
+    // Checking if the interface is already detached from environment
+    const existingLink = await dbManager.models.ENVIRONMENT_HAS_INTERFACE.findOne({
+      where: {
+        id_environment: data.id_environment,
+        id_interface: data.id_interface,
+      },
+    });
+    if (!existingLink)
+      throw new DBObjectAlreadyExists(
+        `The interface is already detached to this environment.`
+      );
+
+    // Detaching the interface from environment
+    await dbManager.models.ENVIRONMENT_HAS_INTERFACE.destroy({
+      where: {
+        id_environment: data.id_environment,
+        id_interface: data.id_interface,
+      },
+    });
+    return await fns.get(data);
+  } catch (err) {
+    throw dbManager.sequelizeErrorManagement(err);
+  }
+};
+
+
+/**
+ * Updating icon & label of environment in database.
+ * @param {String} label label of the new Environment to be put.
+ * @param {String} icon icon of the new Environment to be put.
+ * @param {Number} id_environment id of the environment to update.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Environment}
+ */
+export const update = async function (props, fns = { get }) {
+  try {
+    const schema = z.object({
+      label: z.preprocess((val) => String(val).replace(/[^a-zA-Z0-9-]/g, '').toLowerCase(), z.string().min(2)),
+      icon: z.preprocess((val) => String(val).replace(/[^a-zA-Z0-9-]/g, '').toLowerCase(), z.string().min(2)),
+      id_environment: z.coerce.number().int().positive()
+    });
+    const data = Guard.validateProps(schema, props);
+    // Getting the Environment from database
+    const environment = await dbManager.models.ENVIRONMENT.findByPk(
+      data.id_environment,
+      {
+        include: [
+          {
+            model: dbManager.models.ENVIRONMENT_HAS_INTERFACE,
+            include: [{ model: dbManager.models.INTERFACE }],
+          },
+        ],
+      }
+    );
+    if (!environment)
+      throw new DBObjectNotFound(`The environment does not exist.`);
+
+    // Updating the Environment
+    await dbManager.models.ENVIRONMENT.update(
+      { icon: data.icon, label: data.label },
+      { where: { id_environment: data.id_environment } }
+    );
+    return await fns.get(data);
+  } catch (err) {
+    throw dbManager.sequelizeErrorManagement(err);
+  }
+};
+
+/**
+ * Updating the Label of an interface inside the environment, in db.
+ * @param {String} label label of the interface to be put.
+ * @param {Number} id_environment id of the environment to update.
+ * @param {Number} id_interface id of the interface to update - on link with id_environment.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Environment}
+ */
+export const update_interface = async function (props, fns = { get }) {
+  try {
+    const schema = z.object({
+      label: z.preprocess((val) => String(val).replace(/[^a-zA-Z0-9-]/g, '').toLowerCase(), z.string().min(2)),
+      id_interface: z.coerce.number().int().positive(),
+      id_environment: z.coerce.number().int().positive()
+    });
+    const data = Guard.validateProps(schema, props);
+    const environment = await dbManager.models.ENVIRONMENT.findByPk(
+      data.id_environment,
+      {
+        include: [
+          {
+            model: dbManager.models.ENVIRONMENT_HAS_INTERFACE,
+            include: [{ model: dbManager.models.INTERFACE }],
+          },
+        ],
+      }
+    );
+    if (!environment)
+      throw new DBObjectNotFound(`The environment does not exist.`);
+    await dbManager.models.ENVIRONMENT_HAS_INTERFACE.update(
+      { label: data.label },
+      {
+        where: {
+          id_environment: data.id_environment,
+          id_interface: data.id_interface,
+        },
+      }
+    );
+
+    return await fns.get(data);
+  } catch (err) {
+    throw dbManager.sequelizeErrorManagement(err);
+  }
+};
+/**
+ * Deleting the Environment from the database.
+ * @param {Number} id_environment id of the environment to update.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Environment}
+ */
+export const del = async function (props, fns = { get }) {
+    try {
+        const schema = z.object({
+          id_environment: z.coerce.number().int().positive()
+        });
+        const data = Guard.validateProps(schema, props);
+        const environment = await fns.get(data);
+        return await dbManager.models.ENVIRONMENT.destroy({
+            where: { id_environment: data.id_environment },
+        }).then(() => environment);
+    } catch (err) {
+        throw dbManager.sequelizeErrorManagement(err);
+    }
 };
