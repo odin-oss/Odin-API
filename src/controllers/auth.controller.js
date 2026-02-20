@@ -2,6 +2,7 @@ import * as auth_service from '../services/auth.service.js';
 import { counter, counter_post } from '../middlewares/prometheus.js';
 import { ApiResponse } from '../utils/response.util.js';
 import Guard from '../utils/guard.util.js';
+import logs from '../middlewares/winston.js';
 
 /**
  * Controller that checks parameters and should execute the connexion.
@@ -21,7 +22,6 @@ export const connect = async (
   counter.inc();
 
   //Request
-  // Vérification du contenu de la requête
   try {
     Guard.check_body(req, ['mail', 'password']);
     await fns
@@ -36,6 +36,7 @@ export const connect = async (
         )
       );
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };

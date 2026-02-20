@@ -15,8 +15,9 @@ const __dirname = dirname(__filename);
 
 /**
  * Function that controls whatever enter the route and send the image back from local storage.
- * @param {*} req
- * @param {*} res
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const get = async function (req, res) {
   try {
@@ -37,13 +38,15 @@ export const get = async function (req, res) {
       else throw new ReadingImageError(err.message);
     }
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };
 /**
  * Function that list all the images in the ms.
- * @param {*} req
- * @param {*} res
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const list = async function (req, res) {
   try {
@@ -56,13 +59,15 @@ export const list = async function (req, res) {
 
     ApiResponse.success(req, res, keys, 200, 'List of images transmitted.');
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };
 /**
  * Function that controls whatever enter the route and send the image back from local storage.
- * @param {*} req
- * @param {*} res
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const upload = function (req, res) {
   try {
@@ -72,6 +77,7 @@ export const upload = function (req, res) {
     result.hash = req.file.filename.replace('.png', '').replace('img-', '');
     ApiResponse.success(req, res, req.file, 200, 'Image uploaded.');
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };

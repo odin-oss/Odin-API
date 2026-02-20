@@ -1,5 +1,9 @@
 import z from 'zod';
 import Guard from '../utils/guard.util.js';
+import Argument from './Argument.js';
+import NodeSelector from './NodeSelector.js';
+import Port from './Port.js';
+import VariableEnvironment from './Variable_environment.js';
 
 export class Interface {
   #id_interface;
@@ -19,6 +23,8 @@ export class Interface {
   #need_graphical_rendering_gpu;
   #ram_request;
   #ram_limit;
+  #egress_bandwidth;
+  #ingress_bandwidth;
   #cpu_request;
   #cpu_limit;
   #args;
@@ -51,33 +57,57 @@ export class Interface {
     this.#node_selectors = data.node_selectors;
     this.#ports = data.ports;
     this.#envs = data.envs;
+    this.#egress_bandwidth = data.egress_bandwidth;
+    this.#ingress_bandwidth = data.ingress_bandwidth;
   }
 
   // Zod Schema for object validation
   static schema = z.object({
-    id_interface: z.number().int().optional(),
-    id_type: z.number().int().optional(),
-    label: z.string().default(''),
+    id_interface: z.coerce.number().int().optional(),
+    id_type: z.coerce.number().int().optional(),
+    label: z.preprocess(
+      (val) =>
+        String(val)
+          .replace(/[^a-zA-Z0-9-]/g, '')
+          .toLowerCase(),
+      z.string().min(2).max(255)
+    ).default(''),
     default_label: z.string().default(''),
     registry_link: z.string().default(''),
     exec_command: z.string().default(''),
     service_command: z.string().default(''),
     label_type_image: z.string().default(''),
-    ram_request: z.string().default(''),
-    ram_limit: z.string().default(''),
-    cpu_request: z.string().default(''),
-    cpu_limit: z.string().default(''),
-    privileged: z.boolean().default(false),
-    need_compute_gpu: z.boolean().default(false),
-    need_graphical_rendering_gpu: z.boolean().default(false),
-    readiness_probe_initial_delay: z.number().nonnegative().default(0),
-    liveness_probe_initial_delay: z.number().nonnegative().default(0),
-    readiness_probe_period: z.number().nonnegative().default(0),
-    liveness_probe_period: z.number().nonnegative().default(0),
-    args: z.array(z.string()).default([]),
-    node_selectors: z.array(z.any()).default([]),
-    ports: z.array(z.any()).default([]),
-    envs: z.array(z.any()).default([]),
+    ram_request: z.string({ invalid_type_error: "The RAM value must be a string." })
+      .regex(/^\d+(Gi|Mi)$/, { message: "The RAM value must be as xxGi or xxMi, xx being the integer." }).default(''),
+    ram_limit: z.string({ invalid_type_error: "The RAM value must be a string." })
+      .regex(/^\d+(Gi|Mi)$/, { message: "The RAM value must be as xxGi or xxMi, xx being the integer." }).default(''),
+    cpu_request: z.union([
+      z.number().int({ message: "The CPU must be a string or an integer." }),
+      z.string().regex(/^\d+m?$/, { message: "The string value of the CPU must be xx or xxm, xx being the integer." })]).default(''),
+    cpu_limit: z.union([
+      z.number().int({ message: "The CPU must be a string or an integer." }),
+      z.string().regex(/^\d+m?$/, { message: "The string value of the CPU must be xx or xxm, xx being the integer." })]).default(''),
+    egress_bandwidth: z.string({ invalid_type_error: "The bandwidth must be sent in string." })
+      .regex(/^\d+[MG]$/, { message: "The bandwidth should be like xxM or xxG, xx being your number value." }).default(''),
+    ingress_bandwidth: z.string({ invalid_type_error: "The bandwidth must be sent in string." })
+      .regex(/^\d+[MG]$/, { message: "The bandwidth should be like xxM or xxG, xx being your number value." }).default(''),
+    privileged: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+      .transform((val) => val === 'true')
+      .default(false).default(false),
+    need_compute_gpu: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+      .transform((val) => val === 'true')
+      .default(false).default(false),
+    need_graphical_rendering_gpu: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+      .transform((val) => val === 'true')
+      .default(false).default(false),
+    readiness_probe_initial_delay: z.coerce.number().int().positive().default(0),
+    liveness_probe_initial_delay: z.coerce.number().int().positive().default(0),
+    readiness_probe_period: z.coerce.number().int().positive().default(0),
+    liveness_probe_period: z.coerce.number().int().positive().default(0),
+    args: z.array(z.instanceof(Argument)).default([]),
+    node_selectors: z.array(z.instanceof(NodeSelector)).default([]),
+    ports: z.array(z.instanceof(Port)).default([]),
+    envs: z.array(z.instanceof(VariableEnvironment)).default([]),
   });
 
   // Getters
@@ -251,6 +281,8 @@ export class Interface {
       ram_limit: this.#ram_limit,
       cpu_request: this.#cpu_request,
       cpu_limit: this.#cpu_limit,
+      egress_bandwidth: this.#egress_bandwidth,
+      ingress_bandwidth: this.#ingress_bandwidth,
       args: this.#args,
       envs: this.#envs,
       node_selectors: this.#node_selectors,

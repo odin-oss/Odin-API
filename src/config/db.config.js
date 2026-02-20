@@ -108,9 +108,13 @@ class DBManager {
   sequelizeErrorManagement(error) {
     if (error instanceof DBObjectNotFound) throw error;
     if (error instanceof Sequelize.ConnectionRefusedError)
-      throw new DBConnexionRefused('Connexion DB refusée.');
+      throw new DBConnexionRefused('DB connection refused.');
     if (error instanceof Sequelize.ForeignKeyConstraintError)
-      throw new DBForeignKeyConstraintError('Clé étrangère en conflit.');
+      throw new DBForeignKeyConstraintError('Foreign key still existing.');
+    if (error.name === 'SequelizeUniqueConstraintError')
+      throw new DBForeignKeyConstraintError(
+        'Unique constraint encountered. Check the fields (label,etc..) you gave.'
+      );
     throw error;
   }
 }

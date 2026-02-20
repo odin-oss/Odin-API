@@ -53,7 +53,7 @@ await dbManager
       logger.error(
         `[SYSTEM][500] / : 1/5. Postgres Error: The server encountered an error : ${error}`
       );
-    console.log(error);
+    logger.debug(error);
     process.exit(0);
   });
 
@@ -66,6 +66,7 @@ if (CONFIG.MONGODB_ACTIVATED)
       logger.error(
         `[SYSTEM][500] / : 2/5. MongoDB Error: The server encountered an error : ${error}`
       );
+      logger.debug(error);
       process.exit(0);
     });
 else logger.warn(`[SYSTEM][200] / : 2/5. MongoDB disabled.`);
@@ -79,6 +80,7 @@ if (CONFIG.APPS_INGRESS_ACTIVATED)
       logger.error(
         `[SYSTEM][500] / : 3/5. KONG Error: The server encountered an error : ${error}`
       );
+      logger.debug(error);
       process.exit(0);
     });
 else logger.warn(`[SYSTEM][200] / : 3/5. KONG disabled.`);
@@ -92,6 +94,7 @@ if (CONFIG.KUBERNETES_ACTIVATED)
       logger.error(
         `[SYSTEM][500] / : 4/5. Kubernetes API Error: The server encountered an error : ${error}`
       );
+      logger.debug(error);
       process.exit(0);
     });
 else logger.warn(`[SYSTEM][200] / : 4/5. Kubernetes API disabled.`);

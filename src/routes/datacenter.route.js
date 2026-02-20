@@ -1,6 +1,6 @@
 import express from 'express';
 import * as datacenter_controller from '../controllers/datacenter.controller.js';
-import { isTokenValid } from '../utils/token.util.js';
+import { isAdmin, isTokenValid } from '../utils/token.util.js';
 
 const router = express.Router();
 
@@ -28,6 +28,135 @@ const router = express.Router();
 router.get('/list', isTokenValid, (req, res) =>
   datacenter_controller.list(req, res)
 );
+/**
+ * @swagger
+
+ * /datacenter/:
+ *  post:
+ *    description: Create a new datacenter.
+ *    security:
+ *     - Bearer: []
+ *    tags:
+ *     - Datacenter
+ *    produces:
+ *     - application/json
+ *    responses :
+ *       200:
+ *         description: datacenter created
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/datacenter'
+ *       401:
+ *         description: UnauthorizedError
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/UnauthorizedError'
+ *       500:
+ *         description: DBConnexionRefused
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/DBConnexionRefused'
+ */
+router.post('/', isTokenValid, isAdmin, (req, res) => {
+  datacenter_controller.create(req, res);
+});
+
+/**
+ * @swagger
+ * /datacenter/:id_datacenter:
+ *  put:
+ *    description: Update a datacenter.
+ *    security:
+ *     - Bearer: []
+ *    tags:
+ *     - Datacenter
+ *    produces:
+ *     - application/json
+ *    responses :
+ *       200:
+ *         description: datacenter created
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/datacenter'
+ *       401:
+ *         description: UnauthorizedError
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/UnauthorizedError'
+ *       500:
+ *         description: DBConnexionRefused
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/DBConnexionRefused'
+ */
+router.put('/:id_datacenter', isTokenValid, isAdmin, (req, res) => {
+  datacenter_controller.update(req, res);
+});
+
+/**
+ * @swagger
+
+ * /datacenter/:id_datacenter:
+ *  delete:
+ *    description: Delete a datacenter.
+ *    security:
+ *     - Bearer: []
+ *    tags:
+ *     - Datacenter
+ *    produces:
+ *     - application/json
+ *    responses :
+ *       200:
+ *         description: datacenter deleted
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/datacenter'
+ *       401:
+ *         description: UnauthorizedError
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/UnauthorizedError'
+ *       500:
+ *         description: DBConnexionRefused
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/DBConnexionRefused'
+ */
+router.delete('/:id_datacenter', isTokenValid, isAdmin, (req, res) => {
+  datacenter_controller.del(req, res);
+});
+/**
+ * @swagger
+
+ * /datacenter/:id_datacenter:
+ *  get:
+ *    description: Get a datacenter.
+ *    security:
+ *     - Bearer: []
+ *    tags:
+ *     - Datacenter
+ *    produces:
+ *     - application/json
+ *    responses :
+ *       200:
+ *         description: datacenter transmitted
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/datacenter'
+ *       401:
+ *         description: UnauthorizedError
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/UnauthorizedError'
+ *       500:
+ *         description: DBConnexionRefused
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/DBConnexionRefused'
+ */
+router.get('/:id_datacenter', isTokenValid, isAdmin, (req, res) => {
+  datacenter_controller.get(req, res);
+});
 
 export default router;
 /**

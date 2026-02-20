@@ -59,6 +59,16 @@ export class DBForeignKeyConstraintError extends Error {
   }
 }
 /**
+ * DBObjectAlreadyExists returned whenever the PostgreSQL db object already exists.
+ */
+export class DBObjectAlreadyExists extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 200;
+    this.name = 'DBObjectAlreadyExists';
+  }
+}
+/**
  * DBObjectNotFound returned whenever the PostgreSQL db could not find the element.
  */
 export class DBObjectNotFound extends Error {

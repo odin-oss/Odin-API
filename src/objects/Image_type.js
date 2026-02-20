@@ -1,4 +1,5 @@
 import z from 'zod';
+import Guard from '../utils/guard.util.js';
 
 export class ImageType {
   #id_type;
@@ -12,8 +13,14 @@ export class ImageType {
 
   // Zod Schema for object validation
   static schema = z.object({
-    id_type: z.number().int().positive(),
-    label: z.string().max(255),
+    id_type: z.coerce.number().int().positive(),
+    label: z.preprocess(
+      (val) =>
+        String(val)
+          .replace(/[^a-zA-Z0-9-]/g, '')
+          .toLowerCase(),
+      z.string().min(2).max(255)
+    ),
   });
 
   // Getters

@@ -4,7 +4,7 @@ import {
   counter_get,
   counter_post,
 } from '../middlewares/prometheus.js';
-import { ParameterMisformed } from '../utils/errors.util.js';
+import logs from '../middlewares/winston.js';
 import * as token from '../utils/token.util.js';
 import { ApiResponse } from '../utils/response.util.js';
 import Guard from '../utils/guard.util.js';
@@ -14,10 +14,9 @@ import moment from 'moment-timezone';
 
 /**
  * Controller that checks parameters and create a new session.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const create = async (
   req,
@@ -79,16 +78,16 @@ export const create = async (
         )
       );
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };
 
 /**
  * Controller that checks parameters and fetch the list of session.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const list = async (
   req,
@@ -114,16 +113,16 @@ export const list = async (
       )
     );
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };
 
 /**
  * Controller that checks parameters and fetch the a specific session.
- * @param {*} req HTTP request.
- * @param {*} res HTTP response.
- * @param {*} fns overwriting functions for tests.
- * @returns
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
  */
 export const get = async (
   req,
@@ -156,6 +155,7 @@ export const get = async (
         )
       );
   } catch (err) {
+    logs.debug(err);
     ApiResponse.error(req, res, err);
   }
 };
