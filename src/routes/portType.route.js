@@ -1,17 +1,17 @@
 import express from 'express';
-import * as imageType_controller from '../controllers/imageType.controller.js';
+import * as portType_controller from '../controllers/portType.controller.js';
 import { isAdmin, isTokenValid } from '../utils/token.util.js';
 const router = express.Router();
 
 /**
  * @swagger
- * /imageType/list:
+ * /portType/list:
  *  get:
- *    description: Gets the list of Image Type.
+ *    description: Gets the list of Port Type.
  *    security:
  *     - Bearer: []
  *    tags:
- *     - ImageType
+ *     - PortType
  *    produces:
  *     - application/json
  *    responses :
@@ -33,7 +33,7 @@ const router = express.Router();
  */
 
 router.get('/list', isTokenValid, isAdmin, async (req, res) => {
-  imageType_controller.list(req, res);
+    portType_controller.list(req, res);
 });
 
 /**

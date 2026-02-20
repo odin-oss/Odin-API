@@ -112,7 +112,9 @@ class DBManager {
     if (error instanceof Sequelize.ForeignKeyConstraintError)
       throw new DBForeignKeyConstraintError('Foreign key still existing.');
     if (error.name === 'SequelizeUniqueConstraintError')
-      throw new DBForeignKeyConstraintError('Unique constraint encountered. Check the fields (label,etc..) you gave.');
+      throw new DBForeignKeyConstraintError(
+        'Unique constraint encountered. Check the fields (label,etc..) you gave.'
+      );
     throw error;
   }
 }

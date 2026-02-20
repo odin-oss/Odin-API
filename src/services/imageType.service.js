@@ -6,5 +6,5 @@ import * as imageType_builder from '../builders/imageType.builder.js';
  * @returns {Array<ImageType>}
  */
 export const list = async function (fns = { list: imageType_builder.list }) {
-    return await fns.list();
+  return await fns.list();
 };

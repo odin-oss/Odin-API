@@ -8,8 +8,12 @@ import DATACENTER from '../routes/datacenter.route.js';
 import ENVIRONMENT from '../routes/environment.route.js';
 import IMAGES from '../routes/images.route.js';
 import IMAGETYPE from '../routes/imageType.route.js';
+import INTERFACE from '../routes/interface.route.js';
+import NODESELECTOR from '../routes/nodeSelector.route.js';
+import PORTTYPE from '../routes/portType.route.js';
 import SESSION from '../routes/sessions.route.js';
 import USER from '../routes/user.route.js';
+import VARIABLEENVIRONMENT from '../routes/variableEnvironment.route.js';
 import { ApiResponse } from '../utils/response.util.js';
 import { URLNotFound } from '../utils/errors.util.js';
 
@@ -23,8 +27,12 @@ export default (app) => {
   app.use('/environment', ENVIRONMENT);
   app.use('/imageType', IMAGETYPE);
   app.use('/img', IMAGES);
+  app.use('/interface', INTERFACE);
+  app.use('/nodeSelector', NODESELECTOR);
+  app.use('/portType', PORTTYPE);
   app.use('/session', SESSION);
   app.use('/user', USER);
+  app.use('/variableEnvironment', VARIABLEENVIRONMENT);
   app.use('/', BASE);
   app.use('/*', (req, res) =>
     ApiResponse.error(req, res, new URLNotFound('URL not found.'))

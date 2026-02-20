@@ -44,7 +44,7 @@ export class Application {
 
   // Zod Schema for object validation
   static schema = z.object({
-    id_application: z.number().optional(),
+    id_application: z.coerce.number().int().positive().optional(),
     custom_label: z.string().optional(),
     generated_label: z.string().optional(),
     creation_date: z

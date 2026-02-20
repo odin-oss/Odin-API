@@ -3,7 +3,10 @@ import dbManager from '../config/db.config.js';
 import { Category } from '../objects/Category.js';
 import { Environment } from '../objects/Environment.js';
 import Guard from '../utils/guard.util.js';
-import { DBObjectAlreadyExists, DBObjectNotFound } from '../utils/errors.util.js';
+import {
+  DBObjectAlreadyExists,
+  DBObjectNotFound,
+} from '../utils/errors.util.js';
 
 /**
  * Builder that list all the categories from the db.
@@ -130,25 +133,33 @@ export const detach_environment = async function (props, fns = { get }) {
   try {
     const schema = z.object({
       id_environment: z.coerce.number().int().positive(),
-      id_category: z.coerce.number().int().positive()
+      id_category: z.coerce.number().int().positive(),
     });
     const data = Guard.validateProps(schema, props);
 
-    const category = await dbManager.models.CATEGORY.findByPk(data.id_category, {
-      include: [{ model: dbManager.models.ENVIRONMENT_HAS_CATEGORY }],
-    });
+    const category = await dbManager.models.CATEGORY.findByPk(
+      data.id_category,
+      {
+        include: [{ model: dbManager.models.ENVIRONMENT_HAS_CATEGORY }],
+      }
+    );
     if (!category)
       throw new DBObjectNotFound(`No Category found with this id.`);
 
     // Checking if the environment is not already attached
-    const alreadyAttached = await dbManager.models.ENVIRONMENT_HAS_CATEGORY.findOne({ where: { ...data } });
+    const alreadyAttached =
+      await dbManager.models.ENVIRONMENT_HAS_CATEGORY.findOne({
+        where: { ...data },
+      });
     if (!alreadyAttached)
       throw new DBObjectAlreadyExists(
         `The Environment is already detached to this Category.`
       );
 
     // Detaching the Environment
-    await dbManager.models.ENVIRONMENT_HAS_CATEGORY.destroy({ where: { ...data } });
+    await dbManager.models.ENVIRONMENT_HAS_CATEGORY.destroy({
+      where: { ...data },
+    });
 
     // Sending the complete Category object
     return await fns.get(data);
@@ -165,8 +176,8 @@ export const detach_environment = async function (props, fns = { get }) {
 export const get = async function (props) {
   try {
     const schema = z.object({
-      id_category: z.coerce.number().int().positive()
-    })
+      id_category: z.coerce.number().int().positive(),
+    });
     const data = Guard.validateProps(schema, props);
     return await dbManager.models.CATEGORY.findOne({
       where: { ...data },
@@ -177,16 +188,18 @@ export const get = async function (props) {
         },
       ],
       order: [['id_category', 'ASC']],
-    }).then((cat) => new Category({
-      ...cat.dataValues,
-      environments: cat.ENVIRONMENT_HAS_CATEGORies.map(
-        (env) =>
-          new Environment({
-            ...env.ENVIRONMENT.dataValues,
-            interfaces: [],
-          })
-      ),
-    })
+    }).then(
+      (cat) =>
+        new Category({
+          ...cat.dataValues,
+          environments: cat.ENVIRONMENT_HAS_CATEGORies.map(
+            (env) =>
+              new Environment({
+                ...env.ENVIRONMENT.dataValues,
+                interfaces: [],
+              })
+          ),
+        })
     );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
@@ -204,19 +217,24 @@ export const attach_environment = async function (props, fns = { get }) {
   try {
     const schema = z.object({
       id_environment: z.coerce.number().int().positive(),
-      id_category: z.coerce.number().int().positive()
+      id_category: z.coerce.number().int().positive(),
     });
     const data = Guard.validateProps(schema, props);
 
-    const category = await dbManager.models.CATEGORY.findByPk(data.id_category, {
-      include: [{ model: dbManager.models.ENVIRONMENT_HAS_CATEGORY }],
-    });
+    const category = await dbManager.models.CATEGORY.findByPk(
+      data.id_category,
+      {
+        include: [{ model: dbManager.models.ENVIRONMENT_HAS_CATEGORY }],
+      }
+    );
     if (!category)
       throw new DBObjectNotFound(`No Category found with this id.`);
 
     // Checking if the environment is not already attached
     const alreadyAttached =
-      await dbManager.models.ENVIRONMENT_HAS_CATEGORY.findOne({ where: { ...data } });
+      await dbManager.models.ENVIRONMENT_HAS_CATEGORY.findOne({
+        where: { ...data },
+      });
 
     if (alreadyAttached)
       throw new DBObjectAlreadyExists(
@@ -246,7 +264,7 @@ export const update = async function (props, fns = { get }) {
     const schema = z.object({
       id_category: z.coerce.number().int().positive(),
       label: z.string().min(2),
-      google_material_icon: z.string().min(2)
+      google_material_icon: z.string().min(2),
     });
     const data = Guard.validateProps(schema, props);
     await dbManager.models.CATEGORY.update(
@@ -275,33 +293,39 @@ export const update = async function (props, fns = { get }) {
 export const del = async function (props) {
   try {
     const schema = z.object({
-      id_category: z.coerce.number().int().positive()
+      id_category: z.coerce.number().int().positive(),
     });
     const data = Guard.validateProps(schema, props);
 
-    const category = await dbManager.models.CATEGORY.findByPk(data.id_category, {
-      include: [
-        {
-          model: dbManager.models.ENVIRONMENT_HAS_CATEGORY,
-          include: [{ model: dbManager.models.ENVIRONMENT }]
-        },
-      ],
-    });
+    const category = await dbManager.models.CATEGORY.findByPk(
+      data.id_category,
+      {
+        include: [
+          {
+            model: dbManager.models.ENVIRONMENT_HAS_CATEGORY,
+            include: [{ model: dbManager.models.ENVIRONMENT }],
+          },
+        ],
+      }
+    );
     if (!category) throw new DBObjectNotFound(`Category not found.`);
 
     // Deleting the Category
     return await dbManager.models.CATEGORY.destroy({
       where: { id_category: data.id_category },
-    }).then(() => new Category({
-      ...category.dataValues,
-      environments: category.ENVIRONMENT_HAS_CATEGORies.map(
-        (env) =>
-          new Environment({
-            ...env.ENVIRONMENT.dataValues,
-            interfaces: []
-          })
-      )
-    }));
+    }).then(
+      () =>
+        new Category({
+          ...category.dataValues,
+          environments: category.ENVIRONMENT_HAS_CATEGORies.map(
+            (env) =>
+              new Environment({
+                ...env.ENVIRONMENT.dataValues,
+                interfaces: [],
+              })
+          ),
+        })
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }

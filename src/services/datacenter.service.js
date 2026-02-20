@@ -25,18 +25,18 @@ export const list = async function (
  * @returns {Datacenter}
  */
 export const create = async function (
-    props,
-    fns = {
-        dc_create: datacenter_builder.create,
-    }
+  props,
+  fns = {
+    dc_create: datacenter_builder.create,
+  }
 ) {
-    const schema = z.object({
-      label: z.string().min(2),
-      city: z.string().min(2),
-      provider: z.string().min(2)
-    });
-    const data = Guard.validateProps(schema, props);
-    return await fns.dc_create(data);
+  const schema = z.object({
+    label: z.string().min(2),
+    city: z.string().min(2),
+    provider: z.string().min(2),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns.dc_create(data);
 };
 /**
  * Service that updates a datacenter informations.
@@ -48,19 +48,19 @@ export const create = async function (
  * @returns {Datacenter}
  */
 export const update = async function (
-    props,
-    fns = {
-        dc_update: datacenter_builder.update,
-    }
+  props,
+  fns = {
+    dc_update: datacenter_builder.update,
+  }
 ) {
-    const schema = z.object({
-      label: z.string().min(2),
-      city: z.string().min(2),
-      provider: z.string().min(2),
-      id_datacenter: z.coerce.number().int().positive()
-    });
-    const data = Guard.validateProps(schema, props);
-    return await fns.dc_update(data);
+  const schema = z.object({
+    label: z.string().min(2),
+    city: z.string().min(2),
+    provider: z.string().min(2),
+    id_datacenter: z.coerce.number().int().positive(),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns.dc_update(data);
 };
 
 /**
@@ -70,16 +70,16 @@ export const update = async function (
  * @returns {Datacenter}
  */
 export const del = async function (
-    props,
-    fns = {
-        del: datacenter_builder.del,
-    }
+  props,
+  fns = {
+    del: datacenter_builder.del,
+  }
 ) {
-    const schema = z.object({
-      id_datacenter: z.coerce.number().int().positive()
-    });
-    const data = Guard.validateProps(schema, props);
-    return await fns.del(data);
+  const schema = z.object({
+    id_datacenter: z.coerce.number().int().positive(),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns.del(data);
 };
 
 /**
@@ -89,14 +89,14 @@ export const del = async function (
  * @returns {Datacenter}
  */
 export const get = async function (
-    props,
-    fns = {
-        dc_get: datacenter_builder.get,
-    }
+  props,
+  fns = {
+    dc_get: datacenter_builder.get,
+  }
 ) {
-    const schema = z.object({
-      id_datacenter: z.coerce.number().int().positive()
-    });
-    const data = Guard.validateProps(schema, props);
-    return await fns.dc_get(data);
+  const schema = z.object({
+    id_datacenter: z.coerce.number().int().positive(),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns.dc_get(data);
 };

@@ -81,7 +81,7 @@ router.get('/list', isTokenValid, (req, res) =>
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.post('/', isTokenValid, isAdmin, async (req, res) => {
-    environment_controller.create(req, res);
+  environment_controller.create(req, res);
 });
 /**
  * @swagger
@@ -129,12 +129,12 @@ router.post('/', isTokenValid, isAdmin, async (req, res) => {
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.post(
-    '/:id_environment/interface',
-    isTokenValid,
-    isAdmin,
-    async (req, res) => {
-        environment_controller.attach_interface(req, res);
-    }
+  '/:id_environment/interface',
+  isTokenValid,
+  isAdmin,
+  async (req, res) => {
+    environment_controller.attach_interface(req, res);
+  }
 );
 /**
  * @swagger
@@ -182,12 +182,12 @@ router.post(
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.delete(
-    '/:id_environment/interface',
-    isTokenValid,
-    isAdmin,
-    async (req, res) => {
-        environment_controller.detach_interface(req, res);
-    }
+  '/:id_environment/interface',
+  isTokenValid,
+  isAdmin,
+  async (req, res) => {
+    environment_controller.detach_interface(req, res);
+  }
 );
 /**
  * @swagger
@@ -239,14 +239,9 @@ router.delete(
  *           type: object
  *           $ref: '#/definitions/DBConnexionRefused'
  */
-router.put(
-    '/:id_environment/',
-    isTokenValid,
-    isAdmin,
-    async (req, res) => {
-        environment_controller.update(req, res);
-    }
-);
+router.put('/:id_environment/', isTokenValid, isAdmin, async (req, res) => {
+  environment_controller.update(req, res);
+});
 /**
  * @swagger
  * /environment/{id_environment}/interface/:
@@ -297,12 +292,12 @@ router.put(
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.put(
-    '/:id_environment/interface',
-    isTokenValid,
-    isAdmin,
-    async (req, res) => {
-        environment_controller.update_interface(req, res);
-    }
+  '/:id_environment/interface',
+  isTokenValid,
+  isAdmin,
+  async (req, res) => {
+    environment_controller.update_interface(req, res);
+  }
 );
 
 /**
@@ -345,7 +340,7 @@ router.put(
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.delete('/', isTokenValid, isAdmin, async (req, res) => {
-    environment_controller.del(req, res);
+  environment_controller.del(req, res);
 });
 
 export default router;

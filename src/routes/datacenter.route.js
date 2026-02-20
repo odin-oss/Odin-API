@@ -58,7 +58,7 @@ router.get('/list', isTokenValid, (req, res) =>
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.post('/', isTokenValid, isAdmin, (req, res) => {
-    datacenter_controller.create(req, res);
+  datacenter_controller.create(req, res);
 });
 
 /**
@@ -90,7 +90,7 @@ router.post('/', isTokenValid, isAdmin, (req, res) => {
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.put('/:id_datacenter', isTokenValid, isAdmin, (req, res) => {
-    datacenter_controller.update(req, res);
+  datacenter_controller.update(req, res);
 });
 
 /**
@@ -123,7 +123,7 @@ router.put('/:id_datacenter', isTokenValid, isAdmin, (req, res) => {
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.delete('/:id_datacenter', isTokenValid, isAdmin, (req, res) => {
-    datacenter_controller.del(req, res);
+  datacenter_controller.del(req, res);
 });
 /**
  * @swagger
@@ -155,7 +155,7 @@ router.delete('/:id_datacenter', isTokenValid, isAdmin, (req, res) => {
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.get('/:id_datacenter', isTokenValid, isAdmin, (req, res) => {
-    datacenter_controller.get(req, res);
+  datacenter_controller.get(req, res);
 });
 
 export default router;

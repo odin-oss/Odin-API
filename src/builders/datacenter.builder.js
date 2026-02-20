@@ -47,13 +47,26 @@ export const get = async function (props) {
 export const create = async function (props) {
   try {
     const schema = z.object({
-      label: z.preprocess((val) => String(val).replace(/[^a-zA-Z0-9-]/g, '').toLowerCase(), z.string().min(2)),
+      label: z.preprocess(
+        (val) =>
+          String(val)
+            .replace(/[^a-zA-Z0-9-]/g, '')
+            .toLowerCase(),
+        z.string().min(2)
+      ),
       city: z.string().min(2),
-      provider: z.preprocess((val) => String(val).replace(/[^a-zA-Z0-9-]/g, '').toLowerCase(), z.string().min(2))
+      provider: z.preprocess(
+        (val) =>
+          String(val)
+            .replace(/[^a-zA-Z0-9-]/g, '')
+            .toLowerCase(),
+        z.string().min(2)
+      ),
     });
     const data = Guard.validateProps(schema, props);
-    return await dbManager.models.DATACENTER.create(data)
-      .then((result) => new Datacenter(result.dataValues));
+    return await dbManager.models.DATACENTER.create(data).then(
+      (result) => new Datacenter(result.dataValues)
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -71,17 +84,29 @@ export const create = async function (props) {
 export const update = async function (props, fns = { get }) {
   try {
     const schema = z.object({
-      label: z.preprocess((val) => String(val).replace(/[^a-zA-Z0-9-]/g, '').toLowerCase(), z.string().min(2)),
+      label: z.preprocess(
+        (val) =>
+          String(val)
+            .replace(/[^a-zA-Z0-9-]/g, '')
+            .toLowerCase(),
+        z.string().min(2)
+      ),
       city: z.string().min(2),
-      provider: z.preprocess((val) => String(val).replace(/[^a-zA-Z0-9-]/g, '').toLowerCase(), z.string().min(2)),
-      id_datacenter: z.coerce.number().int().positive()
+      provider: z.preprocess(
+        (val) =>
+          String(val)
+            .replace(/[^a-zA-Z0-9-]/g, '')
+            .toLowerCase(),
+        z.string().min(2)
+      ),
+      id_datacenter: z.coerce.number().int().positive(),
     });
     const data = Guard.validateProps(schema, props);
     await dbManager.models.DATACENTER.update(
       {
         label: data.label,
         city: data.city,
-        provider: data.provider
+        provider: data.provider,
       },
       { where: { id_datacenter: data.id_datacenter } }
     );
@@ -103,16 +128,17 @@ export const del = async function (
 ) {
   try {
     const schema = z.object({
-      id_datacenter: z.coerce.number().int().positive()
+      id_datacenter: z.coerce.number().int().positive(),
     });
     const data = Guard.validateProps(schema, props);
-    const dc = await dbManager.models.DATACENTER.findOne({ where: { id_datacenter: data.id_datacenter } });
+    const dc = await dbManager.models.DATACENTER.findOne({
+      where: { id_datacenter: data.id_datacenter },
+    });
     if (!dc)
-      throw new DBObjectNotFound(
-        'The datacenter is not existing in database.'
-      );
-    return await dbManager.models.DATACENTER.destroy({ where: { id_datacenter: data.id_datacenter } })
-      .then(() => new Datacenter(dc.dataValues));
+      throw new DBObjectNotFound('The datacenter is not existing in database.');
+    return await dbManager.models.DATACENTER.destroy({
+      where: { id_datacenter: data.id_datacenter },
+    }).then(() => new Datacenter(dc.dataValues));
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }

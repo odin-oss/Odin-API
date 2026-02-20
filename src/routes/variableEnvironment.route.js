@@ -1,17 +1,17 @@
 import express from 'express';
-import * as imageType_controller from '../controllers/imageType.controller.js';
+import * as variableEnvironment_controller from '../controllers/variableEnvironment.controller.js';
 import { isAdmin, isTokenValid } from '../utils/token.util.js';
 const router = express.Router();
 
 /**
  * @swagger
- * /imageType/list:
+ * /variableEnvironment/list:
  *  get:
- *    description: Gets the list of Image Type.
+ *    description: Gets the list of variable environment.
  *    security:
  *     - Bearer: []
  *    tags:
- *     - ImageType
+ *     - Variable Environment
  *    produces:
  *     - application/json
  *    responses :
@@ -33,7 +33,7 @@ const router = express.Router();
  */
 
 router.get('/list', isTokenValid, isAdmin, async (req, res) => {
-  imageType_controller.list(req, res);
+    variableEnvironment_controller.list(req, res);
 });
 
 /**

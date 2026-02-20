@@ -1,17 +1,17 @@
 import express from 'express';
-import * as imageType_controller from '../controllers/imageType.controller.js';
+import * as nodeSelector_controller from '../controllers/nodeSelector.controller.js';
 import { isAdmin, isTokenValid } from '../utils/token.util.js';
 const router = express.Router();
 
 /**
  * @swagger
- * /imageType/list:
+ * /nodeSelector/list:
  *  get:
- *    description: Gets the list of Image Type.
+ *    description: Gets the list of node selector.
  *    security:
  *     - Bearer: []
  *    tags:
- *     - ImageType
+ *     - Node Selector
  *    produces:
  *     - application/json
  *    responses :
@@ -33,7 +33,7 @@ const router = express.Router();
  */
 
 router.get('/list', isTokenValid, isAdmin, async (req, res) => {
-  imageType_controller.list(req, res);
+    nodeSelector_controller.list(req, res);
 });
 
 /**

@@ -58,7 +58,7 @@ export const detach_environment = async function (
 ) {
   const schema = z.object({
     id_environment: z.coerce.number().int().positive(),
-    id_category: z.coerce.number().int().positive()
+    id_category: z.coerce.number().int().positive(),
   });
   const data = Guard.validateProps(schema, props);
   return await fns.detach_environment(data);
@@ -78,7 +78,7 @@ export const attach_environment = async function (
 ) {
   const schema = z.object({
     id_environment: z.coerce.number().int().positive(),
-    id_category: z.coerce.number().int().positive()
+    id_category: z.coerce.number().int().positive(),
   });
   const data = Guard.validateProps(schema, props);
   return await fns.attach_environment(data);
@@ -101,7 +101,7 @@ export const update = async function (
   const schema = z.object({
     id_category: z.coerce.number().int().positive(),
     label: z.string().min(2),
-    google_material_icon: z.string().min(2)
+    google_material_icon: z.string().min(2),
   });
   const data = Guard.validateProps(schema, props);
   return await fns.category_update(data);
@@ -120,7 +120,7 @@ export const del = async function (
   }
 ) {
   const schema = z.object({
-    id_category: z.coerce.number().int().positive()
+    id_category: z.coerce.number().int().positive(),
   });
   const data = Guard.validateProps(schema, props);
   return await fns.category_del(data);

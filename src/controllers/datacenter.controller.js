@@ -57,11 +57,14 @@ export const create = async function (
     const schema = z.object({
       label: z.string().min(2),
       city: z.string().min(2),
-      provider: z.string().min(2)
+      provider: z.string().min(2),
     });
     const data = Guard.validateProps(schema, req.body);
-    return await fns.create(data)
-      .then((dc) => ApiResponse.success(req, res, dc.toJSON(), 200, 'Datacenter created.'));
+    return await fns
+      .create(data)
+      .then((dc) =>
+        ApiResponse.success(req, res, dc.toJSON(), 200, 'Datacenter created.')
+      );
   } catch (error) {
     logs.debug(error);
     ApiResponse.error(req, res, error);
@@ -85,18 +88,21 @@ export const update = async function (
     const body_schema = z.object({
       label: z.string().min(2),
       city: z.string().min(2),
-      provider: z.string().min(2)
+      provider: z.string().min(2),
     });
     const body_data = Guard.validateProps(body_schema, req.body);
     const params_schema = z.object({
-      id_datacenter: z.coerce.number().int().positive()
+      id_datacenter: z.coerce.number().int().positive(),
     });
     const params_data = Guard.validateProps(params_schema, req.params);
-    return await fns.update({
-      ...body_data,
-      id_datacenter: params_data.id_datacenter
-    })
-      .then((dc) => ApiResponse.success(req, res, dc.toJSON(), 200, 'Datacenter updated.'));
+    return await fns
+      .update({
+        ...body_data,
+        id_datacenter: params_data.id_datacenter,
+      })
+      .then((dc) =>
+        ApiResponse.success(req, res, dc.toJSON(), 200, 'Datacenter updated.')
+      );
   } catch (error) {
     logs.debug(error);
     ApiResponse.error(req, res, error);
@@ -118,11 +124,14 @@ export const del = async function (
 ) {
   try {
     const schema = z.object({
-      id_datacenter: z.coerce.number().int().positive()
+      id_datacenter: z.coerce.number().int().positive(),
     });
     const data = Guard.validateProps(schema, req.params);
-    return await fns.del(data)
-      .then((dc) => ApiResponse.success(req, res, dc.toJSON(), 200, 'Datacenter deleted.'));
+    return await fns
+      .del(data)
+      .then((dc) =>
+        ApiResponse.success(req, res, dc.toJSON(), 200, 'Datacenter deleted.')
+      );
   } catch (error) {
     logs.debug(error);
     ApiResponse.error(req, res, error);
@@ -144,11 +153,20 @@ export const get = async function (
 ) {
   try {
     const schema = z.object({
-      id_datacenter: z.coerce.number().int().positive()
+      id_datacenter: z.coerce.number().int().positive(),
     });
     const data = Guard.validateProps(schema, req.params);
-    return await fns.get({ id_datacenter: data.id_datacenter })
-      .then((dc) => ApiResponse.success(req, res, dc.toJSON(), 200, 'Datacenter transmitted.'));
+    return await fns
+      .get({ id_datacenter: data.id_datacenter })
+      .then((dc) =>
+        ApiResponse.success(
+          req,
+          res,
+          dc.toJSON(),
+          200,
+          'Datacenter transmitted.'
+        )
+      );
   } catch (error) {
     logs.debug(error);
     ApiResponse.error(req, res, error);

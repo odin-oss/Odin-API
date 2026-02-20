@@ -9,17 +9,24 @@ import logs from '../middlewares/winston.js';
  * @param {Function} fns overwriting functions for tests.
  */
 export const list = async function (
-    req,
-    res,
-    fns = {
-        list: imageType_service.list,
-    }
+  req,
+  res,
+  fns = {
+    list: imageType_service.list,
+  }
 ) {
-    try {
-        await fns.list()
-            .then((its) => ApiResponse.success(req, res, its.map((it) => it.toJSON()), 200, 'List of images type transmitted.'))
-    } catch (error) {
-        logs.debug(error);
-        ApiResponse.error(req, res, error);
-    }
+  try {
+    await fns.list().then((its) =>
+      ApiResponse.success(
+        req,
+        res,
+        its.map((it) => it.toJSON()),
+        200,
+        'List of images type transmitted.'
+      )
+    );
+  } catch (error) {
+    logs.debug(error);
+    ApiResponse.error(req, res, error);
+  }
 };

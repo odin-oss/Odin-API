@@ -182,9 +182,8 @@ router.delete(
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.post('/:id_category/environment', isTokenValid, isAdmin, (req, res) => {
-    category_controller.attach_environment(req, res);
+  category_controller.attach_environment(req, res);
 });
-
 
 /**
  * @swagger
@@ -232,7 +231,7 @@ router.post('/:id_category/environment', isTokenValid, isAdmin, (req, res) => {
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.put('/:id_category', isTokenValid, isAdmin, (req, res) => {
-    category_controller.update(req, res);
+  category_controller.update(req, res);
 });
 
 /**
@@ -276,9 +275,8 @@ router.put('/:id_category', isTokenValid, isAdmin, (req, res) => {
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.delete('/', isTokenValid, isAdmin, (req, res) => {
-    category_controller.del(req, res);
+  category_controller.del(req, res);
 });
-
 
 export default router;
 

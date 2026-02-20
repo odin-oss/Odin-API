@@ -35,7 +35,6 @@ export const get = async function (
   return await fns.environment_get({ ...data });
 };
 
-
 /**
  * Creating a new Environment.
  * @param {String} label label of the new Environment to be created.
@@ -51,7 +50,7 @@ export const create = async function (
 ) {
   const schema = z.object({
     label: z.string().min(2),
-    icon: z.string().min(2)
+    icon: z.string().min(2),
   });
   const data = Guard.validateProps(schema, props);
   return await fns.create(data);
@@ -74,7 +73,7 @@ export const attach_interface = async function (
   const schema = z.object({
     label: z.string().min(2),
     id_environment: z.coerce.number().int().positive(),
-    id_interface: z.coerce.number().int().positive()
+    id_interface: z.coerce.number().int().positive(),
   });
   const data = Guard.validateProps(schema, props);
   return await fns.attach_interface(data);
@@ -94,7 +93,7 @@ export const detach_interface = async function (
 ) {
   const schema = z.object({
     id_environment: z.coerce.number().int().positive(),
-    id_interface: z.coerce.number().int().positive()
+    id_interface: z.coerce.number().int().positive(),
   });
   const data = Guard.validateProps(schema, props);
   return await fns.detach_interface(data);
@@ -117,7 +116,7 @@ export const update = async function (
   const schema = z.object({
     label: z.string().min(2),
     icon: z.string().min(2),
-    id_environment: z.coerce.number().int().positive()
+    id_environment: z.coerce.number().int().positive(),
   });
   const data = Guard.validateProps(schema, props);
   return await fns.update(data);
@@ -138,7 +137,7 @@ export const update_interface = async function (
   const schema = z.object({
     label: z.string().min(2),
     id_interface: z.coerce.number().int().positive(),
-    id_environment: z.coerce.number().int().positive()
+    id_environment: z.coerce.number().int().positive(),
   });
   const data = Guard.validateProps(schema, props);
   return await fns.update_interface(data);
@@ -151,14 +150,14 @@ export const update_interface = async function (
  * @returns {Environment}
  */
 export const del = async function (
-    props,
-    fns = {
-        del: environment_builder.del,
-    }
+  props,
+  fns = {
+    del: environment_builder.del,
+  }
 ) {
-    const schema = z.object({
-      id_environment: z.coerce.number().int().positive()
-    });
-    const data = Guard.validateProps(schema, props);
-    return await fns.del(data);
+  const schema = z.object({
+    id_environment: z.coerce.number().int().positive(),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns.del(data);
 };

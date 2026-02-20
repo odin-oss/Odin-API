@@ -107,18 +107,27 @@ export const detach_environment = async function (
 ) {
   try {
     const body_schema = z.object({
-      id_environment: z.coerce.number().int().positive()
+      id_environment: z.coerce.number().int().positive(),
     });
     const params_schema = z.object({
-      id_category: z.coerce.number().int().positive()
+      id_category: z.coerce.number().int().positive(),
     });
     const body_data = Guard.validateProps(body_schema, req.body);
     const params_data = Guard.validateProps(params_schema, req.params);
-    return await fns.detach_environment({
-      id_category: params_data.id_category,
-      id_environment: body_data.id_environment,
-    })
-      .then((category) => ApiResponse.success(req, res, category.toJSON(), 200, 'The environment has been detached from the category.'));
+    return await fns
+      .detach_environment({
+        id_category: params_data.id_category,
+        id_environment: body_data.id_environment,
+      })
+      .then((category) =>
+        ApiResponse.success(
+          req,
+          res,
+          category.toJSON(),
+          200,
+          'The environment has been detached from the category.'
+        )
+      );
   } catch (err) {
     logs.debug(err);
     ApiResponse.error(req, res, err);
@@ -140,18 +149,27 @@ export const attach_environment = async function (
 ) {
   try {
     const body_schema = z.object({
-      id_environment: z.coerce.number().int().positive()
+      id_environment: z.coerce.number().int().positive(),
     });
     const params_schema = z.object({
-      id_category: z.coerce.number().int().positive()
+      id_category: z.coerce.number().int().positive(),
     });
     const body_data = Guard.validateProps(body_schema, req.body);
     const params_data = Guard.validateProps(params_schema, req.params);
-    return await fns.attach_environment({
-      id_category: params_data.id_category,
-      id_environment: body_data.id_environment,
-    })
-      .then((category) => ApiResponse.success(req, res, category.toJSON(), 200, 'The environment has been attached to the category.'));
+    return await fns
+      .attach_environment({
+        id_category: params_data.id_category,
+        id_environment: body_data.id_environment,
+      })
+      .then((category) =>
+        ApiResponse.success(
+          req,
+          res,
+          category.toJSON(),
+          200,
+          'The environment has been attached to the category.'
+        )
+      );
   } catch (err) {
     logs.debug(err);
     ApiResponse.error(req, res, err);
@@ -174,18 +192,27 @@ export const update = async function (
   try {
     const body_schema = z.object({
       google_material_icon: z.string().min(2),
-      label: z.string().min(2)
+      label: z.string().min(2),
     });
     const params_schema = z.object({
-      id_category: z.coerce.number().int().positive()
+      id_category: z.coerce.number().int().positive(),
     });
     const body_data = Guard.validateProps(body_schema, req.body);
     const params_data = Guard.validateProps(params_schema, req.params);
-    return await fns.update({
-      ...body_data,
-      id_category: params_data.id_category,
-    })
-      .then((category) => ApiResponse.success(req, res, category.toJSON(), 200, 'Category updated.'));
+    return await fns
+      .update({
+        ...body_data,
+        id_category: params_data.id_category,
+      })
+      .then((category) =>
+        ApiResponse.success(
+          req,
+          res,
+          category.toJSON(),
+          200,
+          'Category updated.'
+        )
+      );
   } catch (err) {
     logs.debug(err);
     ApiResponse.error(req, res, err);
@@ -207,11 +234,20 @@ export const del = async function (
 ) {
   try {
     const schema = z.object({
-      id_category: z.coerce.number().int().positive()
+      id_category: z.coerce.number().int().positive(),
     });
     const data = Guard.validateProps(schema, req.body);
-    return await fns.del(data)
-      .then((category) => ApiResponse.success(req, res, category.toJSON(), 200, 'Category deleted.'));
+    return await fns
+      .del(data)
+      .then((category) =>
+        ApiResponse.success(
+          req,
+          res,
+          category.toJSON(),
+          200,
+          'Category deleted.'
+        )
+      );
   } catch (err) {
     logs.debug(err);
     ApiResponse.error(req, res, err);
