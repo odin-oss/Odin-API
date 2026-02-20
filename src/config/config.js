@@ -44,6 +44,10 @@ const envSchema = z.object({
 
   // KAFKA CLUSTER
   KAFKA_BROKER: z.string().default('broker:29092'),
+  KAFKA_ACTIVATED: z
+    .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+    .transform((val) => val === 'true')
+    .default(true),
   KAFKA_TOPIC: z.string().default('upload-logs'),
 
   // KONG - APPS INGRESS

@@ -73,6 +73,7 @@
     "express": "^4.18.2",
     "express-winston": "^4.2.0",
     "jsonwebtoken": "^9.0.2",
+    "kafkajs": "^2.2.4",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.46",
     "mongodb": "^7.1.0",

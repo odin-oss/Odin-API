@@ -84,12 +84,10 @@ export const create = async function (
       .default(false),
     cpu_request: z.union([
       z.number().int({ message: 'The CPU must be a string or an integer.' }),
-      z
-        .string()
-        .regex(/^\d+m?$/, {
-          message:
-            'The string value of the CPU must be xx or xxm, xx being the integer.',
-        }),
+      z.string().regex(/^\d+m?$/, {
+        message:
+          'The string value of the CPU must be xx or xxm, xx being the integer.',
+      }),
     ]),
     ram_request: z
       .string({ invalid_type_error: 'The RAM value must be a string.' })
@@ -98,12 +96,10 @@ export const create = async function (
       }),
     cpu_limit: z.union([
       z.number().int({ message: 'The CPU must be a string or an integer.' }),
-      z
-        .string()
-        .regex(/^\d+m?$/, {
-          message:
-            'The string value of the CPU must be xx or xxm, xx being the integer.',
-        }),
+      z.string().regex(/^\d+m?$/, {
+        message:
+          'The string value of the CPU must be xx or xxm, xx being the integer.',
+      }),
     ]),
     ram_limit: z
       .string({ invalid_type_error: 'The RAM value must be a string.' })
@@ -194,12 +190,10 @@ export const update = async function (
     cpu_request: z
       .union([
         z.number().int({ message: 'The CPU must be a string or an integer.' }),
-        z
-          .string()
-          .regex(/^\d+m?$/, {
-            message:
-              'The string value of the CPU must be xx or xxm, xx being the integer.',
-          }),
+        z.string().regex(/^\d+m?$/, {
+          message:
+            'The string value of the CPU must be xx or xxm, xx being the integer.',
+        }),
       ])
       .optional(),
     ram_request: z
@@ -211,12 +205,10 @@ export const update = async function (
     cpu_limit: z
       .union([
         z.number().int({ message: 'The CPU must be a string or an integer.' }),
-        z
-          .string()
-          .regex(/^\d+m?$/, {
-            message:
-              'The string value of the CPU must be xx or xxm, xx being the integer.',
-          }),
+        z.string().regex(/^\d+m?$/, {
+          message:
+            'The string value of the CPU must be xx or xxm, xx being the integer.',
+        }),
       ])
       .optional(),
     ram_limit: z

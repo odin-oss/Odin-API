@@ -434,3 +434,75 @@ export const update_state = async function (props) {
     throw dbManager.sequelizeErrorManagement(err);
   }
 };
+
+/**
+ * Builder that updates an application export state
+ * @param {Number} id_export id of the export.
+ * @param {Number} id_provider id of the provider that is doing the export.
+ * @param {String} hash unique hash used to identify the application.
+ * @param {String} state new state of the application.
+ * @param {String} app_deletion do we delete the application at the end.
+ * @param {String} download_link download_link to give to the user.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Array<Application>}
+ */
+export const update_application_export_state = async function (
+  props,
+  fns = {
+    update_state,
+  }
+) {
+  try {
+    const schema = z.object({
+      id_export: z.coerce.number().int().positive(),
+      id_provider: z.coerce.number().int().positive().optional(),
+      hash: z.string().min(6).max(6),
+      state: z.enum(['Exporting', 'Available', 'Error']),
+      app_deletion: z
+        .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+        .transform((val) => val === 'true')
+        .default(false),
+      download_link: z.string().optional(),
+    });
+    const data = Guard.validateProps(schema, props);
+    const id_enum_export_state =
+      await dbManager.models.ENUM_EXPORT_STATE.findOne({
+        where: { status: data.state },
+      }).then((r) => {
+        if (r == null)
+          throw new DBObjectNotFound(
+            'The state ' + data.state + ' could not be found.'
+          );
+        return r.id_enum_export_state;
+      });
+
+    const opt_update = { id_enum_export_state };
+    if (data.id_provider) opt_update.id_provider = data.id_provider;
+    if (data.download_link) opt_update.download_link = data.download_link;
+
+    const opt_condition = { where: { id_export: data.id_export } };
+
+    if (data.app_deletion) {
+      const state =
+        data.state === 'Exporting' ? 'DeletedDownload' : 'DeletedError';
+      await fns.update_state({
+        hash: data.hash,
+        state_application: data.state === 'Available' ? 'DeletedDone' : state,
+      });
+    }
+
+    return await dbManager.models.APPLICATION_EXPORT.update(
+      opt_update,
+      opt_condition
+    ).then((r) => {
+      if (r[0] === 0)
+        throw new DBObjectNotFound(
+          'The application export could not be found.'
+        );
+      return r[0] > 0;
+    });
+  } catch (err) {
+    if (err instanceof DBObjectNotFound) throw err;
+    throw dbManager.sequelizeErrorManagement(err);
+  }
+};

@@ -94,23 +94,19 @@ export class Interface {
     cpu_request: z
       .union([
         z.number().int({ message: 'The CPU must be a string or an integer.' }),
-        z
-          .string()
-          .regex(/^\d+m?$/, {
-            message:
-              'The string value of the CPU must be xx or xxm, xx being the integer.',
-          }),
+        z.string().regex(/^\d+m?$/, {
+          message:
+            'The string value of the CPU must be xx or xxm, xx being the integer.',
+        }),
       ])
       .default(''),
     cpu_limit: z
       .union([
         z.number().int({ message: 'The CPU must be a string or an integer.' }),
-        z
-          .string()
-          .regex(/^\d+m?$/, {
-            message:
-              'The string value of the CPU must be xx or xxm, xx being the integer.',
-          }),
+        z.string().regex(/^\d+m?$/, {
+          message:
+            'The string value of the CPU must be xx or xxm, xx being the integer.',
+        }),
       ])
       .default(''),
     egress_bandwidth: z
@@ -130,17 +126,14 @@ export class Interface {
     privileged: z
       .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
       .transform((val) => val === 'true')
-      .default(false)
       .default(false),
     need_compute_gpu: z
       .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
       .transform((val) => val === 'true')
-      .default(false)
       .default(false),
     need_graphical_rendering_gpu: z
       .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
       .transform((val) => val === 'true')
-      .default(false)
       .default(false),
     readiness_probe_initial_delay: z.coerce
       .number()

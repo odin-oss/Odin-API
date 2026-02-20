@@ -30,6 +30,7 @@ import { fetch as kapi } from './modules/kapi.module.js';
 import pkg from '../package.json' with { type: 'json' };
 import { Sequelize } from 'sequelize';
 import { getInstance } from './config/mongo.config.js';
+import { startKafkaConsumption } from './modules/kafka.module.js';
 
 // TEST CONNECT TO PSQL DB
 logger.info(`[SYSTEM][100] / : Trying to connect to PSQL.`);
@@ -57,19 +58,19 @@ await dbManager
     process.exit(0);
   });
 
-// TEST CONNECT TO MDB
-logger.info(`[SYSTEM][100] / : Trying to connect to MDB.`);
-if (CONFIG.MONGODB_ACTIVATED)
-  await getInstance()
-    .then(() => logger.info(`[SYSTEM][200] / : 2/5. MongoDB connected.`))
+// TEST CONNECT TO KAFKA
+logger.info(`[SYSTEM][100] / : Trying to connect to Kafka.`);
+if (CONFIG.KAFKA_ACTIVATED)
+  await startKafkaConsumption()
+    .then(() => logger.info(`[SYSTEM][200] / : 2/5. Kafka consumer connected.`))
     .catch((error) => {
       logger.error(
-        `[SYSTEM][500] / : 2/5. MongoDB Error: The server encountered an error : ${error}`
+        `[SYSTEM][500] / : 2/5. Kafka consumer Error: The server encountered an error : ${error}`
       );
       logger.debug(error);
       process.exit(0);
     });
-else logger.warn(`[SYSTEM][200] / : 2/5. MongoDB disabled.`);
+else logger.warn(`[SYSTEM][200] / : 2/5. Kafka consumer disabled.`);
 
 // TEST CONNECT TO KONG
 logger.info(`[SYSTEM][100] / : Trying to connect to KONG (APPS-INGRESS).`);
