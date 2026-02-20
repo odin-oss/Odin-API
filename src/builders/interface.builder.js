@@ -92,9 +92,7 @@ export const get = async function (props) {
         ),
       });
     })
-    .catch((err) => {
-      throw dbManager.sequelizeErrorManagement(err);
-    });
+    .catch(dbManager.sequelizeErrorManagement);
 };
 
 /**

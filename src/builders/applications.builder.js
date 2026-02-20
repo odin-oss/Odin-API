@@ -70,14 +70,13 @@ export const get = async function (props) {
  * @param {Number} id_user id of the user.
  * @returns {Array<Application>}
  */
-export const list = async function (props) {
+export const list = async function (props = {}) {
   try {
     const schema = z.object({
-      id_user: z.number().positive(),
+      id_user: z.coerce.number().positive().optional(),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
-      where: { id_user: data.id_user },
       include: [
         {
           model: dbManager.models.ENUM_STATE_APPLICATION,
@@ -89,6 +88,7 @@ export const list = async function (props) {
         },
       ],
     };
+    if (data.id_user) options.where = { id_user: data.id_user };
     return await dbManager.models.APPLICATION.findAll(options).then((r) =>
       r.map(
         (app) =>

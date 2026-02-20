@@ -6,11 +6,20 @@ import logs from '../middlewares/winston.js';
 import moment from 'moment-timezone';
 import { Application } from '../objects/Application.js';
 import {
+  list,
   update_application_export_state,
   update_state,
 } from '../builders/applications.builder.js';
-import { ParameterMisformed } from '../utils/errors.util.js';
+import {
+  get_deployments,
+  get_pods,
+  get_replicasets,
+} from '../objects/kubernetes/deployment.js';
+import { get_services } from '../objects/kubernetes/service.js';
+import { get_pvc } from '../objects/kubernetes/pvc.js';
+import { parsingK8SObjects } from '../utils/parsing.util.js';
 
+const topics = ['odin-oss-apps-state', 'odin-oss-upload-logs'];
 const kafka = new Kafka({
   clientId: 'odin-oss',
   brokers: [CONFIG.KAFKA_BROKER],
@@ -26,7 +35,7 @@ const producer = kafka.producer({
     retries: 8,
   },
 });
-
+const admin = kafka.admin();
 let consumerIsConnected = false;
 let producerIsConnected = false;
 consumer.on('consumer.crash', async () => {
@@ -95,7 +104,6 @@ export const startKafkaConsumption = async (
     setInterval,
   }
 ) => {
-  const topics = ['odin-oss-apps-state', 'odin-oss-upload-logs'];
   const dump = new Map();
   fns.setInterval(() => {
     for (const [hash, { timestamp }] of dump) {
@@ -120,7 +128,7 @@ export const startKafkaConsumption = async (
         await fns.subscribe({ topics: topics, fromBeginning: false });
         logs.info(
           '[SYSTEM][100] / : Consumer subscribed to topics: ' +
-            topics.join(', ')
+          topics.join(', ')
         );
         await fns.run({
           eachMessage: async ({ topic, partition, message }) => {
@@ -215,18 +223,13 @@ const applicationExportStateConsumption = async (props) => {
     const { exportId, hash, state, appDeletion, data } = validatedData.message;
 
     if (['progress', 'finished', 'failed'].includes(state)) {
-      const id_provider =
-        data.providerId !== undefined ? data.providerId : null;
-      const download_link =
-        data.transferUrl !== undefined ? data.transferUrl : null;
-
       storage_updater({
         id_export: exportId,
         hash: hash,
         state: state,
         app_deletion: appDeletion,
-        id_provider: id_provider,
-        download_link: download_link,
+        id_provider: data.providerId,
+        download_link: data.transferUrl,
       });
     } else if (!['connected', 'list', 'start'].includes(state)) {
       logs.warn(`Unknown state: ${state} for application export: ${exportId}`);
@@ -285,14 +288,14 @@ const storage_updater = async (
 ) => {
   const schema = z.object({
     id_export: z.coerce.number().int().positive(),
-    id_provider: z.coerce.number().int().positive().optional(),
+    id_provider: z.coerce.number().int().positive().default(null),
     hash: z.string().min(6).max(6),
     state: z.enum(['progress', 'finished', 'failed']),
     app_deletion: z
       .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
       .transform((val) => val === 'true')
       .default(false),
-    download_link: z.string().optional(),
+    download_link: z.string().default(null),
   });
   const data = Guard.validateProps(schema, props);
   const STATE_MAP = {
@@ -303,5 +306,161 @@ const storage_updater = async (
   return await fns.update_application_export_state({
     ...data,
     state: STATE_MAP[data.state],
+  });
+};
+
+/**
+ * Function that will publish all the states after fetching them in the Kafka topic.
+ * @param {Function} fns overwriting functions for tests
+ */
+export const publish = async (
+  fns = {
+    connect: producer.connect,
+    send: producer.send,
+    list,
+    get_k8s_object: get_all_kubernetes_object,
+  }
+) => {
+  const run = async () => {
+    try {
+      // Connect the producer
+      if (!producerIsConnected && CONFIG.KAFKA_ACTIVATED) {
+        await fns.connect();
+        changeProducerIsConnected({ state: true });
+        logs.info(
+          '[SYSTEM][100] / : Kafka producer connected to the Kafka Broker.'
+        );
+      }
+
+      const hashes = (await fns.list()).map(app => app.hash);
+      const content = await fns.get_k8s_object({ hashes });
+
+      if (CONFIG.KAFKA_ACTIVATED) {
+        for (const element of content) {
+          await fns.send({
+            topic: topics[0],
+            messages: [
+              {
+                key: `${element.topic}${moment
+                  .tz(CONFIG.APP_TZ)
+                  .format('YYYYMMDDHHmmss')}`,
+                value: element.stdout,
+              },
+            ],
+          });
+        }
+      }
+
+      logs.info(
+        '[SYSTEM][100] / : The states of applications have been published.'
+      );
+    } catch (error) {
+      logs.error('[SYSTEM][100] / : Error producing message :', error.name);
+      logs.debug(error);
+      if (error.name === 'KafkaJSConnectionError') {
+        shutdown();
+      }
+      throw error;
+    }
+  };
+
+  await run();
+};
+
+/**
+ * This function is creating the Kafka clusters on creation (start).
+ */
+export const createKafkaTopics = async () => {
+  await admin.connect();
+  logs.info(
+    `[SYSTEM][100] / : Kafka Admin connected for topics creation : ${JSON.stringify(topics)} `
+  );
+  for (let topic of topics) {
+    const success = await admin.createTopics({
+      validateOnly: false,
+      waitForLeaders: true,
+      timeout: 5000,
+      topics: [
+        {
+          topic: topic,
+          numPartitions: 3, // Increase for better parallelism
+          replicationFactor: 1, // Set to 1 for local dev, 3 for production
+          configEntries: [
+            { name: 'cleanup.policy', value: 'delete' },
+            { name: 'retention.ms', value: '604800000' }, // 1 days
+          ],
+        },
+      ],
+    });
+    if (success) {
+      logs.info(
+        `[SYSTEM][100] / : Kafka Admin said that topic ${topic} has been created.`
+      );
+    } else {
+      logs.debug(
+        `[SYSTEM][100] / : Kafka Admin said that topic ${topic} already exists. `
+      );
+    }
+  }
+  await admin.disconnect();
+  logs.info(
+    `[SYSTEM][100] / : Kafka Admin disconnected because topics creation is over.`
+  );
+};
+
+/**
+ * Function that will get all the k8s objects linked to the hashes in the array in argument.
+ * @param {Array<String>} hashes list of hashes to check on the cluster.
+ * @param {Function} fns functions to overwrite for tests.
+ * @returns {JSON}
+ */
+export const get_all_kubernetes_object = async (
+  props,
+  fns = {
+    get_replicasets,
+    get_pvc,
+    get_deployments,
+    get_pods,
+    get_services,
+    parsingK8SObjects,
+  }
+) => {
+  const schema = z.object({
+    hashes: z.array(z.string().min(6).max(6)).default([]),
+  });
+  const data = Guard.validateProps(schema, props);
+  if (data.hashes.length === 0) return [];
+
+  let promises = [];
+  for (const hash of data.hashes) {
+    promises = [
+      ...promises,
+      fns.get_replicasets({ hash }),
+      fns.get_pvc({ hash }),
+      fns.get_deployments({ hash }),
+      fns.get_pods({ hash }),
+      fns.get_services({ hash }),
+    ];
+  }
+  return await Promise.all(promises).then((r) => {
+    const result = [];
+    for (let i = 0; i < data.hashes.length; i++) {
+      const items = [
+        ...r[i * 5].items,
+        ...r[i * 5 + 1].items,
+        ...r[i * 5 + 2].items,
+        ...r[i * 5 + 3].items,
+        ...r[i * 5 + 4].items,
+      ];
+      result.push({
+        topic: `${data.hashes[i]}`,
+        stdout: fns.parsingK8SObjects({
+          items: items,
+          hash: data.hashes[i],
+        }),
+      });
+    }
+
+    return result;
   });
 };

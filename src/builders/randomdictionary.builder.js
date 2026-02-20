@@ -9,7 +9,5 @@ export const list = async function () {
   return await dbManager.models.RANDOM_DICTIONARY.findAll()
     .then((r) => r.map((word) => dictionary.add(word.word)))
     .then(() => dictionary)
-    .catch((err) => {
-      throw dbManager.sequelizeErrorManagement(err);
-    });
+    .catch(dbManager.sequelizeErrorManagement);
 };

@@ -10,7 +10,5 @@ export const list = async function () {
     .then((varenvs) =>
       varenvs.map((varenv) => new VariableEnvironment(varenv.dataValues))
     )
-    .catch((err) => {
-      throw dbManager.sequelizeErrorManagement(err);
-    });
+    .catch(dbManager.sequelizeErrorManagement);
 };

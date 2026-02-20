@@ -572,6 +572,93 @@ const put = async function (props, fetch = kapi.fetch) {
   }));
 };
 
+/**
+ * Function that will fetch kapi to get all the Pods in a specific namespace.
+ * @param {String} hash unique hash to identify the application on the cluster.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
+ */
+export const get_pods = async (
+  props,
+  fns = {
+    fetch: kapi.fetch,
+  }
+) => {
+  const schema = z.object({
+    hash: z.string().min(6).max(6),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns
+    .fetch({
+      method: 'GET',
+      url: `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/pods`,
+    })
+    .then((r) => {
+      for (let item of r.items) {
+        item.kind = 'Pod';
+      }
+      return r;
+    });
+};
+
+/**
+ * Function that will fetch kapi to get all the Deployments in a specific namespace.
+ * @param {String} hash unique hash to identify the application on the cluster.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
+ */
+export const get_deployments = async (
+  props,
+  fns = {
+    fetch: kapi.fetch,
+  }
+) => {
+  const schema = z.object({
+    hash: z.string().min(6).max(6),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns
+    .fetch({
+      method: 'GET',
+      url: `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/deployments`,
+    })
+    .then((r) => {
+      for (let item of r.items) {
+        item.kind = 'Deployment';
+      }
+      return r;
+    });
+};
+
+/**
+ * Function that will get the replicasets from the kubernetes API.
+ * @param {String} hash unique hash to identify the application on the cluster.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
+ */
+export const get_replicasets = async (
+  props,
+  fns = {
+    fetch: kapi.fetch,
+  }
+) => {
+  const schema = z.object({
+    hash: z.string().min(6).max(6),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns
+    .fetch({
+      method: 'GET',
+      url: `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/replicasets`,
+    })
+    .then((r) => {
+      for (let item of r.items) {
+        item.kind = 'ReplicaSet';
+      }
+      return r;
+    });
+};
+
 const test_exports = {};
 if (CONFIG.APP_ENVIRONMENT === 'test') {
   test_exports.add_node_selectors = add_node_selectors;

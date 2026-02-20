@@ -9,7 +9,5 @@ import dbManager from '../config/db.config.js';
 export const list = async function () {
   return dbManager.models.IMAGE_TYPE.findAll()
     .then((its) => its.map((it) => new ImageType(it)))
-    .catch((err) => {
-      throw dbManager.sequelizeErrorManagement(err);
-    });
+    .catch(dbManager.sequelizeErrorManagement);
 };

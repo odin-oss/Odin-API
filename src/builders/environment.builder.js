@@ -7,6 +7,11 @@ import {
   DBObjectAlreadyExists,
   DBObjectNotFound,
 } from '../utils/errors.util.js';
+import NodeSelector from '../objects/NodeSelector.js';
+import Argument from '../objects/Argument.js';
+import Port from '../objects/Port.js';
+import PortType from '../objects/Port_type.js';
+import VariableEnvironment from '../objects/Variable_environment.js';
 
 /**
  * Builder that list all the environments in database.
@@ -62,9 +67,7 @@ export const list = async function () {
       }
       return result;
     })
-    .catch((err) => {
-      throw dbManager.sequelizeErrorManagement(err);
-    });
+    .catch(dbManager.sequelizeErrorManagement);
 };
 
 /**
@@ -150,30 +153,21 @@ export const get = async function (props) {
               label_type_image: inter.INTERFACE.IMAGE_TYPE.label,
               args: inter.INTERFACE.INTERFACE_HAS_ARGUMENTs.sort(
                 (a, b) => a.id_argument - b.id_argument
-              ).map((arg) => ({
-                id_argument: arg.id_argument,
-                value: arg.ARGUMENT.value,
-              })),
+              ).map((arg) => new Argument(arg.ARGUMENT.dataValues)),
               node_selectors: inter.INTERFACE.INTERFACE_HAS_NODE_SELECTORs.map(
-                (ins) => ({
-                  id_node_selector: ins.id_node_selector,
-                  key: ins.NODE_SELECTOR.key,
-                  value: ins.NODE_SELECTOR.value,
-                })
+                (ins) => new NodeSelector(ins.NODE_SELECTOR.dataValues)
               ),
-              ports: inter.INTERFACE.INTERFACE_HAS_PORTs.map((ihp) => ({
-                id_port_type: ihp.id_port_type,
-                port: ihp.port,
-                label: ihp.label,
-                port_type: ihp.PORT_TYPE.label,
-                display_name: ihp.display_name,
-                icon: ihp.icon,
-              })),
-              envs: inter.INTERFACE.INTERFACE_HAS_VARIABLEs.map((ihv) => ({
-                id_variable_environment: ihv.id_variable_environment,
-                key: ihv.VARIABLE_ENVIRONMENT.key,
-                value: ihv.VARIABLE_ENVIRONMENT.value,
-              })),
+              ports: inter.INTERFACE.INTERFACE_HAS_PORTs.map(
+                (ihp) =>
+                  new Port({
+                    ...ihp.dataValues,
+                    port_type: new PortType(ihp.PORT_TYPE.dataValues),
+                  })
+              ),
+              envs: inter.INTERFACE.INTERFACE_HAS_VARIABLEs.map(
+                (ihv) =>
+                  new VariableEnvironment(ihv.VARIABLE_ENVIRONMENT.dataValues)
+              ),
             })
         ),
       });

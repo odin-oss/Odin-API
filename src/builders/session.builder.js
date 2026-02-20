@@ -392,7 +392,5 @@ export const get_on_administrateur = async function (props) {
       }
       return session;
     })
-    .catch((err) => {
-      throw dbManager.sequelizeErrorManagement(err);
-    });
+    .catch(dbManager.sequelizeErrorManagement);
 };

@@ -29,8 +29,11 @@ import { fetch as kong } from './modules/kong-api.module.js';
 import { fetch as kapi } from './modules/kapi.module.js';
 import pkg from '../package.json' with { type: 'json' };
 import { Sequelize } from 'sequelize';
-import { getInstance } from './config/mongo.config.js';
-import { startKafkaConsumption } from './modules/kafka.module.js';
+import {
+  createKafkaTopics,
+  publish,
+  startKafkaConsumption,
+} from './modules/kafka.module.js';
 
 // TEST CONNECT TO PSQL DB
 logger.info(`[SYSTEM][100] / : Trying to connect to PSQL.`);
@@ -60,7 +63,16 @@ await dbManager
 
 // TEST CONNECT TO KAFKA
 logger.info(`[SYSTEM][100] / : Trying to connect to Kafka.`);
-if (CONFIG.KAFKA_ACTIVATED)
+if (CONFIG.KAFKA_ACTIVATED) {
+  await createKafkaTopics()
+    .then(() => logger.info(`[SYSTEM][200] / : 2/5. Kafka topics created.`))
+    .catch((error) => {
+      logger.error(
+        `[SYSTEM][500] / : 2/5. Kafka error during topic creation: The server encountered an error : ${error}`
+      );
+      logger.debug(error);
+      process.exit(0);
+    });
   await startKafkaConsumption()
     .then(() => logger.info(`[SYSTEM][200] / : 2/5. Kafka consumer connected.`))
     .catch((error) => {
@@ -70,7 +82,17 @@ if (CONFIG.KAFKA_ACTIVATED)
       logger.debug(error);
       process.exit(0);
     });
-else logger.warn(`[SYSTEM][200] / : 2/5. Kafka consumer disabled.`);
+
+  await publish()
+    .then(() => logger.info(`[SYSTEM][200] / : 2/5. Kafka consumer connected.`))
+    .catch((error) => {
+      logger.error(
+        `[SYSTEM][500] / : 2/5. Kafka consumer Error: The server encountered an error : ${error}`
+      );
+      logger.debug(error);
+      process.exit(0);
+    });
+} else logger.warn(`[SYSTEM][200] / : 2/5. Kafka consumer disabled.`);
 
 // TEST CONNECT TO KONG
 logger.info(`[SYSTEM][100] / : Trying to connect to KONG (APPS-INGRESS).`);
