@@ -33,7 +33,7 @@ const router = express.Router();
  */
 
 router.get('/list', isTokenValid, isAdmin, async (req, res) => {
-    variableEnvironment_controller.list(req, res);
+  variableEnvironment_controller.list(req, res);
 });
 
 /**

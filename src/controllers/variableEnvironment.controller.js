@@ -9,16 +9,25 @@ import { ApiResponse } from '../utils/response.util.js';
  * @param {Function} fns overwriting functions for tests.
  */
 export const list = async function (
-    req,
-    res,
-    fns = {
-        variableEnvironment_list: variableEnvironment_service.list,
-    }
+  req,
+  res,
+  fns = {
+    variableEnvironment_list: variableEnvironment_service.list,
+  }
 ) {
-    return await fns.variableEnvironment_list()
-        .then((response) => ApiResponse.success(req, res, response.map((varEnvs) => varEnvs.toJSON()), 200, 'List of variables environments type transmitted.'))
-        .catch((error) => {
-            logs.debug(error);
-            ApiResponse.error(req, res, error);
-        });
+  return await fns
+    .variableEnvironment_list()
+    .then((response) =>
+      ApiResponse.success(
+        req,
+        res,
+        response.map((varEnvs) => varEnvs.toJSON()),
+        200,
+        'List of variables environments type transmitted.'
+      )
+    )
+    .catch((error) => {
+      logs.debug(error);
+      ApiResponse.error(req, res, error);
+    });
 };

@@ -41,7 +41,6 @@ router.get('/', isTokenValid, isAdmin, async (req, res) => {
   interface_controller.get(req, res);
 });
 
-
 /**
  * @swagger
 
@@ -72,7 +71,7 @@ router.get('/', isTokenValid, isAdmin, async (req, res) => {
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.get('/list', isTokenValid, isAdmin, async (req, res) => {
-    interface_controller.list(req, res);
+  interface_controller.list(req, res);
 });
 /**
  * @swagger
@@ -200,7 +199,7 @@ router.get('/list', isTokenValid, isAdmin, async (req, res) => {
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.post('/', isTokenValid, isAdmin, (req, res) => {
-    interface_controller.create(req, res);
+  interface_controller.create(req, res);
 });
 /**
  * @swagger
@@ -301,7 +300,7 @@ router.post('/', isTokenValid, isAdmin, (req, res) => {
  *           $ref: '#/definitions/DBConnexionRefused'
  */
 router.put('/:id_interface', isTokenValid, isAdmin, (req, res) => {
-    interface_controller.update(req, res);
+  interface_controller.update(req, res);
 });
 
 export default router;

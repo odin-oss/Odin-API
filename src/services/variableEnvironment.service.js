@@ -7,9 +7,9 @@ import VariableEnvironment from '../objects/Variable_environment.js';
  * @returns {Array<VariableEnvironment>}
  */
 export const list = async function (
-    fns = {
-        list: variableEnvironment_builder.list,
-    }
+  fns = {
+    list: variableEnvironment_builder.list,
+  }
 ) {
-    return await fns.list();
+  return await fns.list();
 };

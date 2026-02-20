@@ -33,7 +33,7 @@ const router = express.Router();
  */
 
 router.get('/list', isTokenValid, isAdmin, async (req, res) => {
-    portType_controller.list(req, res);
+  portType_controller.list(req, res);
 });
 
 /**

@@ -7,9 +7,9 @@ import PortType from '../objects/Port_type.js';
  * @returns {Array<PortType>}
  */
 export const list = async function (
-    fns = {
-        portType_list: portType_builder.list,
-    }
+  fns = {
+    portType_list: portType_builder.list,
+  }
 ) {
-    return await fns.portType_list();
+  return await fns.portType_list();
 };
