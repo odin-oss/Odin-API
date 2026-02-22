@@ -9,6 +9,7 @@ import {
   KubernetesErrorNotDefined,
   ObjectsAlreadyExistsError,
 } from '../utils/errors.util.js';
+import logs from '../middlewares/winston.js';
 
 /**
  * Function used to communicate with the Kubernetes API.
@@ -45,7 +46,7 @@ export const fetch = async function (
   };
 
   // add agent only on production envs
-  if (CONFIG.APP_ENVIRONMENT !== 'local' && CONFIG.APP_ENVIRONMENT !== 'test') {
+  if (CONFIG.KUBERNETES_AGENT) {
     options.agent = CONFIG.KUBERNETES_AGENT;
   }
 
@@ -84,6 +85,7 @@ export const fetch = async function (
       }
       return data;
     } catch (err) {
+      logs.debug(`[SYSTEM][DEBUG] / : Kubernetes API error ${err}`);
       if (attempt < retries) {
         // Wait before retrying
         await new Promise((resolve) => setTimeout(resolve, retryDelay));

@@ -128,7 +128,7 @@ export const startKafkaConsumption = async (
         await fns.subscribe({ topics: topics, fromBeginning: false });
         logs.info(
           '[SYSTEM][100] / : Consumer subscribed to topics: ' +
-          topics.join(', ')
+            topics.join(', ')
         );
         await fns.run({
           eachMessage: async ({ topic, partition, message }) => {
@@ -332,7 +332,7 @@ export const publish = async (
         );
       }
 
-      const hashes = (await fns.list()).map(app => app.hash);
+      const hashes = (await fns.list()).map((app) => app.hash);
       const content = await fns.get_k8s_object({ hashes });
 
       if (CONFIG.KAFKA_ACTIVATED) {

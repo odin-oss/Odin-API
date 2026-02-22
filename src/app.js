@@ -84,7 +84,7 @@ if (CONFIG.KAFKA_ACTIVATED) {
     });
 
   await publish()
-    .then(() => logger.info(`[SYSTEM][200] / : 2/5. Kafka consumer connected.`))
+    .then(() => logger.info(`[SYSTEM][200] / : 2/5. Kafka producer connected.`))
     .catch((error) => {
       logger.error(
         `[SYSTEM][500] / : 2/5. Kafka consumer Error: The server encountered an error : ${error}`

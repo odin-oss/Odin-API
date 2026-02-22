@@ -120,8 +120,14 @@ if (!parsed.success) {
 }
 const CONFIG = parsed.data;
 
-if (!['local', 'test'].includes(CONFIG.APP_ENVIRONMENT)) {
-  const token = await fs.readFile(CONFIG.KUBERNETES_TOKEN_PATH, 'utf-8');
+if (
+  !['test'].includes(CONFIG.APP_ENVIRONMENT) ||
+  process.env.KUBERNETES_TOKEN_PATH
+) {
+  const token =
+    (process.env.KUBERNETES_TOKEN_PATH &&
+      (await fs.readFile(CONFIG.KUBERNETES_TOKEN_PATH, 'utf-8'))) ||
+    CONFIG.KUBERNETES_TOKEN;
   CONFIG.KUBERNETES_TOKEN = token;
   const ca = await fs.readFile(CONFIG.KUBERNETES_CA_CERT_PATH, 'utf-8');
   CONFIG.KUBERNETES_AGENT = new https.Agent({ ca });
