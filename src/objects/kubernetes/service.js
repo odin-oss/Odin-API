@@ -24,9 +24,7 @@ export const deletion = async function (
     hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
-  const list = fns
-    .get_service({ ...data, onlyShutable: true })
-    .then((r) => r.result);
+  const list = fns.get_service({ ...data }).then((r) => r.result);
   const promises = list.map((name) => fns.delete_service({ ...data, name }));
   return await Promise.all(promises);
 };
@@ -84,33 +82,28 @@ export const create = async function (props, fetch = kapi.fetch) {
     },
   };
   const url = `/api/v1/namespaces/n${data.hash}/services`;
-  return await fetch({ url, method: 'POST', body })
-    .then((res) => ({
-      result: res,
-      type: 'Service',
-      name: `${prefix}${data.label}${data.hash}${data.port_externe}`,
-    }))
-    .catch(console.debug);
+  return await fetch({ url, method: 'POST', body }).then((res) => ({
+    result: res,
+    type: 'Service',
+    name: `${prefix}${data.label}${data.hash}${data.port_externe}`,
+  }));
 };
 
 /**
  * Private function that will fetch the Kubernetes API in order to get the name of the services attached to this hash.
  * @param {String} hash unique hash to identify service resources.
- * @param {Boolean} onlyShutable is this new resource able to be deleted safely on stop.
  * @param {Function} fetch functions to overwrite for unit testing.
  * @returns {JSON}
  */
 const get = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(6).max(6),
-    onlyShutable: z.boolean().default(true),
   });
   const data = Guard.validateProps(schema, props);
-  const url = `/api/v1/namespaces/n${data.hash}/services?labelSelector=hash=${data.hash},shutable=${data.onlyShutable ? 'true' : 'false'}`;
+  const url = `/api/v1/namespaces/n${data.hash}/services?labelSelector=hash=${data.hash}`;
   return await fetch({ url, method: 'GET' }).then((res) => ({
     result: res.items.map((item) => item.metadata.name),
     type: 'Services',
-    onlyShutable: data.onlyShutable,
   }));
 };
 /**

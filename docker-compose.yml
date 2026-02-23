@@ -61,6 +61,10 @@ services:
       KONG_PG_DATABASE: odin
       KONG_PROXY_LISTEN: 0.0.0.0:8000, 0.0.0.0:8443 ssl
       KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PLUGINS: bundled,odin-auth
+      KONG_LUA_PACKAGE_PATH: /usr/local/share/lua/5.1/?.lua;;
+    volumes:
+      - ./kong-plugins/odin-auth:/usr/local/share/lua/5.1/kong/plugins/odin-auth
     ports:
       - "80:8000" # Proxy
       - "443:8443" # Proxy

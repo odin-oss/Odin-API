@@ -25,7 +25,8 @@ const envSchema = z.object({
   APP_TOKEN_EXPIRATION_HOURS: z.string().transform(Number).default(24),
   APP_TZ: z.string().default('Europe/Paris'),
   USER_APPS_EXPIRATION_HOURS: z.string().transform(Number).default(6),
-  USER_APPS_HOSTNAME: z.string().default('localhost'),
+  TLS_ODIN_DASHBOARD: z.string().default('app.getodin.cloud'),
+  TLS_ODIN_MONOLITH: z.string().default('api.app.getodin.cloud'),
 
   // ICON OF IMAGES
   MAX_CONTENT_SIZE: z.string().default('5mb'),

@@ -72,17 +72,15 @@ export const create = async function (props, fetch = kapi.fetch) {
 /**
  * Private function that will fetch the KAPI.
  * @param {String} hash unique has the application.
- * @param {Boolean} onlyShutable filter the result only of shutable resources if set to true - default true.
  * @param {Function} fetch functions to overwrite for unit testing.
  * @returns {JSON}
  */
 const get = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(6).max(6),
-    onlyShutable: z.boolean().default(true),
   });
   const data = Guard.validateProps(schema, props);
-  const url = `/api/v1/namespaces/odin/services?labelSelector=type=ExternalName,hash=${data.hash},shutable=${{ ...expected_props, ...props }.onlyShutable ? 'true' : 'false'}`;
+  const url = `/api/v1/namespaces/odin/services?labelSelector=type=ExternalName,hash=${data.hash}`;
   return await fetch({ url, method: 'GET' }).then((res) => {
     if (res === 'Kubernetes is not activated.') return { result: res };
     return {

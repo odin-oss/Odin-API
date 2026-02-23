@@ -8,6 +8,7 @@ import Port from '../Port.js';
 import VariableEnvironment from '../Variable_environment.js';
 import Argument from '../Argument.js';
 import NodeSelector from '../NodeSelector.js';
+import logger from '../../middlewares/winston.js';
 
 /**
  * Function that launch the deletion of the deployment.
@@ -26,9 +27,7 @@ export const deletion = async function (
     hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
-  const list = await fns
-    .get_deployment({ ...data, onlyShutable: true })
-    .then((r) => r.result);
+  const list = await fns.get_deployment({ ...data }).then((r) => r.result);
   if (list.length === 0) return [];
   const promises = [];
   for (let deploy of list) {
@@ -49,12 +48,10 @@ export const scale = async function (
 ) {
   const schema = z.object({
     hash: z.string().min(6).max(6),
-    replicas: z.number().default(0),
+    replicas: z.number().int().positive().default(0),
   });
   const data = Guard.validateProps(schema, props);
-  const list = await fns
-    .get_deployment({ ...data, onlyShutable: true })
-    .then((r) => r.result);
+  const list = await fns.get_deployment({ ...data }).then((r) => r.result);
   if (list === 'Kubernetes is not activated.') return;
   const promises = [];
   for (let deploy of list) {
@@ -233,7 +230,10 @@ export const create = async function (props, fetch = kapi.fetch) {
   try {
     if (data.need_compute_gpu) body = add_compute_gpu({ body });
     body = add_node_selectors({ body, node_selectors: data.node_selectors });
-    body = add_service_commands({ body, service_command: data.service_command });
+    body = add_service_commands({
+      body,
+      service_command: data.service_command,
+    });
     body = add_arguments({
       body,
       args: data.args,
@@ -264,13 +264,14 @@ export const create = async function (props, fetch = kapi.fetch) {
     });
 
     const url = `/apis/apps/v1/namespaces/n${data.hash}/deployments`;
-    return await fetch({ url, method: 'POST', body })
-      .then((res) => ({
-        result: res,
-        type: 'Deployment',
-        name: `${data.label}${data.hash}`,
-      }))
-  } catch (err) { console.debug(err) }
+    return await fetch({ url, method: 'POST', body }).then((res) => ({
+      result: res,
+      type: 'Deployment',
+      name: `${data.label}${data.hash}`,
+    }));
+  } catch (err) {
+    logger.debug(err);
+  }
 };
 /**
  * Private function that will add the node_selectors part to the body.
@@ -387,7 +388,10 @@ const add_arguments = function (props) {
   data.body.spec.template.spec.containers[0].args = [];
   data.args.forEach((arg) => {
     data.body.spec.template.spec.containers[0].args.push(
-      parsing_generic_tags(arg.value, { ...data, web_title: `SSH - ${data.generated_label}` })
+      parsing_generic_tags(arg.value, {
+        ...data,
+        web_title: `SSH - ${data.generated_label}`,
+      })
     );
   });
 
@@ -456,7 +460,8 @@ const add_envs = function (props) {
     ...data.envs.map((env) => ({
       name: env.key,
       value: parsing_generic_tags(env.value, {
-        ...data, web_title: `SSH - ${data.generated_label}`
+        ...data,
+        web_title: `SSH - ${data.generated_label}`,
       }),
     }))
   );
@@ -529,23 +534,20 @@ const add_storage = function (props) {
 /**
  * Private function that will fetch the Kubernetes API to get the deployment object.
  * @param {String} hash unique has the application.
- * @param {Boolean} onlyShutable filter the result only of shutable resources if set to true - default false.
  * @param {Function} fns functions to overwrite for unit testing.
  * @returns {JSON}
  */
 const get = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(6).max(6),
-    onlyShutable: z.boolean().default(false),
   });
   const data = Guard.validateProps(schema, props);
-  const url = `/apis/apps/v1/namespaces/n${data.hash}/deployments?labelSelector=type=Deployment,hash=${data.hash},shutable=${data.onlyShutable ? 'true' : 'false'}`;
+  const url = `/apis/apps/v1/namespaces/n${data.hash}/deployments?labelSelector=type=Deployment,hash=${data.hash}`;
   return await fetch({ url, method: 'GET' }).then((res) => {
     if (res === 'Kubernetes is not activated.') return { result: res };
     return {
       result: res.items.map((item) => item.metadata.name),
       type: 'Deployments',
-      onlyShutable: data.onlyShutable,
     };
   });
 };

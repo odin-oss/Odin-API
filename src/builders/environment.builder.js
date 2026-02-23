@@ -92,16 +92,20 @@ export const get = async function (props) {
           include: [
             {
               model: dbManager.models.INTERFACE,
-            }]
-        }]
+            },
+          ],
+        },
+      ],
     });
     if (environment == null)
       throw new DBObjectNotFound('The environment does not exist.');
     return await dbManager.models.INTERFACE.findAll({
       where: {
         id_interface: {
-          [Op.in]: environment.ENVIRONMENT_HAS_INTERFACEs.map((ehi) => ehi.id_interface)
-        }
+          [Op.in]: environment.ENVIRONMENT_HAS_INTERFACEs.map(
+            (ehi) => ehi.id_interface
+          ),
+        },
       },
       include: [
         {
@@ -150,7 +154,9 @@ export const get = async function (props) {
           (inter) =>
             new Interface({
               ...inter.dataValues,
-              label: environment.ENVIRONMENT_HAS_INTERFACEs.find((ehi) => ehi.id_interface === inter.id_interface).label,
+              label: environment.ENVIRONMENT_HAS_INTERFACEs.find(
+                (ehi) => ehi.id_interface === inter.id_interface
+              ).label,
               id_type: inter.IMAGE_TYPE.id_type,
               label_type_image: inter.IMAGE_TYPE.label,
               args: inter.INTERFACE_HAS_ARGUMENTs.sort(
