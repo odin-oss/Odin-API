@@ -2,6 +2,7 @@ import z from 'zod';
 import CONFIG from '../../config/config.js';
 import * as kapi from '../../modules/kapi.module.js';
 import Guard from '../../utils/guard.util.js';
+import logs from '../../middlewares/winston.js';
 
 /**
  * Function used to delete the registryhub from Kubernetes cluster.
@@ -57,9 +58,11 @@ export const create = async function (props, fetch = kapi.fetch) {
     type: 'kubernetes.io/dockerconfigjson',
   };
   const url = `/api/v1/namespaces/n${data_checks.hash}/secrets`;
-  return await fetch({ url, method: 'POST', body }).then((res) => ({
-    result: res,
-    type: 'RegistryHub',
-    name: `registryhub`,
-  }));
+  return await fetch({ url, method: 'POST', body })
+    .then((res) => ({
+      result: res,
+      type: 'RegistryHub',
+      name: `registryhub`,
+    }))
+    .catch(logs.debug);
 };

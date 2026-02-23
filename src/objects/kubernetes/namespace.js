@@ -1,7 +1,7 @@
 import * as kapi from '../../modules/kapi.module.js';
-import CONFIG from '../../config/config.js';
 import z from 'zod';
 import Guard from '../../utils/guard.util.js';
+import logs from '../../middlewares/winston.js';
 
 /**
  * Delete a namespace from kubernetes cluster.
@@ -30,16 +30,17 @@ export const deletion = async function (props, fetch = kapi.fetch) {
  */
 export const create = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
-    hash: z.string().min(6).max(6),
+    hash: z.string().min(4).max(6),
   });
   const data = Guard.validateProps(schema, props);
+  const name = `${(data.hash === 'odin' && 'odin') || 'n' + data.hash}`;
   const body = {
     apiVersion: 'v1',
     kind: 'Namespace',
     metadata: {
-      name: `n${data.hash}`, // Replace with your desired namespace name
+      name,
       labels: {
-        'kubernetes.io/metadata.name': `n${data.hash}`,
+        'kubernetes.io/metadata.name': name,
         type: 'Namespace',
         hash: `${data.hash}`,
         name: 'user-app-namespace',
@@ -53,6 +54,6 @@ export const create = async function (props, fetch = kapi.fetch) {
   return await fetch({ url, method: 'POST', body }).then((res) => ({
     result: res,
     type: 'Namespace',
-    name: `n${data.hash}`,
+    name,
   }));
 };

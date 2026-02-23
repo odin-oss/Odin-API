@@ -22,19 +22,6 @@ services:
     volumes:
       - kafka_data:/var/lib/kafka/data
 
-  mongo_db: # to be deprecated
-    image: mongo:8.2.5-noble
-    container_name: odin-oss-mdb
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: odin
-      MONGO_INITDB_ROOT_PASSWORD: odin
-      MONGO_INITDB_DATABASE: odin
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/var/lib/postgresql/data
-
   postgres_db:
     image: postgres:15-alpine
     container_name: odin-oss-psql
@@ -81,5 +68,4 @@ services:
 
 volumes:
   postgres_data:
-  mongodb_data:
   kafka_data:

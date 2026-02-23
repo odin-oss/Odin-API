@@ -4,7 +4,7 @@ import * as kapi from '../../modules/kapi.module.js';
 import Guard from '../../utils/guard.util.js';
 
 /**
- * Function that executes the deletion of all the externalname contained in the cirrus namespace and the match the hash.
+ * Function that executes the deletion of all the externalname contained in the odin namespace and the match the hash.
  * @param {String} hash unique hash to identify specific external name resources.
  * @param {Function} fns functions to overwrite for unit testing.
  * @returns {JSON}
@@ -24,7 +24,7 @@ export const deletion = async function (
 };
 
 /**
- * Function that executes the creation of an externalname in the cirrus namespace on Kubernetes.
+ * Function that executes the creation of an externalname in the odin namespace on Kubernetes.
  * @param {String} hash unique hash to identify specific external name resources.
  * @param {String} label label of the application.
  * @param {Number} port_externe port to point from this external name.
@@ -43,7 +43,7 @@ export const create = async function (props, fetch = kapi.fetch) {
     kind: 'Service',
     metadata: {
       name: `ci${data.label}${data.hash}${data.port_externe}-proxy`,
-      namespace: 'cirrus',
+      namespace: 'odin',
       labels: {
         type: 'ExternalName',
         hash: `${data.hash}`,
@@ -61,7 +61,7 @@ export const create = async function (props, fetch = kapi.fetch) {
       type: 'ExternalName',
     },
   };
-  const url = `/api/v1/namespaces/cirrus/services`;
+  const url = `/api/v1/namespaces/odin/services`;
   return await fetch({ url, method: 'POST', body }).then((res) => ({
     result: res,
     type: 'ExternalName',
@@ -82,7 +82,7 @@ const get = async function (props, fetch = kapi.fetch) {
     onlyShutable: z.boolean().default(true),
   });
   const data = Guard.validateProps(schema, props);
-  const url = `/api/v1/namespaces/cirrus/services?labelSelector=type=ExternalName,hash=${data.hash},shutable=${{ ...expected_props, ...props }.onlyShutable ? 'true' : 'false'}`;
+  const url = `/api/v1/namespaces/odin/services?labelSelector=type=ExternalName,hash=${data.hash},shutable=${{ ...expected_props, ...props }.onlyShutable ? 'true' : 'false'}`;
   return await fetch({ url, method: 'GET' }).then((res) => {
     if (res === 'Kubernetes is not activated.') return { result: res };
     return {
@@ -102,7 +102,7 @@ const del = async function (props, fetch = kapi.fetch) {
     name: z.string(),
   });
   const data = Guard.validateProps(schema, props);
-  const url = `/api/v1/namespaces/cirrus/services/${data.name}`;
+  const url = `/api/v1/namespaces/odin/services/${data.name}`;
   return await fetch({ url, method: 'DELETE' }).then((res) => ({
     result: res,
     type: 'ExternalName',

@@ -4,6 +4,10 @@ import { parsing_generic_tags } from '../../utils/parsing.util.js';
 import { ParameterMisformed } from '../../utils/errors.util.js';
 import Guard from '../../utils/guard.util.js';
 import z from 'zod';
+import Port from '../Port.js';
+import VariableEnvironment from '../Variable_environment.js';
+import Argument from '../Argument.js';
+import NodeSelector from '../NodeSelector.js';
 
 /**
  * Function that launch the deletion of the deployment.
@@ -67,13 +71,11 @@ export const scale = async function (
 /**
  * Function that will launch the creation of the deployment in the kubernetes cluster.
  * @param {String} hash unique hash to identify the deploy in the cluster.
- * @param {String} image image of the container in the registry.
- * @param {String} image_tag tag of the image of the container in the registry.
+ * @param {String} registry_link image of the container in the registry.
  * @param {String} username username of the application.
  * @param {String} password password of the application.
  * @param {String} service_command service_command of the container.
  * @param {String} label label of the application.
- * @param {String} web_title web_title for the UI.
  * @param {String} ports list of all the ports to open on the container.
  * @param {String} envs list of all the env vars to set in the container.
  * @param {String} args list of all the arguments container.
@@ -96,29 +98,62 @@ export const scale = async function (
 export const create = async function (props, fetch = kapi.fetch) {
   const schema = z.object({
     hash: z.string().min(6).max(6),
-    image: z.string(),
-    image_tag: z.string(),
+    registry_link: z.string().transform((val) => {
+      const parts = val.split(':');
+      if (parts.length !== 2) {
+        throw new z.ZodError(
+          "The registry link should be in the format 'image:image_tag'."
+        );
+      }
+      return {
+        image: parts[0],
+        image_tag: parts[1],
+      };
+    }),
     username: z.string(),
     password: z.string(),
     service_command: z.string(),
     label: z.string(),
-    web_title: z.string(),
-    ports: z.array().default([]),
-    envs: z.array().default([]),
-    args: z.array().default([]),
-    node_selectors: z.array().default([]),
+    ports: z.array(z.lazy(() => z.instanceof(Port))).default([]),
+    envs: z.array(z.lazy(() => z.instanceof(VariableEnvironment))).default([]),
+    args: z.array(z.lazy(() => z.instanceof(Argument))).default([]),
+    node_selectors: z
+      .array(z.lazy(() => z.instanceof(NodeSelector)))
+      .default([]),
     generated_label: z.string(),
     has_storage: z.boolean(),
-    readiness_probe_initial_delay: z.number().default(10),
-    liveness_probe_initial_delay: z.number().default(10),
-    readiness_probe_period: z.number().default(10),
-    liveness_probe_period: z.number().default(10),
+    readiness_probe_initial_delay: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(10),
+    liveness_probe_initial_delay: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(10),
+    readiness_probe_period: z.coerce.number().int().positive().default(10),
+    liveness_probe_period: z.coerce.number().int().positive().default(10),
     need_compute_gpu: z.boolean().default(false),
     need_graphical_rendering_gpu: z.boolean().default(false),
     ram_limit: z.string(),
     ram_request: z.string(),
     cpu_request: z.string(),
     cpu_limit: z.string(),
+    egress_bandwidth: z
+      .string({ invalid_type_error: 'The bandwidth must be sent in string.' })
+      .regex(/^\d+[MG]$/, {
+        message:
+          'The bandwidth should be like xxM or xxG, xx being your number value.',
+      })
+      .default('10M'),
+    ingress_bandwidth: z
+      .string({ invalid_type_error: 'The bandwidth must be sent in string.' })
+      .regex(/^\d+[MG]$/, {
+        message:
+          'The bandwidth should be like xxM or xxG, xx being your number value.',
+      })
+      .default('10M'),
   });
   const data = Guard.validateProps(schema, props);
   let body = {
@@ -149,6 +184,10 @@ export const create = async function (props, fetch = kapi.fetch) {
           },
           name: `${data.label}${data.hash}`,
           namespace: `n${data.hash}`,
+          annotations: {
+            'kubernetes.io/ingress-bandwidth': data.ingress_bandwidth,
+            'kubernetes.io/egress-bandwidth': data.egress_bandwidth,
+          },
         },
         spec: {
           containers: [
@@ -191,47 +230,47 @@ export const create = async function (props, fetch = kapi.fetch) {
       },
     },
   };
+  try {
+    if (data.need_compute_gpu) body = add_compute_gpu({ body });
+    body = add_node_selectors({ body, node_selectors: data.node_selectors });
+    body = add_service_commands({ body, service_command: data.service_command });
+    body = add_arguments({
+      body,
+      args: data.args,
+      hash: data.hash,
+      username: data.username,
+      password: data.password,
+      label: data.label,
+      target: data.target,
+      generated_label: data.generated_label,
+    });
+    body = add_ports({ body, ports: data.ports });
+    body = add_envs({
+      body,
+      envs: data.envs,
+      hash: data.hash,
+      username: data.username,
+      password: data.password,
+      label: data.label,
+      target: data.target,
+      generated_label: data.generated_label,
+    });
+    body = add_storage({
+      body: body,
+      username: data.username,
+      label: data.label,
+      hash: data.hash,
+      has_storage: data.has_storage,
+    });
 
-  if (data.need_compute_gpu) body = add_compute_gpu({ body });
-  body = add_node_selectors({ body, node_selectors: data.node_selectors });
-  body = add_service_commands({ body, service_command: data.service_command });
-  body = add_arguments({
-    body,
-    args: data.args,
-    hash: data.hash,
-    username: data.username,
-    password: data.password,
-    label: data.label,
-    target: data.target,
-    generated_label: data.generated_label,
-    web_title: data.web_title,
-  });
-  body = add_ports({ body, ports: data.ports });
-  body = add_envs({
-    body,
-    envs: data.envs,
-    hash: data.hash,
-    username: data.username,
-    password: data.password,
-    label: data.label,
-    target: data.target,
-    generated_label: data.generated_label,
-    web_title: data.web_title,
-  });
-  body = add_storage({
-    body: body,
-    username: data.username,
-    label: data.label,
-    hash: data.hash,
-    has_storage: data.has_storage,
-  });
-
-  const url = `/apis/apps/v1/namespaces/n${data.hash}/deployments`;
-  return await fetch({ url, method: 'POST', body }).then((res) => ({
-    result: res,
-    type: 'Deployment',
-    name: `${data.label}${data.hash}`,
-  }));
+    const url = `/apis/apps/v1/namespaces/n${data.hash}/deployments`;
+    return await fetch({ url, method: 'POST', body })
+      .then((res) => ({
+        result: res,
+        type: 'Deployment',
+        name: `${data.label}${data.hash}`,
+      }))
+  } catch (err) { console.debug(err) }
 };
 /**
  * Private function that will add the node_selectors part to the body.
@@ -241,7 +280,7 @@ export const create = async function (props, fetch = kapi.fetch) {
  */
 const add_node_selectors = function (props) {
   const schema = z.object({
-    node_selectors: z.array().default([]),
+    node_selectors: z.array(z.lazy(() => NodeSelector.schema)).default([]),
     body: z.json(),
   });
   const data = Guard.validateProps(schema, props);
@@ -303,7 +342,7 @@ const add_node_selectors = function (props) {
  */
 const add_service_commands = function (props) {
   const schema = z.object({
-    service_command: z.string().min(1).default(''),
+    service_command: z.string().default(''),
     body: z.json(),
   });
   const data = Guard.validateProps(schema, props);
@@ -326,20 +365,18 @@ const add_service_commands = function (props) {
  * @param {String} password password in the final container.
  * @param {String} label label of the container.
  * @param {JSON} body body to update, used to create the final deployment.
- * @param {String} web_title web_title for the UI.
  * @param {String} target target one container to speak to another (alpha).
  * @returns {JSON}
  */
 const add_arguments = function (props) {
   const schema = z.object({
-    args: z.array().default([]),
+    args: z.array(z.lazy(() => Argument.schema)).default([]),
     hash: z.string().min(6).max(6).default(''),
     generated_label: z.string().default(''),
     username: z.string().default(''),
     password: z.string().default(''),
     label: z.string().default(''),
     body: z.json(),
-    web_title: z.string().default(''),
     target: z.string().default(''),
   });
   const data = Guard.validateProps(schema, props);
@@ -350,7 +387,7 @@ const add_arguments = function (props) {
   data.body.spec.template.spec.containers[0].args = [];
   data.args.forEach((arg) => {
     data.body.spec.template.spec.containers[0].args.push(
-      parsing_generic_tags(arg.value, { ...data })
+      parsing_generic_tags(arg.value, { ...data, web_title: `SSH - ${data.generated_label}` })
     );
   });
 
@@ -365,7 +402,7 @@ const add_arguments = function (props) {
  */
 const add_ports = function (props) {
   const schema = z.object({
-    ports: z.array().default([]),
+    ports: z.array(z.lazy(() => Port.schema)).default([]),
     body: z.json(),
   });
   const data = Guard.validateProps(schema, props);
@@ -391,7 +428,6 @@ const add_ports = function (props) {
  * Private function that will add envs part to the body object.
  * @param {Array} envs list of envs to set in the body.
  * @param {JSON} body body to update, used to create the final deployment.
- * @param {String} web_title web_title for the UI.
  * @param {String} generated_label generated label for the application.
  * @param {String} username username in the final container.
  * @param {String} password password in the final container.
@@ -403,12 +439,11 @@ const add_envs = function (props) {
   const schema = z.object({
     hash: z.string().min(6).max(6),
     body: z.json(),
-    envs: z.array().default([]),
+    envs: z.array(z.lazy(() => VariableEnvironment.schema)).default([]),
     username: z.string().default(''),
     password: z.string().default(''),
     label: z.string().default(''),
     generated_label: z.string().default(''),
-    web_title: z.string().default(''),
   });
   const data = Guard.validateProps(schema, props);
 
@@ -421,7 +456,7 @@ const add_envs = function (props) {
     ...data.envs.map((env) => ({
       name: env.key,
       value: parsing_generic_tags(env.value, {
-        ...data,
+        ...data, web_title: `SSH - ${data.generated_label}`
       }),
     }))
   );
@@ -591,7 +626,7 @@ export const get_pods = async (
   return await fns
     .fetch({
       method: 'GET',
-      url: `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/pods`,
+      url: `/api/v1/namespaces/n${data.hash}/pods`,
     })
     .then((r) => {
       for (let item of r.items) {
@@ -620,7 +655,7 @@ export const get_deployments = async (
   return await fns
     .fetch({
       method: 'GET',
-      url: `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/deployments`,
+      url: `/apis/apps/v1/namespaces/n${data.hash}/deployments`,
     })
     .then((r) => {
       for (let item of r.items) {
@@ -649,7 +684,7 @@ export const get_replicasets = async (
   return await fns
     .fetch({
       method: 'GET',
-      url: `${CONFIG.KUBERNETES_URL}/apis/apps/v1/namespaces/n${data.hash}/replicasets`,
+      url: `/apis/apps/v1/namespaces/n${data.hash}/replicasets`,
     })
     .then((r) => {
       for (let item of r.items) {

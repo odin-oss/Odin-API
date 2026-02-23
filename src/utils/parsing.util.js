@@ -51,7 +51,25 @@ export const parsingK8SObjects = function (
 ) {
   const schema = z.object({
     hash: z.string().min(6).max(6),
-    items: z.array().default([]),
+    items: z
+      .array(
+        z.object({
+          kind: z.string(),
+          metadata: z.preprocess(
+            (val) => (typeof val === 'string' ? JSON.parse(val) : val),
+            z.any()
+          ),
+          spec: z.preprocess(
+            (val) => (typeof val === 'string' ? JSON.parse(val) : val),
+            z.any()
+          ),
+          status: z.preprocess(
+            (val) => (typeof val === 'string' ? JSON.parse(val) : val),
+            z.any()
+          ),
+        })
+      )
+      .default([]),
   });
   const data = Guard.validateProps(schema, props);
   const result = {

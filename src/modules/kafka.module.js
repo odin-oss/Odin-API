@@ -171,7 +171,6 @@ const applicationStateConsumption = async (props) => {
           }
         },
         z.object({
-          value: z.string().min(1),
           hash: z.string(),
           state: z.string(),
         })
@@ -256,6 +255,7 @@ const state_updater = async (
   }
 ) => {
   const schema = z.object({
+    hash: z.string().min(6).max(6),
     state_application: z.enum([
       'Ready',
       'Off',
@@ -313,7 +313,7 @@ const storage_updater = async (
  * Function that will publish all the states after fetching them in the Kafka topic.
  * @param {Function} fns overwriting functions for tests
  */
-export const publish = async (
+export const startKafkaPublication = async (
   fns = {
     connect: producer.connect,
     send: producer.send,
@@ -332,7 +332,21 @@ export const publish = async (
         );
       }
 
-      const hashes = (await fns.list()).map((app) => app.hash);
+      const hashes = (
+        await fns.list({
+          filter: [
+            'Ready',
+            'Off',
+            'Getting ready',
+            'Error',
+            'DeletedLaunch',
+            'DeletedDownload',
+            'DeletedDone',
+            'DeletedError',
+            'Scheduled',
+          ],
+        })
+      ).map((app) => app.hash);
       const content = await fns.get_k8s_object({ hashes });
 
       if (CONFIG.KAFKA_ACTIVATED) {

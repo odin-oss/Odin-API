@@ -316,3 +316,28 @@ export const create = async function (
       return r;
     });
 };
+
+/**
+ * Get applications scheduled to start.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Array<Application>}
+ */
+export const getScheduledApplications = async function (
+  fns = {
+    application_scheduled: application_builder.getScheduledApplications,
+    environment_get: environment_builder.get,
+  }
+) {
+  const applications = await fns.application_scheduled();
+  const promises = applications.map((app) =>
+    fns.environment_get({ id_environment: app.id_environment })
+  );
+  return await Promise.all(promises).then((environments) => {
+    for (const application of applications) {
+      application.environment = environments.filter(
+        (env) => env.id_environment === application.id_environment
+      )[0];
+    }
+    return applications;
+  });
+};

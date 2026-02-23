@@ -54,7 +54,7 @@ export const smashExport = async function (props, fetch = kapi.fetch) {
       namespace: `n${data.hash}`,
       labels: {
         hash: `${data.hash}`,
-        app: 'cirrus-storage-carrier',
+        app: 'odin-storage-carrier',
       },
     },
     spec: {
@@ -62,7 +62,7 @@ export const smashExport = async function (props, fetch = kapi.fetch) {
       ttlSecondsAfterFinished: 60,
       template: {
         spec: {
-          // serviceAccountName: 'sa-cirrus-storage-carrier',
+          // serviceAccountName: 'sa-odin-storage-carrier',
           volumes: [
             {
               name: `${data.label}${data.hash}-pvc`,

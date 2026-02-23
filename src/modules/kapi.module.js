@@ -54,7 +54,6 @@ export const fetch = async function (
   if (method !== 'GET' && method !== 'DELETE') {
     options.body = raw_body;
   }
-
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const res = await fetch(`${CONFIG.KUBERNETES_URL}${url}`, options);
@@ -63,29 +62,41 @@ export const fetch = async function (
         throw new KubernetesAPITimedOut(
           'Kubernetes API timed out or bad gateway'
         );
-      else if (res.status >= 400)
+      else if (res.status === 409 && res.statusText === 'Conflict') {
+        logs.debug(
+          `[KUBERNETES][${res.status}] / : ${body.kind} ${body.metadata.name} Already present on the cluster (in namespace ${body.metadata.namespace}).`
+        );
+        return `${body.kind} ${body.metadata.name} Already present on the cluster (in namespace ${body.metadata.namespace}).`;
+      }
+
+      let fetchData;
+      if (contentType?.includes('application/json')) {
+        fetchData = await res.json();
+      } else {
+        fetchData = await res.text();
+      }
+
+      if (res.status >= 400) {
+        logs.debug(
+          `[KUBERNETES][${res.status}] / : ${body.kind} ${body.metadata.name} (in namespace ${body.metadata.namespace}) says : `,
+          fetchData
+        );
         throw new KubernetesErrorNotDefined(
           `Kubernetes API returned status code ${res.status}`
         );
+      }
 
-      let data;
-      if (contentType?.includes('application/json')) {
-        data = await res.json();
-      } else {
-        data = await res.text();
-      }
       if (typeof data === 'string') {
-        if (data.includes('the target machine actively refused it'))
-          throw new ConnetexKubernetesAPIError(data);
-        if (data.includes('x509: cannot verify signature'))
-          throw new KubernetesAPIx509Certificate(data);
-      } else if (typeof data === 'object') {
-        if (data.reason === 'AlreadyExists')
-          throw new ObjectsAlreadyExistsError(data.message);
+        if (fetchData.includes('the target machine actively refused it'))
+          throw new ConnetexKubernetesAPIError(fetchData);
+        if (fetchData.includes('x509: cannot verify signature'))
+          throw new KubernetesAPIx509Certificate(fetchData);
+      } else if (typeof fetchData === 'object') {
+        if (fetchData.reason === 'AlreadyExists')
+          throw new ObjectsAlreadyExistsError(fetchData.message);
       }
-      return data;
+      return fetchData;
     } catch (err) {
-      logs.debug(`[SYSTEM][DEBUG] / : Kubernetes API error ${err}`);
       if (attempt < retries) {
         // Wait before retrying
         await new Promise((resolve) => setTimeout(resolve, retryDelay));

@@ -95,7 +95,7 @@ export const get_pvc = async (
   return await fns
     .fetch({
       method: 'GET',
-      url: `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/persistentvolumeclaims`,
+      url: `/api/v1/namespaces/n${data.hash}/persistentvolumeclaims`,
     })
     .then((r) => {
       for (let item of r.items) {

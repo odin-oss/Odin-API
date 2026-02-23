@@ -754,7 +754,6 @@ export const attach_envs = async function (props, fns = { get }) {
     await Promise.all(promises);
     return await fns.get(data);
   } catch (err) {
-    console.log(err);
     throw dbManager.sequelizeErrorManagement(err);
   }
 };

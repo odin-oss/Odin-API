@@ -28,12 +28,20 @@ import dbManager from './config/db.config.js';
 import { fetch as kong } from './modules/kong-api.module.js';
 import { fetch as kapi } from './modules/kapi.module.js';
 import pkg from '../package.json' with { type: 'json' };
+import cron from 'node-cron';
 import { Sequelize } from 'sequelize';
 import {
   createKafkaTopics,
-  publish,
   startKafkaConsumption,
+  startKafkaPublication,
 } from './modules/kafka.module.js';
+import {
+  launch_delete_apps,
+  launch_scheduled_applications,
+  launch_stop_applications,
+  launch_stop_sessions,
+} from './modules/cron.module.js';
+import { create } from './objects/kubernetes/namespace.js';
 
 // TEST CONNECT TO PSQL DB
 logger.info(`[SYSTEM][100] / : Trying to connect to PSQL.`);
@@ -83,7 +91,7 @@ if (CONFIG.KAFKA_ACTIVATED) {
       process.exit(0);
     });
 
-  await publish()
+  await startKafkaPublication()
     .then(() => logger.info(`[SYSTEM][200] / : 2/5. Kafka producer connected.`))
     .catch((error) => {
       logger.error(
@@ -110,7 +118,7 @@ else logger.warn(`[SYSTEM][200] / : 3/5. KONG disabled.`);
 
 // TEST CONNECT TO Kubernetes API
 logger.info(`[SYSTEM][100] / : Trying to connect to Kubernetes API.`);
-if (CONFIG.KUBERNETES_ACTIVATED)
+if (CONFIG.KUBERNETES_ACTIVATED) {
   await kapi({ url: '/healthz', method: 'get' })
     .then(() => logger.info(`[SYSTEM][200] / : 4/5. Kubernetes API reachable.`))
     .catch((error) => {
@@ -120,7 +128,66 @@ if (CONFIG.KUBERNETES_ACTIVATED)
       logger.debug(error);
       process.exit(0);
     });
-else logger.warn(`[SYSTEM][200] / : 4/5. Kubernetes API disabled.`);
+  await create({ hash: 'odin' })
+    .then(() =>
+      logger.info(
+        `[SYSTEM][200] / : 4/5. Odin has created the 'odin' namespace on the cluster.`
+      )
+    )
+    .catch((error) => {
+      logger.error(
+        `[SYSTEM][500] / : 4/5. Kubernetes API Error during creation of 'odin' namespace : ${error}`
+      );
+      logger.debug(error);
+      process.exit(0);
+    });
+} else logger.warn(`[SYSTEM][200] / : 4/5. Kubernetes API disabled.`);
+
+// ADVICES AND WARNINGS
+if (CONFIG.KUBERNETES_ACTIVATED && !CONFIG.KUBERNETES_ISTIO_ACTIVATED)
+  logger.warn(
+    `[SYSTEM][SECURITY] / : 4/5. CAUTION ! You should enable Istio on your cluster.`
+  );
+
+// LAUNCHING CRONS
+logger.info(
+  `[SYSTEM][CRON] / : Starting detection of applications scheduled to be started.`
+);
+cron.schedule('*/2 * * * * *', () => {
+  logger.debug('[CRON][200] Checking applications scheduled to be started.');
+  launch_scheduled_applications().then(
+    (response) =>
+      response !== 0 &&
+      logger.info('[CRON][200] ' + response + ' applications started.')
+  );
+});
+logger.info(`[SYSTEM][CRON] / : Starting detection of applications to stop.`);
+cron.schedule('*/30 * * * * *', () => {
+  logger.debug('[CRON][200] Checking for applications to stop.');
+  launch_stop_applications().then(
+    (response) =>
+      response !== 0 &&
+      logger.info('[CRON][200] ' + response + ' applications stopped.')
+  );
+});
+logger.info(`[SYSTEM][CRON] / : Starting detection of sessions to stop.`);
+cron.schedule('*/30 * * * * *', () => {
+  logger.debug('[CRON][200] Checking for sessions to stop.');
+  launch_stop_sessions().then(
+    (response) =>
+      response !== 0 &&
+      logger.info('[CRON][200] ' + response + ' sessions stopped.')
+  );
+});
+logger.info(`[SYSTEM][CRON] / : Starting detection of applications to delete.`);
+cron.schedule('*/30 * * * * *', () => {
+  logger.debug('[CRON][200] Checking for applications to delete.');
+  launch_delete_apps().then(
+    (response) =>
+      response !== 0 &&
+      logger.info('[CRON][200] ' + response + ' application deleted.')
+  );
+});
 
 const optionsJSdoc = {
   definition: {

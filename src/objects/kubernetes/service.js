@@ -47,7 +47,9 @@ export const create = async function (props, fetch = kapi.fetch) {
     label: z.string(),
     port_externe: z.number().positive(),
     port_interne: z.number().positive(),
-    type: z.instanceof(SVC_TYPE).default(SVC_TYPE.CLUSTERIP),
+    type: z
+      .union([z.literal(SVC_TYPE.LOADBALANCER), z.literal(SVC_TYPE.CLUSTERIP)])
+      .default(SVC_TYPE.CLUSTERIP),
     shutable: z.boolean().default(true),
   });
   const data = Guard.validateProps(schema, props);
@@ -82,11 +84,13 @@ export const create = async function (props, fetch = kapi.fetch) {
     },
   };
   const url = `/api/v1/namespaces/n${data.hash}/services`;
-  return await fetch({ url, method: 'POST', body }).then((res) => ({
-    result: res,
-    type: 'Service',
-    name: `${prefix}${data.label}${data.hash}${data.port_externe}`,
-  }));
+  return await fetch({ url, method: 'POST', body })
+    .then((res) => ({
+      result: res,
+      type: 'Service',
+      name: `${prefix}${data.label}${data.hash}${data.port_externe}`,
+    }))
+    .catch(console.debug);
 };
 
 /**
@@ -149,7 +153,7 @@ export const get_services = async (
   return await fns
     .fetch({
       method: 'GET',
-      url: `${CONFIG.KUBERNETES_URL}/api/v1/namespaces/n${data.hash}/services`,
+      url: `/api/v1/namespaces/n${data.hash}/services`,
     })
     .then((r) => {
       for (let item of r.items) {

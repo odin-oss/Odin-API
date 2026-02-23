@@ -74,21 +74,15 @@ const envSchema = z.object({
     .string()
     .default('/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'),
   KUBERNETES_AGENT: z.any().default(undefined),
+  KUBERNETES_ISTIO_ACTIVATED: z
+    .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+    .transform((val) => val === 'true')
+    .default(true),
 
   // WINSTON LOGGER CONFIGURATION
   LOG_PATH: z.string().default('log'),
   LOG_LEVEL: z.string().default('info'),
   LOG_LEVEL_EXCEPTIONS: z.string().default('debug'),
-
-  // MONGODB CONFIGURATION
-  MONGODB_ACTIVATED: z
-    .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
-    .transform((val) => val === 'true')
-    .default(true),
-  MONGODB_URL: z.string().default('localhost:27017'),
-  MONGODB_USERNAME: z.string().default('odin'),
-  MONGODB_PASSWORD: z.string().default('odin'),
-  MONGODB_DB: z.string().default('odin_db'),
 
   // REGISTRY
   REGISTRY_URL: z.string().default('registry.gitlab.com'),
@@ -121,8 +115,8 @@ if (!parsed.success) {
 const CONFIG = parsed.data;
 
 if (
-  !['test'].includes(CONFIG.APP_ENVIRONMENT) ||
-  process.env.KUBERNETES_TOKEN_PATH
+  !['test'].includes(CONFIG.APP_ENVIRONMENT) &&
+  process.env.KUBERNETES_CA_CERT_PATH
 ) {
   const token =
     (process.env.KUBERNETES_TOKEN_PATH &&
