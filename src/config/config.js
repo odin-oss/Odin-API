@@ -25,7 +25,8 @@ const envSchema = z.object({
   APP_TOKEN_EXPIRATION_HOURS: z.string().transform(Number).default(24),
   APP_TZ: z.string().default('Europe/Paris'),
   USER_APPS_EXPIRATION_HOURS: z.string().transform(Number).default(6),
-  USER_APPS_HOSTNAME: z.string().default('localhost'),
+  TLS_ODIN_DASHBOARD: z.string().default('app.getodin.cloud'),
+  TLS_ODIN_MONOLITH: z.string().default('api.app.getodin.cloud'),
 
   // ICON OF IMAGES
   MAX_CONTENT_SIZE: z.string().default('5mb'),
@@ -44,6 +45,10 @@ const envSchema = z.object({
 
   // KAFKA CLUSTER
   KAFKA_BROKER: z.string().default('broker:29092'),
+  KAFKA_ACTIVATED: z
+    .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+    .transform((val) => val === 'true')
+    .default(true),
   KAFKA_TOPIC: z.string().default('upload-logs'),
 
   // KONG - APPS INGRESS
@@ -70,21 +75,15 @@ const envSchema = z.object({
     .string()
     .default('/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'),
   KUBERNETES_AGENT: z.any().default(undefined),
+  KUBERNETES_ISTIO_ACTIVATED: z
+    .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+    .transform((val) => val === 'true')
+    .default(true),
 
   // WINSTON LOGGER CONFIGURATION
   LOG_PATH: z.string().default('log'),
   LOG_LEVEL: z.string().default('info'),
   LOG_LEVEL_EXCEPTIONS: z.string().default('debug'),
-
-  // MONGODB CONFIGURATION
-  MONGODB_ACTIVATED: z
-    .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
-    .transform((val) => val === 'true')
-    .default(true),
-  MONGODB_URL: z.string().default('localhost:27017'),
-  MONGODB_USERNAME: z.string().default('odin'),
-  MONGODB_PASSWORD: z.string().default('odin'),
-  MONGODB_DB: z.string().default('odin_db'),
 
   // REGISTRY
   REGISTRY_URL: z.string().default('registry.gitlab.com'),
@@ -116,8 +115,14 @@ if (!parsed.success) {
 }
 const CONFIG = parsed.data;
 
-if (!['local', 'test'].includes(CONFIG.APP_ENVIRONMENT)) {
-  const token = await fs.readFile(CONFIG.KUBERNETES_TOKEN_PATH, 'utf-8');
+if (
+  !['test'].includes(CONFIG.APP_ENVIRONMENT) &&
+  process.env.KUBERNETES_CA_CERT_PATH
+) {
+  const token =
+    (process.env.KUBERNETES_TOKEN_PATH &&
+      (await fs.readFile(CONFIG.KUBERNETES_TOKEN_PATH, 'utf-8'))) ||
+    CONFIG.KUBERNETES_TOKEN;
   CONFIG.KUBERNETES_TOKEN = token;
   const ca = await fs.readFile(CONFIG.KUBERNETES_CA_CERT_PATH, 'utf-8');
   CONFIG.KUBERNETES_AGENT = new https.Agent({ ca });

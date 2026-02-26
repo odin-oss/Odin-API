@@ -76,6 +76,35 @@ const execute_creation = async function (props, fetch = kapi.fetch) {
   }));
 };
 
+/**
+ * Function that will fetch kapi to get all the PVC in a specific namespace.
+ * @param {String} hash unique hash to identify the application on the cluster.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {JSON}
+ */
+export const get_pvc = async (
+  props,
+  fns = {
+    fetch: kapi.fetch,
+  }
+) => {
+  const schema = z.object({
+    hash: z.string().min(6).max(6),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns
+    .fetch({
+      method: 'GET',
+      url: `/api/v1/namespaces/n${data.hash}/persistentvolumeclaims`,
+    })
+    .then((r) => {
+      for (let item of r.items) {
+        item.kind = 'PersistentVolumeClaim';
+      }
+      return r;
+    });
+};
+
 const test_exports = {};
 if (CONFIG.APP_ENVIRONMENT === 'test') {
   test_exports.execute_creation = execute_creation;

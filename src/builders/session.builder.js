@@ -13,7 +13,8 @@ import { User } from '../objects/User.js';
 import { Application } from '../objects/Application.js';
 import moment from 'moment-timezone';
 import Guard from '../utils/guard.util.js';
-import z, { int } from 'zod';
+import z from 'zod';
+import { literal, Op } from 'sequelize';
 
 /**
  * Attribute the session to a professor in the database
@@ -329,7 +330,7 @@ export const get_on_professeur = async function (props) {
 
 /**
  * Get session if user is ADMINISTRATEUR.
- * @param {*} props
+ * @param {Number} id_session id of the session to get
  */
 export const get_on_administrateur = async function (props) {
   const schema = z.object({
@@ -337,7 +338,7 @@ export const get_on_administrateur = async function (props) {
   });
   const data = Guard.validateProps(schema, props);
 
-  const promise = dbManager.models.SESSION.findOne({
+  return await dbManager.models.SESSION.findOne({
     where: {
       id_session: data.id_session,
     },
@@ -367,8 +368,7 @@ export const get_on_administrateur = async function (props) {
         ],
       },
     ],
-  });
-  return await promise
+  })
     .then((result) => {
       const session = new Session({
         ...result.dataValues,
@@ -392,6 +392,56 @@ export const get_on_administrateur = async function (props) {
       }
       return session;
     })
+    .catch(dbManager.sequelizeErrorManagement);
+};
+
+/**
+ * Builder that get the list of all applications scheduled to be stopped because of end of session.
+ * @returns {Array<Session>}
+ */
+export const getSessionToShutdown = async function () {
+  const id_state = await dbManager.models.ENUM_STATE_APPLICATION.findOne({
+    where: {
+      label: 'EndedSession',
+    },
+  });
+  const options = {
+    include: [
+      {
+        model: dbManager.models.SESSION,
+        required: true,
+        where: {
+          end_date: {
+            [Op.lt]: literal(
+              `DATE_TRUNC('minute', NOW() AT TIME ZONE '${CONFIG.APP_TZ}')`
+            ),
+          },
+        },
+      },
+      {
+        model: dbManager.models.APPLICATION,
+        required: true,
+        include: [
+          {
+            model: dbManager.models.DATACENTER,
+            required: false,
+          },
+        ],
+        where: {
+          id_enum_state_application: {
+            [Op.ne]: id_state.id_enum_state_application,
+          },
+        },
+      },
+    ],
+  };
+  return await dbManager.models.SESSION_HAS_USER.findAll(options)
+    .then((applications) =>
+      applications.map((app) => ({
+        hash: app.APPLICATION.hash,
+        datacenter: app.APPLICATION.DATACENTER,
+      }))
+    )
     .catch((err) => {
       throw dbManager.sequelizeErrorManagement(err);
     });

@@ -11,11 +11,12 @@ export default class Guard {
    * Validate the properties of an object with a zod schema and throw an error if the validation fails.
    * @param {ZodSchema} schema
    * @param {Object} props
-   * @returns
+   * @returns {JSON}
    */
   static validateProps = function (schema, props) {
     const result = schema.safeParse(props);
     if (!result.success) {
+      logs.debug(result.error);
       const isMissing = result.error.issues.some(
         (i) => i.code === 'invalid_type'
       );

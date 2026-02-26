@@ -6,9 +6,7 @@ import NodeSelector from '../objects/NodeSelector.js';
  * @returns {Array<NodeSelector}
  */
 export const list = async function () {
-    return await dbManager.models.NODE_SELECTOR.findAll()
-        .then((result) => result.map((r) =>new NodeSelector(r.dataValues)))
-        .catch((err) => {
-            throw dbManager.sequelizeErrorManagement(err);
-        });
+  return await dbManager.models.NODE_SELECTOR.findAll()
+    .then((result) => result.map((r) => new NodeSelector(r.dataValues)))
+    .catch(dbManager.sequelizeErrorManagement);
 };

@@ -6,9 +6,9 @@ import dbManager from '../config/db.config.js';
  * @returns {Array<VariableEnvironment>}
  */
 export const list = async function () {
-    return await dbManager.models.VARIABLE_ENVIRONMENT.findAll()
-        .then((varenvs) => varenvs.map((varenv) => new VariableEnvironment(varenv.dataValues)))
-        .catch((err) => {
-            throw dbManager.sequelizeErrorManagement(err);
-        });
+  return await dbManager.models.VARIABLE_ENVIRONMENT.findAll()
+    .then((varenvs) =>
+      varenvs.map((varenv) => new VariableEnvironment(varenv.dataValues))
+    )
+    .catch(dbManager.sequelizeErrorManagement);
 };

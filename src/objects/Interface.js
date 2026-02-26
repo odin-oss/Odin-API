@@ -65,42 +65,81 @@ export class Interface {
   static schema = z.object({
     id_interface: z.coerce.number().int().optional(),
     id_type: z.coerce.number().int().optional(),
-    label: z.preprocess(
-      (val) =>
-        String(val)
-          .replace(/[^a-zA-Z0-9-]/g, '')
-          .toLowerCase(),
-      z.string().min(2).max(255)
-    ).default(''),
+    label: z
+      .preprocess(
+        (val) =>
+          String(val)
+            .replace(/[^a-zA-Z0-9-]/g, '')
+            .toLowerCase(),
+        z.string().min(2).max(255)
+      )
+      .default(''),
     default_label: z.string().default(''),
     registry_link: z.string().default(''),
     exec_command: z.string().default(''),
     service_command: z.string().default(''),
     label_type_image: z.string().default(''),
-    ram_request: z.string({ invalid_type_error: "The RAM value must be a string." })
-      .regex(/^\d+(Gi|Mi)$/, { message: "The RAM value must be as xxGi or xxMi, xx being the integer." }).default(''),
-    ram_limit: z.string({ invalid_type_error: "The RAM value must be a string." })
-      .regex(/^\d+(Gi|Mi)$/, { message: "The RAM value must be as xxGi or xxMi, xx being the integer." }).default(''),
-    cpu_request: z.union([
-      z.number().int({ message: "The CPU must be a string or an integer." }),
-      z.string().regex(/^\d+m?$/, { message: "The string value of the CPU must be xx or xxm, xx being the integer." })]).default(''),
-    cpu_limit: z.union([
-      z.number().int({ message: "The CPU must be a string or an integer." }),
-      z.string().regex(/^\d+m?$/, { message: "The string value of the CPU must be xx or xxm, xx being the integer." })]).default(''),
-    egress_bandwidth: z.string({ invalid_type_error: "The bandwidth must be sent in string." })
-      .regex(/^\d+[MG]$/, { message: "The bandwidth should be like xxM or xxG, xx being your number value." }).default(''),
-    ingress_bandwidth: z.string({ invalid_type_error: "The bandwidth must be sent in string." })
-      .regex(/^\d+[MG]$/, { message: "The bandwidth should be like xxM or xxG, xx being your number value." }).default(''),
-    privileged: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+    ram_request: z
+      .string({ invalid_type_error: 'The RAM value must be a string.' })
+      .regex(/^\d+(Gi|Mi)$/, {
+        message: 'The RAM value must be as xxGi or xxMi, xx being the integer.',
+      })
+      .default(''),
+    ram_limit: z
+      .string({ invalid_type_error: 'The RAM value must be a string.' })
+      .regex(/^\d+(Gi|Mi)$/, {
+        message: 'The RAM value must be as xxGi or xxMi, xx being the integer.',
+      })
+      .default(''),
+    cpu_request: z
+      .union([
+        z.number().int({ message: 'The CPU must be a string or an integer.' }),
+        z.string().regex(/^\d+m?$/, {
+          message:
+            'The string value of the CPU must be xx or xxm, xx being the integer.',
+        }),
+      ])
+      .default(''),
+    cpu_limit: z
+      .union([
+        z.number().int({ message: 'The CPU must be a string or an integer.' }),
+        z.string().regex(/^\d+m?$/, {
+          message:
+            'The string value of the CPU must be xx or xxm, xx being the integer.',
+        }),
+      ])
+      .default(''),
+    egress_bandwidth: z
+      .string({ invalid_type_error: 'The bandwidth must be sent in string.' })
+      .regex(/^\d+[MG]$/, {
+        message:
+          'The bandwidth should be like xxM or xxG, xx being your number value.',
+      })
+      .default(''),
+    ingress_bandwidth: z
+      .string({ invalid_type_error: 'The bandwidth must be sent in string.' })
+      .regex(/^\d+[MG]$/, {
+        message:
+          'The bandwidth should be like xxM or xxG, xx being your number value.',
+      })
+      .default(''),
+    privileged: z
+      .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
       .transform((val) => val === 'true')
-      .default(false).default(false),
-    need_compute_gpu: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+      .default(false),
+    need_compute_gpu: z
+      .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
       .transform((val) => val === 'true')
-      .default(false).default(false),
-    need_graphical_rendering_gpu: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+      .default(false),
+    need_graphical_rendering_gpu: z
+      .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
       .transform((val) => val === 'true')
-      .default(false).default(false),
-    readiness_probe_initial_delay: z.coerce.number().int().positive().default(0),
+      .default(false),
+    readiness_probe_initial_delay: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(0),
     liveness_probe_initial_delay: z.coerce.number().int().positive().default(0),
     readiness_probe_period: z.coerce.number().int().positive().default(0),
     liveness_probe_period: z.coerce.number().int().positive().default(0),

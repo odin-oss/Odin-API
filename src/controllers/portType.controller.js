@@ -9,16 +9,25 @@ import logs from '../middlewares/winston.js';
  * @param {Function} fns overwriting functions for tests.
  */
 export const list = async function (
-    req,
-    res,
-    fns = {
-        list: portType_service.list,
-    }
+  req,
+  res,
+  fns = {
+    list: portType_service.list,
+  }
 ) {
-    await fns.list()
-        .then((response) => ApiResponse.success(req, res, response.map((pt) => pt.toJSON()), 200, 'List of port Type type transmitted.'))
-        .catch((error) => {
-            logs.debug(error);
-            ApiResponse.error(req, res, error);
-        });
+  await fns
+    .list()
+    .then((response) =>
+      ApiResponse.success(
+        req,
+        res,
+        response.map((pt) => pt.toJSON()),
+        200,
+        'List of port Type type transmitted.'
+      )
+    )
+    .catch((error) => {
+      logs.debug(error);
+      ApiResponse.error(req, res, error);
+    });
 };

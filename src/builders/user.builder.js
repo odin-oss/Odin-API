@@ -45,9 +45,7 @@ export const get = async function (props) {
         role: r.USER_ROLE.label,
       });
     })
-    .catch((err) => {
-      throw dbManager.sequelizeErrorManagement(err);
-    });
+    .catch(dbManager.sequelizeErrorManagement);
 };
 
 /**

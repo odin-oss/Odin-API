@@ -33,7 +33,7 @@ const router = express.Router();
  */
 
 router.get('/list', isTokenValid, isAdmin, async (req, res) => {
-    nodeSelector_controller.list(req, res);
+  nodeSelector_controller.list(req, res);
 });
 
 /**

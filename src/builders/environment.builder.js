@@ -7,6 +7,12 @@ import {
   DBObjectAlreadyExists,
   DBObjectNotFound,
 } from '../utils/errors.util.js';
+import NodeSelector from '../objects/NodeSelector.js';
+import Argument from '../objects/Argument.js';
+import Port from '../objects/Port.js';
+import PortType from '../objects/Port_type.js';
+import VariableEnvironment from '../objects/Variable_environment.js';
+import { Op } from 'sequelize';
 
 /**
  * Builder that list all the environments in database.
@@ -62,9 +68,7 @@ export const list = async function () {
       }
       return result;
     })
-    .catch((err) => {
-      throw dbManager.sequelizeErrorManagement(err);
-    });
+    .catch(dbManager.sequelizeErrorManagement);
 };
 
 /**
@@ -78,7 +82,7 @@ export const get = async function (props) {
       id_environment: z.coerce.number().int().positive(),
     });
     const data = Guard.validateProps(schema, props);
-    return await dbManager.models.ENVIRONMENT.findOne({
+    const environment = await dbManager.models.ENVIRONMENT.findOne({
       where: {
         id_environment: data.id_environment,
       },
@@ -88,92 +92,90 @@ export const get = async function (props) {
           include: [
             {
               model: dbManager.models.INTERFACE,
-              include: [
-                {
-                  model: dbManager.models.IMAGE_TYPE,
-                  required: true,
-                },
-                {
-                  model: dbManager.models.INTERFACE_HAS_ARGUMENT,
-                  separate: true,
-                  include: [
-                    {
-                      model: dbManager.models.ARGUMENT,
-                      order: [['id_argument', 'DESC']],
-                    },
-                  ],
-                },
-                {
-                  model: dbManager.models.INTERFACE_HAS_NODE_SELECTOR,
-                  separate: true,
-                  include: [
-                    {
-                      model: dbManager.models.NODE_SELECTOR,
-                    },
-                  ],
-                },
-                {
-                  model: dbManager.models.INTERFACE_HAS_PORT,
-                  separate: true,
-                  include: [
-                    {
-                      model: dbManager.models.PORT_TYPE,
-                    },
-                  ],
-                },
-                {
-                  model: dbManager.models.INTERFACE_HAS_VARIABLE,
-                  separate: true,
-                  include: [
-                    {
-                      model: dbManager.models.VARIABLE_ENVIRONMENT,
-                    },
-                  ],
-                },
-              ],
             },
           ],
         },
       ],
-      order: [['id_environment', 'ASC']],
-    }).then((env) => {
-      if (env == null)
+    });
+    if (environment == null)
+      throw new DBObjectNotFound('The environment does not exist.');
+    return await dbManager.models.INTERFACE.findAll({
+      where: {
+        id_interface: {
+          [Op.in]: environment.ENVIRONMENT_HAS_INTERFACEs.map(
+            (ehi) => ehi.id_interface
+          ),
+        },
+      },
+      include: [
+        {
+          model: dbManager.models.IMAGE_TYPE,
+        },
+        {
+          model: dbManager.models.INTERFACE_HAS_ARGUMENT,
+          include: [
+            {
+              model: dbManager.models.ARGUMENT,
+              order: [['id_argument', 'DESC']],
+            },
+          ],
+        },
+        {
+          model: dbManager.models.INTERFACE_HAS_NODE_SELECTOR,
+          include: [
+            {
+              model: dbManager.models.NODE_SELECTOR,
+            },
+          ],
+        },
+        {
+          model: dbManager.models.INTERFACE_HAS_PORT,
+          include: [
+            {
+              model: dbManager.models.PORT_TYPE,
+            },
+          ],
+        },
+        {
+          model: dbManager.models.INTERFACE_HAS_VARIABLE,
+          include: [
+            {
+              model: dbManager.models.VARIABLE_ENVIRONMENT,
+            },
+          ],
+        },
+      ],
+    }).then((interfaces) => {
+      if (interfaces == null)
         throw new DBObjectNotFound('The environment does not exist.');
       return new Environment({
-        ...env.dataValues,
-        interfaces: env.ENVIRONMENT_HAS_INTERFACEs.map(
+        ...environment.dataValues,
+        interfaces: interfaces.map(
           (inter) =>
             new Interface({
-              ...inter.INTERFACE.dataValues,
-              label: inter.label,
-              id_type: inter.INTERFACE.IMAGE_TYPE.id_type,
-              label_type_image: inter.INTERFACE.IMAGE_TYPE.label,
-              args: inter.INTERFACE.INTERFACE_HAS_ARGUMENTs.sort(
+              ...inter.dataValues,
+              label: environment.ENVIRONMENT_HAS_INTERFACEs.find(
+                (ehi) => ehi.id_interface === inter.id_interface
+              ).label,
+              id_type: inter.IMAGE_TYPE.id_type,
+              label_type_image: inter.IMAGE_TYPE.label,
+              args: inter.INTERFACE_HAS_ARGUMENTs.sort(
                 (a, b) => a.id_argument - b.id_argument
-              ).map((arg) => ({
-                id_argument: arg.id_argument,
-                value: arg.ARGUMENT.value,
-              })),
-              node_selectors: inter.INTERFACE.INTERFACE_HAS_NODE_SELECTORs.map(
-                (ins) => ({
-                  id_node_selector: ins.id_node_selector,
-                  key: ins.NODE_SELECTOR.key,
-                  value: ins.NODE_SELECTOR.value,
-                })
+              ).map((arg) => new Argument(arg.ARGUMENT.dataValues)),
+              node_selectors: inter.INTERFACE_HAS_NODE_SELECTORs.map(
+                (ins) => new NodeSelector(ins.NODE_SELECTOR.dataValues)
               ),
-              ports: inter.INTERFACE.INTERFACE_HAS_PORTs.map((ihp) => ({
-                id_port_type: ihp.id_port_type,
-                port: ihp.port,
-                label: ihp.label,
-                port_type: ihp.PORT_TYPE.label,
-                display_name: ihp.display_name,
-                icon: ihp.icon,
-              })),
-              envs: inter.INTERFACE.INTERFACE_HAS_VARIABLEs.map((ihv) => ({
-                id_variable_environment: ihv.id_variable_environment,
-                key: ihv.VARIABLE_ENVIRONMENT.key,
-                value: ihv.VARIABLE_ENVIRONMENT.value,
-              })),
+              ports: inter.INTERFACE_HAS_PORTs.map(
+                (ihp) =>
+                  new Port({
+                    ...ihp.dataValues,
+                    port_type: new PortType(ihp.PORT_TYPE.dataValues),
+                  })
+              ),
+              envs: inter.INTERFACE_HAS_VARIABLEs.map(
+                (ihv) =>
+                  new VariableEnvironment(ihv.VARIABLE_ENVIRONMENT.dataValues)
+              ),
             })
         ),
       });

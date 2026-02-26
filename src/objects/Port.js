@@ -1,6 +1,6 @@
-import z from "zod";
-import PortType from "./Port_type.js";
-import Guard from "../utils/guard.util.js";
+import z from 'zod';
+import PortType from './Port_type.js';
+import Guard from '../utils/guard.util.js';
 
 export default class Port {
   #id_port_type;
@@ -19,14 +19,14 @@ export default class Port {
     this.#icon = data.icon;
     this.#display_name = data.display_name;
   }
-// Zod Schema for object validation
+  // Zod Schema for object validation
   static schema = z.object({
     id_port_type: z.coerce.number().int().positive().optional(),
     port: z.coerce.number().positive().optional(),
     label: z.string().optional(),
     icon: z.string().optional(),
     display_name: z.string().optional(),
-    port_type: z.lazy(() => z.instanceof(PortType)).optional()
+    port_type: z.lazy(() => z.instanceof(PortType)).optional(),
   });
 
   get id_port_type() {

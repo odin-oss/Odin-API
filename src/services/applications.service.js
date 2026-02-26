@@ -137,8 +137,8 @@ export const update_state = async function (
     application_get: application_builder.get,
     datacenter_get: datacenter_builder.get,
     application_update: application_builder.update_state,
-    exec_start: exec_start,
-    exec_shutdown: exec_shutdown,
+    exec_start,
+    exec_shutdown,
     environment_get: environment_builder.get,
   }
 ) {
@@ -192,8 +192,8 @@ export const deletion = async function (
     application_get: application_builder.get,
     application_delete: application_builder.deletion,
     datacenter_get: datacenter_builder.get,
-    exec_deletion: exec_deletion,
-    exec_shutdown: exec_shutdown,
+    exec_deletion,
+    exec_shutdown,
     download_deletion: application_builder.download_deletion,
     export_storage: storage_service.exportStorage,
   }
@@ -203,18 +203,14 @@ export const deletion = async function (
     backup_storage: z.boolean().default(true),
   });
   const data = Guard.validateProps(schema, props);
-  const app = await Promise.resolve(
-    fns.application_get({ id_application: data.id_application })
-  );
+  const app = await fns.application_get({ id_application: data.id_application });
   if (!['Ready', 'Off'].includes(app.state_application))
     throw new ApplicationInvalidStateError(
       'The application must be in states Ready or Off to be deleted, current state is ' +
         app.state_application
     );
 
-  const datacenter = await Promise.resolve(
-    fns.datacenter_get({ id_datacenter: app.datacenter.id_datacenter })
-  );
+  const datacenter = await fns.datacenter_get({ id_datacenter: app.datacenter.id_datacenter });
   const promises = [];
 
   if (data.backup_storage) {
@@ -315,4 +311,29 @@ export const create = async function (
       r.datacenter = datacenter;
       return r;
     });
+};
+
+/**
+ * Get applications scheduled to start.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Array<Application>}
+ */
+export const getScheduledApplications = async function (
+  fns = {
+    application_scheduled: application_builder.getScheduledApplications,
+    environment_get: environment_builder.get,
+  }
+) {
+  const applications = await fns.application_scheduled();
+  const promises = applications.map((app) =>
+    fns.environment_get({ id_environment: app.id_environment })
+  );
+  return await Promise.all(promises).then((environments) => {
+    for (const application of applications) {
+      application.environment = environments.filter(
+        (env) => env.id_environment === application.id_environment
+      )[0];
+    }
+    return applications;
+  });
 };

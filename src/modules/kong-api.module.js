@@ -4,6 +4,8 @@ import {
   AppsIngressErrorNotDefined,
   AppsIngressNotReachable,
 } from '../utils/errors.util.js';
+import logger from '../middlewares/winston.js';
+
 /**
  * Function used to communicate with the Kubernetes API.
  * @param {*} param0
@@ -16,6 +18,7 @@ export const fetch = async function (
 ) {
   if (!CONFIG.APPS_INGRESS_ACTIVATED)
     return 'Apps-Ingress (Kong) is not activated.';
+
   // convert body from JSON to string for fetch command
   let raw_body;
   if (method !== 'GET' && method !== 'DELETE') {
@@ -43,6 +46,18 @@ export const fetch = async function (
     if (!res.headers.get('content-type')?.includes('application/json'))
       return { result: 'ok' };
     let data = await res.json();
+    if (data.name === 'unique constraint violation')
+      logger.debug(
+        `[KONG][${res.status}}] / : 3/5. KONG Error: The services/routes already exists in Kong, skipping creation.`
+      );
+    if (
+      data?.fields?.name ===
+      "plugin 'odin-auth' not enabled; add it to the 'plugins' configuration property"
+    )
+      logger.error(
+        `[KONG][${res.status}}] / : 3/5. KONG Error: You must add the 'odin-auth' plugin to the 'plugins' configuration property in Kong, skipping creation.`
+      );
+
     return data;
   } catch (err) {
     if (err instanceof nf.FetchError)

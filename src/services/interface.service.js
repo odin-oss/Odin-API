@@ -74,30 +74,54 @@ export const create = async function (
     exec_command: z.string().min(2).max(255),
     service_command: z.string().min(2).max(255),
     id_type: z.coerce.number().int().positive(),
-    need_compute_gpu: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+    need_compute_gpu: z
+      .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
       .transform((val) => val === 'true')
       .default(false),
-    need_graphical_rendering_gpu: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+    need_graphical_rendering_gpu: z
+      .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
       .transform((val) => val === 'true')
       .default(false),
     cpu_request: z.union([
-      z.number().int({ message: "The CPU must be a string or an integer." }),
-      z.string().regex(/^\d+m?$/, { message: "The string value of the CPU must be xx or xxm, xx being the integer." })]),
-    ram_request: z.string({ invalid_type_error: "The RAM value must be a string." })
-      .regex(/^\d+(Gi|Mi)$/, { message: "The RAM value must be as xxGi or xxMi, xx being the integer." }),
+      z.number().int({ message: 'The CPU must be a string or an integer.' }),
+      z.string().regex(/^\d+m?$/, {
+        message:
+          'The string value of the CPU must be xx or xxm, xx being the integer.',
+      }),
+    ]),
+    ram_request: z
+      .string({ invalid_type_error: 'The RAM value must be a string.' })
+      .regex(/^\d+(Gi|Mi)$/, {
+        message: 'The RAM value must be as xxGi or xxMi, xx being the integer.',
+      }),
     cpu_limit: z.union([
-      z.number().int({ message: "The CPU must be a string or an integer." }),
-      z.string().regex(/^\d+m?$/, { message: "The string value of the CPU must be xx or xxm, xx being the integer." })]),
-    ram_limit: z.string({ invalid_type_error: "The RAM value must be a string." })
-      .regex(/^\d+(Gi|Mi)$/, { message: "The RAM value must be as xxGi or xxMi, xx being the integer." }),
+      z.number().int({ message: 'The CPU must be a string or an integer.' }),
+      z.string().regex(/^\d+m?$/, {
+        message:
+          'The string value of the CPU must be xx or xxm, xx being the integer.',
+      }),
+    ]),
+    ram_limit: z
+      .string({ invalid_type_error: 'The RAM value must be a string.' })
+      .regex(/^\d+(Gi|Mi)$/, {
+        message: 'The RAM value must be as xxGi or xxMi, xx being the integer.',
+      }),
     readiness_probe_initial_delay: z.coerce.number().int().positive(),
     readiness_probe_period: z.coerce.number().int().positive(),
     liveness_probe_initial_delay: z.coerce.number().int().positive(),
     liveness_probe_period: z.coerce.number().int().positive(),
-    egress_bandwidth: z.string({ invalid_type_error: "The bandwidth must be sent in string." })
-      .regex(/^\d+[MG]$/, { message: "The bandwidth should be like xxM or xxG, xx being your number value." }),
-    ingress_bandwidth: z.string({ invalid_type_error: "The bandwidth must be sent in string." })
-      .regex(/^\d+[MG]$/, { message: "The bandwidth should be like xxM or xxG, xx being your number value." })
+    egress_bandwidth: z
+      .string({ invalid_type_error: 'The bandwidth must be sent in string.' })
+      .regex(/^\d+[MG]$/, {
+        message:
+          'The bandwidth should be like xxM or xxG, xx being your number value.',
+      }),
+    ingress_bandwidth: z
+      .string({ invalid_type_error: 'The bandwidth must be sent in string.' })
+      .regex(/^\d+[MG]$/, {
+        message:
+          'The bandwidth should be like xxM or xxG, xx being your number value.',
+      }),
   });
   const data = Guard.validateProps(schema, props);
   return await fns.create(data);
@@ -142,63 +166,131 @@ export const update = async function (
 ) {
   const schema = z.object({
     id_interface: z.coerce.number().int().positive(),
-      label: z.preprocess(
-      (val) =>
-        String(val)
-          .replace(/[^a-zA-Z0-9-]/g, '')
-          .toLowerCase(),
-      z.string().min(2).max(255)
-    ).optional(),
+    label: z
+      .preprocess(
+        (val) =>
+          String(val)
+            .replace(/[^a-zA-Z0-9-]/g, '')
+            .toLowerCase(),
+        z.string().min(2).max(255)
+      )
+      .optional(),
     registry_link: z.string().min(2).max(255).optional(),
     exec_command: z.string().min(2).max(255).optional(),
     service_command: z.string().min(2).max(255).optional(),
     id_type: z.coerce.number().int().positive().optional(),
-    need_compute_gpu: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+    need_compute_gpu: z
+      .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
       .transform((val) => val === 'true')
       .optional(),
-    need_graphical_rendering_gpu: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+    need_graphical_rendering_gpu: z
+      .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
       .transform((val) => val === 'true')
       .optional(),
-    cpu_request: z.union([
-      z.number().int({ message: "The CPU must be a string or an integer." }),
-      z.string().regex(/^\d+m?$/, { message: "The string value of the CPU must be xx or xxm, xx being the integer." })]).optional(),
-    ram_request: z.string({ invalid_type_error: "The RAM value must be a string." })
-      .regex(/^\d+(Gi|Mi)$/, { message: "The RAM value must be as xxGi or xxMi, xx being the integer." }).optional(),
-    cpu_limit: z.union([
-      z.number().int({ message: "The CPU must be a string or an integer." }),
-      z.string().regex(/^\d+m?$/, { message: "The string value of the CPU must be xx or xxm, xx being the integer." })]).optional(),
-    ram_limit: z.string({ invalid_type_error: "The RAM value must be a string." })
-      .regex(/^\d+(Gi|Mi)$/, { message: "The RAM value must be as xxGi or xxMi, xx being the integer." }).optional(),
-    readiness_probe_initial_delay: z.coerce.number().int().positive().optional(),
+    cpu_request: z
+      .union([
+        z.number().int({ message: 'The CPU must be a string or an integer.' }),
+        z.string().regex(/^\d+m?$/, {
+          message:
+            'The string value of the CPU must be xx or xxm, xx being the integer.',
+        }),
+      ])
+      .optional(),
+    ram_request: z
+      .string({ invalid_type_error: 'The RAM value must be a string.' })
+      .regex(/^\d+(Gi|Mi)$/, {
+        message: 'The RAM value must be as xxGi or xxMi, xx being the integer.',
+      })
+      .optional(),
+    cpu_limit: z
+      .union([
+        z.number().int({ message: 'The CPU must be a string or an integer.' }),
+        z.string().regex(/^\d+m?$/, {
+          message:
+            'The string value of the CPU must be xx or xxm, xx being the integer.',
+        }),
+      ])
+      .optional(),
+    ram_limit: z
+      .string({ invalid_type_error: 'The RAM value must be a string.' })
+      .regex(/^\d+(Gi|Mi)$/, {
+        message: 'The RAM value must be as xxGi or xxMi, xx being the integer.',
+      })
+      .optional(),
+    readiness_probe_initial_delay: z.coerce
+      .number()
+      .int()
+      .positive()
+      .optional(),
     readiness_probe_period: z.coerce.number().int().positive().optional(),
     liveness_probe_initial_delay: z.coerce.number().int().positive().optional(),
     liveness_probe_period: z.coerce.number().int().positive().optional(),
-    egress_bandwidth: z.string({ invalid_type_error: "The bandwidth must be sent in string." })
-      .regex(/^\d+[MG]$/, { message: "The bandwidth should be like xxM or xxG, xx being your number value." })
+    egress_bandwidth: z
+      .string({ invalid_type_error: 'The bandwidth must be sent in string.' })
+      .regex(/^\d+[MG]$/, {
+        message:
+          'The bandwidth should be like xxM or xxG, xx being your number value.',
+      })
       .optional(),
-    ingress_bandwidth: z.string({ invalid_type_error: "The bandwidth must be sent in string." })
-      .regex(/^\d+[MG]$/, { message: "The bandwidth should be like xxM or xxG, xx being your number value." })
+    ingress_bandwidth: z
+      .string({ invalid_type_error: 'The bandwidth must be sent in string.' })
+      .regex(/^\d+[MG]$/, {
+        message:
+          'The bandwidth should be like xxM or xxG, xx being your number value.',
+      })
       .optional(),
-    args: z.array(z.string({ invalid_type_error: "Each argument must be a string." }), { invalid_type_error: "Args should be an array of string." }).optional(),
-    node_selectors: z.array(z.coerce.number().int().positive({ message: "Each ID must be a positive integer." }), { invalid_type_error: "Arrays of ids should be an array." }).optional(),
-    ports: z.array(
-      z.object({
-        port: z.coerce.number().int().positive(),
-        id_port_type: z.coerce.number().int().positive(),
-        icon: z.string().min(2).max(255),
-        label: z.string().min(2).max(255),
-        display_name: z.string().min(2).max(255),
-      }, { invalid_type_error: "Each port must be an object with the required keys." }),
-      { invalid_type_error: "Ports should be an array of port objects" })
+    args: z
+      .array(
+        z.string({ invalid_type_error: 'Each argument must be a string.' }),
+        { invalid_type_error: 'Args should be an array of string.' }
+      )
       .optional(),
-    envs: z.array(
-      z.union([
-        z.object({ id_variable_environment: z.coerce.number().int().positive() }),
-        z.object({ key: z.string().min(1), value: z.string() })
-      ],
-        { errorMap: () => ({ message: 'The env object should have: key and value OR id_variable_environment.' }) }),
-      { invalid_type_error: 'Envs should be an array.' })
-      .optional()
+    node_selectors: z
+      .array(
+        z.coerce
+          .number()
+          .int()
+          .positive({ message: 'Each ID must be a positive integer.' }),
+        { invalid_type_error: 'Arrays of ids should be an array.' }
+      )
+      .optional(),
+    ports: z
+      .array(
+        z.object(
+          {
+            port: z.coerce.number().int().positive(),
+            id_port_type: z.coerce.number().int().positive(),
+            icon: z.string().min(2).max(255),
+            label: z.string().min(2).max(255),
+            display_name: z.string().min(2).max(255),
+          },
+          {
+            invalid_type_error:
+              'Each port must be an object with the required keys.',
+          }
+        ),
+        { invalid_type_error: 'Ports should be an array of port objects' }
+      )
+      .optional(),
+    envs: z
+      .array(
+        z.union(
+          [
+            z.object({
+              id_variable_environment: z.coerce.number().int().positive(),
+            }),
+            z.object({ key: z.string().min(1), value: z.string() }),
+          ],
+          {
+            errorMap: () => ({
+              message:
+                'The env object should have: key and value OR id_variable_environment.',
+            }),
+          }
+        ),
+        { invalid_type_error: 'Envs should be an array.' }
+      )
+      .optional(),
   });
   const data = Guard.validateProps(schema, props);
   const promises = [];

@@ -7,11 +7,14 @@ import * as registry_hub from '../objects/kubernetes/registry.js';
 import * as service from '../objects/kubernetes/service.js';
 import * as authorization_policy from '../objects/kubernetes/authorization-policy.js';
 import * as network_policy from '../objects/kubernetes/network-policy.js';
-import * as mongodb from '../modules/mongodb.module.js';
 import Guard from '../utils/guard.util.js';
 import { Application } from '../objects/Application.js';
 import z from 'zod';
 import { Interface } from '../objects/Interface.js';
+import { Environment } from '../objects/Environment.js';
+import { Datacenter } from '../objects/Datacenter.js';
+import CONFIG from '../config/config.js';
+import logger from '../middlewares/winston.js';
 
 /**
  * Function that will execute the deletion workflow.
@@ -24,11 +27,9 @@ export const exec_deletion = async function (
   fns = {
     external_name_deletion: external_name.deletion,
     namespace_deletion: namespace.deletion,
-    update_application: mongodb.updateApplication,
     registry_hub_deletion: registry_hub.deletion,
     deployment_deletion: deployment.deletion,
     service_deletion: service.deletion,
-    delete_application: mongodb.deleteApplication,
     deleteFromKong: ingress.deleteFromKong,
     delete_network_policy: network_policy.deletion,
     delete_authorization_policy: authorization_policy.deletion,
@@ -39,17 +40,16 @@ export const exec_deletion = async function (
   });
   const data = Guard.validateProps(schema, props);
   const promises = [
-    fns.delete_network_policy({ ...data }),
-    fns.delete_authorization_policy({ ...data }),
+    //fns.delete_network_policy({ ...data }),
     fns.external_name_deletion({ ...data }),
     fns.namespace_deletion({ ...data }),
-    fns.delete_application({ ...data }),
     fns.registry_hub_deletion({ ...data }),
     fns.deployment_deletion({ ...data }),
     fns.service_deletion({ ...data }),
     fns.deleteFromKong({ ...data }),
   ];
-
+  if (CONFIG.KUBERNETES_ISTIO_ACTIVATED)
+    promises.push(fns.delete_authorization_policy({ ...data }));
   return await Promise.all(promises).then((r) => ({ ...data }));
 };
 
@@ -63,21 +63,13 @@ export const exec_start = async function (
   props,
   fns = {
     scale: deployment.scale,
-    update_application: mongodb.updateApplication,
   }
 ) {
   const schema = z.object({
     hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
-  const promises = [
-    fns.scale({ ...data, replicas: 1 }),
-    fns.update_application({
-      ...data,
-      state: 'started',
-    }),
-  ];
-  return await Promise.all(promises).then(() => ({ ...data }));
+  return await fns.scale({ ...data, replicas: 1 }).then(() => ({ ...data }));
 };
 
 /**
@@ -89,7 +81,6 @@ export const exec_start = async function (
 export const exec_shutdown = async function (
   props,
   fns = {
-    update_application: mongodb.updateApplication,
     scale: deployment.scale,
   }
 ) {
@@ -97,14 +88,9 @@ export const exec_shutdown = async function (
     hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
-  const promises = [
-    fns.scale({ hash: data.hash, replicas: 0 }),
-    fns.update_application({
-      hash: data.hash,
-      state: 'shutted',
-    }),
-  ];
-  return await Promise.all(promises).then(() => ({ ...data }));
+  return await fns
+    .scale({ hash: data.hash, replicas: 0 })
+    .then(() => ({ ...data }));
 };
 
 /**
@@ -121,7 +107,6 @@ export const exec_shutdown = async function (
 export const create = async function (
   props,
   fns = {
-    save_app: mongodb.saveApplication,
     create_namespace: namespace.create,
     create_registry_hub: registry_hub.create,
     create_service: service.create,
@@ -135,33 +120,27 @@ export const create = async function (
 ) {
   const schema = z.object({
     hash: z.string().min(6).max(6),
-    interfaces: z.array(z.instanceof(Interface)).default([]),
+    datacenter: z.instanceof(Datacenter),
+    environment: z.instanceof(Environment),
     generated_label: z.string(),
     username: z.string(),
     password: z.string(),
-    web_title: z.string(),
+    id_user: z.coerce.number().int().positive(),
   });
   const data = Guard.validateProps(schema, props);
-  await fns.save_app({
-    application: {
-      ...data,
-      state: 'created',
-    },
-  });
   await fns.create_namespace({ hash: data.hash });
   await fns.create_registry_hub({ hash: data.hash });
-  await fns.create_authorization_policy({ hash: data.hash });
-  await fns.create_network_policy({ hash: data.hash });
-  // On détecte les stockages à activer.
+  if (CONFIG.KUBERNETES_ISTIO_ACTIVATED)
+    await fns.create_authorization_policy({ hash: data.hash });
+  //await fns.create_network_policy({ hash: data.hash }); to be deprecated because MONOLITH will not be automaticaly present on k8s cluster
   const promises = [];
-  const storage = data.interfaces.flatMap((app) =>
+  const storage = data.environment.interfaces.flatMap((app) =>
     app.envs
       .filter((env) => env.key === 'HSTORAGE')
       .map(() => app.label.toLowerCase().replace(' ', ''))
   );
-  for (let app of data.interfaces) {
+  for (let app of data.environment.interfaces) {
     const label = app.label.toLocaleLowerCase().replace(' ', '');
-    // On génère le clusterip ssh
     promises.push(
       fns.create_service({
         label,
@@ -171,7 +150,7 @@ export const create = async function (
         type: service.SVC_TYPE.CLUSTERIP,
       })
     );
-    // On génère les services et ingress controller.
+
     promises.push(
       fns.addInKong({
         hash: data.hash,
@@ -179,6 +158,7 @@ export const create = async function (
         label,
       })
     );
+
     for (let port of app.ports) {
       promises.push(
         fns.create_service({
@@ -209,13 +189,12 @@ export const create = async function (
     if (label.includes('ssh-')) {
       promises.push(
         fns.create_deployment({
-          ...app,
-          hash: props.hash,
-          username: props.username,
-          password: props.password,
+          ...app.toJSON(),
+          hash: data.hash,
+          username: data.username,
+          password: data.password,
           label,
-          web_title: props.web_title,
-          generated_label: props.generated_label,
+          generated_label: data.generated_label,
           has_storage: storage.includes(label),
           target: label.split('ssh-')[1],
         })
@@ -223,18 +202,17 @@ export const create = async function (
     } else {
       promises.push(
         fns.create_deployment({
-          ...app,
-          hash: props.hash,
-          username: props.username,
-          password: props.password,
+          ...app.toJSON(),
+          hash: data.hash,
+          username: data.username,
+          password: data.password,
           label,
-          web_title: props.web_title,
-          generated_label: props.generated_label,
+          generated_label: data.generated_label,
           has_storage: storage.includes(label),
           target: '',
         })
       );
     }
   }
-  return await Promise.all(promises).then(() => ({ hash: data.hash }));
+  return await Promise.allSettled(promises).then(() => ({ hash: data.hash }));
 };

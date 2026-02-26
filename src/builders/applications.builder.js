@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { literal, Op } from 'sequelize';
 import moment from 'moment-timezone';
 import z from 'zod';
 import CONFIG from '../config/config.js';
@@ -70,14 +70,14 @@ export const get = async function (props) {
  * @param {Number} id_user id of the user.
  * @returns {Array<Application>}
  */
-export const list = async function (props) {
+export const list = async function (props = {}) {
   try {
     const schema = z.object({
-      id_user: z.number().positive(),
+      id_user: z.coerce.number().positive().optional(),
+      filter: z.array(z.string()).optional(),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
-      where: { id_user: data.id_user },
       include: [
         {
           model: dbManager.models.ENUM_STATE_APPLICATION,
@@ -89,6 +89,9 @@ export const list = async function (props) {
         },
       ],
     };
+    if (data.filter)
+      options.include[0].where = { label: { [Op.in]: data.filter } };
+    if (data.id_user) options.where = { id_user: data.id_user };
     return await dbManager.models.APPLICATION.findAll(options).then((r) =>
       r.map(
         (app) =>
@@ -242,17 +245,17 @@ export const is_owner = async function (props) {
     const whereOpt =
       data.key === undefined
         ? {
-            [Op.and]: [
-              { id_application: data.id_application },
-              { id_user: data.id_user },
-            ],
-          }
+          [Op.and]: [
+            { id_application: data.id_application },
+            { id_user: data.id_user },
+          ],
+        }
         : {
-            [Op.and]: [
-              { generated_label: data.key },
-              { id_user: data.id_user },
-            ],
-          };
+          [Op.and]: [
+            { generated_label: data.key },
+            { id_user: data.id_user },
+          ],
+        };
 
     return await dbManager.models.APPLICATION.findOne({ where: whereOpt }).then(
       (r) => r != null
@@ -363,17 +366,7 @@ export const download_deletion = async function (props) {
       await dbManager.models.ENUM_STATE_APPLICATION.findOne(options).then(
         (r) => r.id_enum_state_application
       );
-
-    const opt_update = {
-      id_enum_state_application: id_enum_state_application,
-    };
-
-    options = {
-      where: {
-        id_application: data.id_application,
-      },
-    };
-    return await dbManager.models.APPLICATION.update(opt_update, options).then(
+    return await dbManager.models.APPLICATION.update({ id_enum_state_application }, { where: { id_application: data.id_application } }).then(
       (r) => r > 0
     );
   } catch (err) {
@@ -390,10 +383,15 @@ export const download_deletion = async function (props) {
 export const update_state = async function (props) {
   try {
     const schema = z.object({
-      id_application: z.number().positive(),
-      state_application: z.enum(['Off', 'Ready']),
+      id_application: z.number().positive().optional(),
+      hash: z.string().min(6).max(6).optional(),
+      state_application: z.enum(['Off', 'Ready', 'Getting ready']),
     });
     const data = Guard.validateProps(schema, props);
+    if (!data.id_application && !data.hash)
+      throw new MissingArgumentError(
+        'You must provide either hash or id_application.'
+      );
     const options = {
       where: { label: data.state_application },
     };
@@ -401,25 +399,23 @@ export const update_state = async function (props) {
       await dbManager.models.ENUM_STATE_APPLICATION.findOne(options).then(
         (r) => r.id_enum_state_application
       );
-
     const opt_update = {
       id_enum_state_application: id_enum_state_application,
       state_changed_date: moment.tz(CONFIG.APP_TZ).utc().format(),
       programming_shutdown_date:
         data.state_application === 'Ready'
           ? moment
-              .tz(CONFIG.APP_TZ)
-              .clone()
-              .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 's')
-              .utc()
-              .format()
+            .tz(CONFIG.APP_TZ)
+            .clone()
+            .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 'h')
+            .utc()
+            .format()
           : null,
     };
-    const opt_condition = {
-      where: {
-        id_application: data.id_application,
-      },
-    };
+    const opt_condition = { where: {} };
+    if (data.id_application)
+      opt_condition.where.id_application = data.id_application;
+    else opt_condition.where.hash = data.hash;
 
     return await dbManager.models.APPLICATION.update(
       opt_update,
@@ -433,4 +429,238 @@ export const update_state = async function (props) {
     if (err instanceof DBObjectNotFound) throw err;
     throw dbManager.sequelizeErrorManagement(err);
   }
+};
+
+/**
+ * Builder that updates an application export state
+ * @param {Number} id_export id of the export.
+ * @param {Number} id_provider id of the provider that is doing the export.
+ * @param {String} hash unique hash used to identify the application.
+ * @param {String} state new state of the application.
+ * @param {String} app_deletion do we delete the application at the end.
+ * @param {String} download_link download_link to give to the user.
+ * @param {Function} fns overwriting functions for tests.
+ * @returns {Array<Application>}
+ */
+export const update_application_export_state = async function (
+  props,
+  fns = {
+    update_state,
+  }
+) {
+  try {
+    const schema = z.object({
+      id_export: z.coerce.number().int().positive(),
+      id_provider: z.coerce.number().int().positive().optional(),
+      hash: z.string().min(6).max(6),
+      state: z.enum(['Exporting', 'Available', 'Error']),
+      app_deletion: z
+        .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+        .transform((val) => val === 'true')
+        .default(false),
+      download_link: z.string().optional(),
+    });
+    const data = Guard.validateProps(schema, props);
+    const id_enum_export_state =
+      await dbManager.models.ENUM_EXPORT_STATE.findOne({
+        where: { status: data.state },
+      }).then((r) => {
+        if (r == null)
+          throw new DBObjectNotFound(
+            'The state ' + data.state + ' could not be found.'
+          );
+        return r.id_enum_export_state;
+      });
+
+    const opt_update = { id_enum_export_state };
+    if (data.id_provider) opt_update.id_provider = data.id_provider;
+    if (data.download_link) opt_update.download_link = data.download_link;
+
+    const opt_condition = { where: { id_export: data.id_export } };
+
+    if (data.app_deletion) {
+      const state =
+        data.state === 'Exporting' ? 'DeletedDownload' : 'DeletedError';
+      await fns.update_state({
+        hash: data.hash,
+        state_application: data.state === 'Available' ? 'DeletedDone' : state,
+      });
+    }
+
+    return await dbManager.models.APPLICATION_EXPORT.update(
+      opt_update,
+      opt_condition
+    ).then((r) => {
+      if (r[0] === 0)
+        throw new DBObjectNotFound(
+          'The application export could not be found.'
+        );
+      return r[0] > 0;
+    });
+  } catch (err) {
+    if (err instanceof DBObjectNotFound) throw err;
+    throw dbManager.sequelizeErrorManagement(err);
+  }
+};
+/**
+ * Builder that get the list of all scheduled applications to launch.
+ * @returns {Array<Application>}
+ */
+export const getScheduledApplications = async function () {
+  const options = {
+    include: [
+      {
+        model: dbManager.models.DATACENTER,
+        required: true,
+      },
+      {
+        model: dbManager.models.ENUM_STATE_APPLICATION,
+        required: true,
+        where: {
+          label: 'Scheduled',
+        },
+      },
+      {
+        model: dbManager.models.ENVIRONMENT,
+        required: true,
+      },
+    ],
+    where: {
+      state_changed_date: {
+        [Op.lt]: literal(
+          `DATE_TRUNC('minute', NOW() AT TIME ZONE '${CONFIG.APP_TZ}' + INTERVAL '1 minute')`
+        ),
+      },
+    },
+  };
+  return await dbManager.models.APPLICATION.findAll(options)
+    .then((applications) => {
+      const result = [];
+      for (const application of applications) {
+        result.push(
+          new Application({
+            ...application.dataValues,
+            state_application: application.ENUM_STATE_APPLICATION.label,
+            environment: new Environment({
+              ...application.ENVIRONMENT.dataValues,
+            }),
+            datacenter: new Datacenter({
+              ...application.DATACENTER.dataValues,
+            }),
+          })
+        );
+      }
+      return result;
+    })
+    .catch((err) => {
+      throw dbManager.sequelizeErrorManagement(err);
+    });
+};
+
+/**
+ * Builder that get the list of all applications scheduled to be stopped.
+ * @returns {Array<Application>}
+ */
+export const getApplicationToShutdown = async function () {
+  const options = {
+    include: [
+      {
+        model: dbManager.models.DATACENTER,
+        required: true,
+      },
+      {
+        model: dbManager.models.ENUM_STATE_APPLICATION,
+        where: {
+          [Op.or]: [
+            {
+              label: 'Ready',
+            },
+            {
+              label: 'Getting ready',
+            },
+          ],
+        },
+      },
+      {
+        model: dbManager.models.ENVIRONMENT,
+        required: true,
+      },
+    ],
+    where: {
+      programming_shutdown_date: {
+        [Op.lt]: literal(
+          `DATE_TRUNC('minute', NOW() AT TIME ZONE '${CONFIG.APP_TZ}')`
+        ),
+      },
+    },
+  };
+  return await dbManager.models.APPLICATION.findAll(options)
+    .then((applications) => {
+      const result = [];
+      for (const application of applications) {
+        result.push(
+          new Application({
+            ...application.dataValues,
+            state_application: application.ENUM_STATE_APPLICATION.label,
+            environment: new Environment({
+              ...application.ENVIRONMENT.dataValues,
+            }),
+            datacenter: new Datacenter({
+              ...application.DATACENTER.dataValues,
+            }),
+          })
+        );
+      }
+      return result;
+    })
+    .catch((err) => {
+      throw dbManager.sequelizeErrorManagement(err);
+    });
+};
+
+/**
+ * Builder that get the list of all applications scheduled to be deleted after being downloaded.
+ * @returns {Array<Application>}
+ */
+export const getApplicationToDelete = async function () {
+  const options = {
+    include: [
+      {
+        model: dbManager.models.DATACENTER,
+        required: true,
+      },
+      {
+        model: dbManager.models.ENUM_STATE_APPLICATION,
+        where: {
+          label: 'DeletedDone',
+        },
+      },
+      {
+        model: dbManager.models.ENVIRONMENT,
+        required: true,
+      },
+    ],
+  };
+  return await dbManager.models.APPLICATION.findAll(options)
+    .then((applications) => {
+      const result = [];
+      for (const application of applications) {
+        result.push(
+          new Application({
+            ...application.dataValues,
+            state_application: application.ENUM_STATE_APPLICATION.label,
+            environment: new Environment({
+              ...application.ENVIRONMENT.dataValues,
+            }),
+            datacenter: new Datacenter({
+              ...application.DATACENTER.dataValues,
+            }),
+          })
+        );
+      }
+      return result;
+    })
+    .catch((err) => {
+      throw dbManager.sequelizeErrorManagement(err);
+    });
 };

@@ -6,9 +6,7 @@ import PortType from '../objects/Port_type.js';
  * @returns {Array<PortType>}
  */
 export const list = async function () {
-    return await dbManager.models.PORT_TYPE.findAll()
-        .then((result) => result.map((r) =>new PortType(r.dataValues)))
-        .catch((err) => {
-            throw dbManager.sequelizeErrorManagement(err);
-        });
+  return await dbManager.models.PORT_TYPE.findAll()
+    .then((result) => result.map((r) => new PortType(r.dataValues)))
+    .catch(dbManager.sequelizeErrorManagement);
 };

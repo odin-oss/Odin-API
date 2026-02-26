@@ -2,6 +2,7 @@ import { fetch } from '../../modules/kong-api.module.js';
 import CONFIG from '../../config/config.js';
 import Guard from '../../utils/guard.util.js';
 import z from 'zod';
+import Port from '../Port.js';
 
 /**
  * Function that will add Routes and Services to Kong corresponding to one application.
@@ -19,7 +20,7 @@ export const addInKong = async function (
 ) {
   const schema = z.object({
     hash: z.string().min(6).max(6),
-    ports: z.array().default([]),
+    ports: z.array(z.lazy(() => Port.schema)).default([]),
     label: z.string(),
   });
   const data_checks = Guard.validateProps(schema, props);
@@ -39,6 +40,19 @@ export const addInKong = async function (
       })
     );
   }
+  await Promise.all(promises);
+
+  // Getting Services from Kong to retrieve their id
+  promises = [];
+  for (let port of data_checks.ports) {
+    const url = `/services/${data_checks.hash}-${data_checks.label}-${port.label.toLocaleLowerCase()}`;
+    promises.push(
+      fns.fetch({
+        method: 'GET',
+        url: url,
+      })
+    );
+  }
   const svc = await Promise.all(promises);
 
   // Creating Route in Kong
@@ -51,10 +65,10 @@ export const addInKong = async function (
         `/${data_checks.hash}/${data_checks.label}-${data_checks.ports[s].label.toLocaleLowerCase()}`,
       ],
       strip_path:
-        data_checks.ports[s].port_type.toLocaleLowerCase() === 'strip_path',
+        data_checks.ports[s].port_type.label.toLocaleLowerCase() ===
+        'strip_path',
       preserve_host: true,
     };
-
     // enable Odin-Auth plugin for authentication
     promises.push(
       fns.fetch({
@@ -63,7 +77,7 @@ export const addInKong = async function (
         body: {
           name: 'odin-auth',
           config: {
-            auth_url: `https://${CONFIG.USER_APPS_HOSTNAME}/auth`,
+            auth_url: `https://${CONFIG.TLS_ODIN_MONOLITH}/auth`,
           },
         },
       })
@@ -71,12 +85,11 @@ export const addInKong = async function (
     promises.push(
       fns.fetch({
         method: 'POST',
-        url: url,
+        url,
         body: data,
       })
     );
   }
-
   return await Promise.all(promises);
 };
 

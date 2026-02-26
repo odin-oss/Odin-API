@@ -1,5 +1,9 @@
 import dbManager from '../config/db.config.js';
-import { DBObjectAlreadyExists, DBObjectNotFound, MissingArgumentError } from '../utils/errors.util.js';
+import {
+  DBObjectAlreadyExists,
+  DBObjectNotFound,
+  MissingArgumentError,
+} from '../utils/errors.util.js';
 import { Interface } from '../objects/Interface.js';
 import Guard from '../utils/guard.util.js';
 import z from 'zod';
@@ -72,19 +76,23 @@ export const get = async function (props) {
         args: r.INTERFACE_HAS_ARGUMENTs.sort(
           (a, b) => a.id_argument - b.id_argument
         ).map((arg) => new Argument({ ...arg.ARGUMENT.dataValues })),
-        node_selectors: r.INTERFACE_HAS_NODE_SELECTORs.map((ins) => new NodeSelector({ ...ins.NODE_SELECTOR.dataValues })),
-        ports: r.INTERFACE_HAS_PORTs.map(
-          (ihp) => new Port({
-            ...ihp.dataValues,
-            port_type: new PortType({ ...ihp.PORT_TYPE.dataValues })
-          })
+        node_selectors: r.INTERFACE_HAS_NODE_SELECTORs.map(
+          (ins) => new NodeSelector({ ...ins.NODE_SELECTOR.dataValues })
         ),
-        envs: r.INTERFACE_HAS_VARIABLEs.map((ihv) => new VariableEnvironment({ ...ihv.VARIABLE_ENVIRONMENT.dataValues }))
+        ports: r.INTERFACE_HAS_PORTs.map(
+          (ihp) =>
+            new Port({
+              ...ihp.dataValues,
+              port_type: new PortType({ ...ihp.PORT_TYPE.dataValues }),
+            })
+        ),
+        envs: r.INTERFACE_HAS_VARIABLEs.map(
+          (ihv) =>
+            new VariableEnvironment({ ...ihv.VARIABLE_ENVIRONMENT.dataValues })
+        ),
       });
     })
-    .catch((err) => {
-      throw dbManager.sequelizeErrorManagement(err);
-    });
+    .catch(dbManager.sequelizeErrorManagement);
 };
 
 /**
@@ -139,20 +147,35 @@ export const list = async function () {
         required: true,
       },
     ],
-  })
-    .then((result) => result.map(
+  }).then((result) =>
+    result.map(
       (inter) =>
         new Interface({
           ...inter.dataValues,
           id_type: inter.IMAGE_TYPE.id_type,
           label_type_image: inter.IMAGE_TYPE.label,
-          argument: inter.INTERFACE_HAS_ARGUMENTs.sort((a, b) => a.id_argument - b.id_argument)
-            .map((arg) => new Argument({ ...arg.ARGUMENT.dataValues })),
-          node_selectors: inter.INTERFACE_HAS_NODE_SELECTORs.map((ins) => new NodeSelector({ ...ins.NODE_SELECTOR.dataValues })),
-          ports: inter.INTERFACE_HAS_PORTs.map((ihp) => new Port({ ...ihp.dataValues, port_type: new PortType({ ...ihp.PORT_TYPE.dataValues }) })),
-          variable_environments: inter.INTERFACE_HAS_VARIABLEs.map((ihv) => new VariableEnvironment({ ...ihv.VARIABLE_ENVIRONMENT.dataValues })),
+          argument: inter.INTERFACE_HAS_ARGUMENTs.sort(
+            (a, b) => a.id_argument - b.id_argument
+          ).map((arg) => new Argument({ ...arg.ARGUMENT.dataValues })),
+          node_selectors: inter.INTERFACE_HAS_NODE_SELECTORs.map(
+            (ins) => new NodeSelector({ ...ins.NODE_SELECTOR.dataValues })
+          ),
+          ports: inter.INTERFACE_HAS_PORTs.map(
+            (ihp) =>
+              new Port({
+                ...ihp.dataValues,
+                port_type: new PortType({ ...ihp.PORT_TYPE.dataValues }),
+              })
+          ),
+          variable_environments: inter.INTERFACE_HAS_VARIABLEs.map(
+            (ihv) =>
+              new VariableEnvironment({
+                ...ihv.VARIABLE_ENVIRONMENT.dataValues,
+              })
+          ),
         })
-    ))
+    )
+  );
 };
 
 /**
@@ -191,30 +214,56 @@ export const create = async function (props, fns = { get }) {
       exec_command: z.string().min(2).max(255),
       service_command: z.string().min(2).max(255),
       id_type: z.coerce.number().int().positive(),
-      need_compute_gpu: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+      need_compute_gpu: z
+        .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
         .transform((val) => val === 'true')
         .default(false),
-      need_graphical_rendering_gpu: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+      need_graphical_rendering_gpu: z
+        .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
         .transform((val) => val === 'true')
         .default(false),
       cpu_request: z.union([
-        z.number().int({ message: "The CPU must be a string or an integer." }),
-        z.string().regex(/^\d+m?$/, { message: "The string value of the CPU must be xx or xxm, xx being the integer." })]),
-      ram_request: z.string({ invalid_type_error: "The RAM value must be a string." })
-        .regex(/^\d+(Gi|Mi)$/, { message: "The RAM value must be as xxGi or xxMi, xx being the integer." }),
+        z.number().int({ message: 'The CPU must be a string or an integer.' }),
+        z.string().regex(/^\d+m?$/, {
+          message:
+            'The string value of the CPU must be xx or xxm, xx being the integer.',
+        }),
+      ]),
+      ram_request: z
+        .string({ invalid_type_error: 'The RAM value must be a string.' })
+        .regex(/^\d+(Gi|Mi)$/, {
+          message:
+            'The RAM value must be as xxGi or xxMi, xx being the integer.',
+        }),
       cpu_limit: z.union([
-        z.number().int({ message: "The CPU must be a string or an integer." }),
-        z.string().regex(/^\d+m?$/, { message: "The string value of the CPU must be xx or xxm, xx being the integer." })]),
-      ram_limit: z.string({ invalid_type_error: "The RAM value must be a string." })
-        .regex(/^\d+(Gi|Mi)$/, { message: "The RAM value must be as xxGi or xxMi, xx being the integer." }),
+        z.number().int({ message: 'The CPU must be a string or an integer.' }),
+        z.string().regex(/^\d+m?$/, {
+          message:
+            'The string value of the CPU must be xx or xxm, xx being the integer.',
+        }),
+      ]),
+      ram_limit: z
+        .string({ invalid_type_error: 'The RAM value must be a string.' })
+        .regex(/^\d+(Gi|Mi)$/, {
+          message:
+            'The RAM value must be as xxGi or xxMi, xx being the integer.',
+        }),
       readiness_probe_initial_delay: z.coerce.number().int().positive(),
       readiness_probe_period: z.coerce.number().int().positive(),
       liveness_probe_initial_delay: z.coerce.number().int().positive(),
       liveness_probe_period: z.coerce.number().int().positive(),
-      egress_bandwidth: z.string({ invalid_type_error: "The bandwidth must be sent in string." })
-        .regex(/^\d+[MG]$/, { message: "The bandwidth should be like xxM or xxG, xx being your number value." }),
-      ingress_bandwidth: z.string({ invalid_type_error: "The bandwidth must be sent in string." })
-        .regex(/^\d+[MG]$/, { message: "The bandwidth should be like xxM or xxG, xx being your number value." })
+      egress_bandwidth: z
+        .string({ invalid_type_error: 'The bandwidth must be sent in string.' })
+        .regex(/^\d+[MG]$/, {
+          message:
+            'The bandwidth should be like xxM or xxG, xx being your number value.',
+        }),
+      ingress_bandwidth: z
+        .string({ invalid_type_error: 'The bandwidth must be sent in string.' })
+        .regex(/^\d+[MG]$/, {
+          message:
+            'The bandwidth should be like xxM or xxG, xx being your number value.',
+        }),
     });
     const data = Guard.validateProps(schema, props);
     const created = await dbManager.models.INTERFACE.create(data);
@@ -232,11 +281,12 @@ export const create = async function (props, fns = { get }) {
  */
 export const update_args = async function (props) {
   try {
-
     const schema = z.object({
       id_interface: z.coerce.number().int().positive(),
-      args: z.array(z.string({ invalid_type_error: "Each argument must be a string." }),
-        { invalid_type_error: "Args should be an array of string." })
+      args: z.array(
+        z.string({ invalid_type_error: 'Each argument must be a string.' }),
+        { invalid_type_error: 'Args should be an array of string.' }
+      ),
     });
     const data = Guard.validateProps(schema, props);
 
@@ -293,8 +343,13 @@ export const update_nodeselectors = async function (props) {
   try {
     const schema = z.object({
       id_interface: z.coerce.number().int().positive(),
-      node_selectors: z.array(z.coerce.number().int().positive({ message: "Each ID must be a positive integer." }),
-        { invalid_type_error: "Arrays of ids should be an array." })
+      node_selectors: z.array(
+        z.coerce
+          .number()
+          .int()
+          .positive({ message: 'Each ID must be a positive integer.' }),
+        { invalid_type_error: 'Arrays of ids should be an array.' }
+      ),
     });
     const data = Guard.validateProps(schema, props);
     // Checking that the interface exists
@@ -325,14 +380,21 @@ export const update_ports = async function (props) {
     const schema = z.object({
       id_interface: z.coerce.number().int().positive(),
       ports: z.array(
-        z.object({
-          port: z.coerce.number().int().positive(),
-          id_port_type: z.coerce.number().int().positive(),
-          icon: z.string().min(2).max(255),
-          label: z.string().min(2).max(255),
-          display_name: z.string().min(2).max(255),
-        }, { invalid_type_error: "Each port must be an object with the required keys." }),
-        { invalid_type_error: "Ports should be an array of port objects" })
+        z.object(
+          {
+            port: z.coerce.number().int().positive(),
+            id_port_type: z.coerce.number().int().positive(),
+            icon: z.string().min(2).max(255),
+            label: z.string().min(2).max(255),
+            display_name: z.string().min(2).max(255),
+          },
+          {
+            invalid_type_error:
+              'Each port must be an object with the required keys.',
+          }
+        ),
+        { invalid_type_error: 'Ports should be an array of port objects' }
+      ),
     });
     const data = Guard.validateProps(schema, props);
 
@@ -361,18 +423,27 @@ export const update_envs = async function (props) {
     const schema = z.object({
       id_interface: z.coerce.number().int().positive(),
       envs: z.array(
-        z.union([
-          z.object({ id_variable_environment: z.coerce.number().int().positive() }),
-          z.object({ key: z.string().min(1), value: z.string() })
-        ],
-          { errorMap: () => ({ message: 'The env object should have: key and value OR id_variable_environment.' }) }),
-        { invalid_type_error: 'Envs should be an array.' })
+        z.union(
+          [
+            z.object({
+              id_variable_environment: z.coerce.number().int().positive(),
+            }),
+            z.object({ key: z.string().min(1), value: z.string() }),
+          ],
+          {
+            errorMap: () => ({
+              message:
+                'The env object should have: key and value OR id_variable_environment.',
+            }),
+          }
+        ),
+        { invalid_type_error: 'Envs should be an array.' }
+      ),
     });
     const data = Guard.validateProps(schema, props);
     // Getting the existing Interface
     const inter = await dbManager.models.INTERFACE.findByPk(data.id_interface);
-    if (!inter)
-      throw new DBObjectNotFound(`Interface not found in database.`);
+    if (!inter) throw new DBObjectNotFound(`Interface not found in database.`);
 
     // Removing env var from interface in database
     await dbManager.models.INTERFACE_HAS_VARIABLE.destroy({
@@ -410,43 +481,89 @@ export const update = async function (props, fns = { get }) {
   try {
     const schema = z.object({
       id_interface: z.coerce.number().int().positive(),
-      label: z.preprocess(
-        (val) =>
-          String(val)
-            .replace(/[^a-zA-Z0-9-]/g, '')
-            .toLowerCase(),
-        z.string().min(2).max(255)
-      ).optional(),
+      label: z
+        .preprocess(
+          (val) =>
+            String(val)
+              .replace(/[^a-zA-Z0-9-]/g, '')
+              .toLowerCase(),
+          z.string().min(2).max(255)
+        )
+        .optional(),
       registry_link: z.string().min(2).max(255).optional(),
       exec_command: z.string().min(2).max(255).optional(),
       service_command: z.string().min(2).max(255).optional(),
       id_type: z.coerce.number().int().positive().optional(),
-      need_compute_gpu: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+      need_compute_gpu: z
+        .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
         .transform((val) => val === 'true')
         .optional(),
-      need_graphical_rendering_gpu: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+      need_graphical_rendering_gpu: z
+        .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
         .transform((val) => val === 'true')
         .optional(),
-      cpu_request: z.union([
-        z.number().int({ message: "The CPU must be a string or an integer." }),
-        z.string().regex(/^\d+m?$/, { message: "The string value of the CPU must be xx or xxm, xx being the integer." })]).optional(),
-      ram_request: z.string({ invalid_type_error: "The RAM value must be a string." })
-        .regex(/^\d+(Gi|Mi)$/, { message: "The RAM value must be as xxGi or xxMi, xx being the integer." }).optional(),
-      cpu_limit: z.union([
-        z.number().int({ message: "The CPU must be a string or an integer." }),
-        z.string().regex(/^\d+m?$/, { message: "The string value of the CPU must be xx or xxm, xx being the integer." })]).optional(),
-      ram_limit: z.string({ invalid_type_error: "The RAM value must be a string." })
-        .regex(/^\d+(Gi|Mi)$/, { message: "The RAM value must be as xxGi or xxMi, xx being the integer." }).optional(),
-      readiness_probe_initial_delay: z.coerce.number().int().positive().optional(),
+      cpu_request: z
+        .union([
+          z
+            .number()
+            .int({ message: 'The CPU must be a string or an integer.' }),
+          z.string().regex(/^\d+m?$/, {
+            message:
+              'The string value of the CPU must be xx or xxm, xx being the integer.',
+          }),
+        ])
+        .optional(),
+      ram_request: z
+        .string({ invalid_type_error: 'The RAM value must be a string.' })
+        .regex(/^\d+(Gi|Mi)$/, {
+          message:
+            'The RAM value must be as xxGi or xxMi, xx being the integer.',
+        })
+        .optional(),
+      cpu_limit: z
+        .union([
+          z
+            .number()
+            .int({ message: 'The CPU must be a string or an integer.' }),
+          z.string().regex(/^\d+m?$/, {
+            message:
+              'The string value of the CPU must be xx or xxm, xx being the integer.',
+          }),
+        ])
+        .optional(),
+      ram_limit: z
+        .string({ invalid_type_error: 'The RAM value must be a string.' })
+        .regex(/^\d+(Gi|Mi)$/, {
+          message:
+            'The RAM value must be as xxGi or xxMi, xx being the integer.',
+        })
+        .optional(),
+      readiness_probe_initial_delay: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional(),
       readiness_probe_period: z.coerce.number().int().positive().optional(),
-      liveness_probe_initial_delay: z.coerce.number().int().positive().optional(),
-      liveness_probe_period: z.coerce.number().int().positive().optional(),
-      egress_bandwidth: z.string({ invalid_type_error: "The bandwidth must be sent in string." })
-        .regex(/^\d+[MG]$/, { message: "The bandwidth should be like xxM or xxG, xx being your number value." })
+      liveness_probe_initial_delay: z.coerce
+        .number()
+        .int()
+        .positive()
         .optional(),
-      ingress_bandwidth: z.string({ invalid_type_error: "The bandwidth must be sent in string." })
-        .regex(/^\d+[MG]$/, { message: "The bandwidth should be like xxM or xxG, xx being your number value." })
-        .optional()
+      liveness_probe_period: z.coerce.number().int().positive().optional(),
+      egress_bandwidth: z
+        .string({ invalid_type_error: 'The bandwidth must be sent in string.' })
+        .regex(/^\d+[MG]$/, {
+          message:
+            'The bandwidth should be like xxM or xxG, xx being your number value.',
+        })
+        .optional(),
+      ingress_bandwidth: z
+        .string({ invalid_type_error: 'The bandwidth must be sent in string.' })
+        .regex(/^\d+[MG]$/, {
+          message:
+            'The bandwidth should be like xxM or xxG, xx being your number value.',
+        })
+        .optional(),
     });
     const data = Guard.validateProps(schema, props);
     const inter = await dbManager.models.INTERFACE.findByPk(data.id_interface);
@@ -456,7 +573,9 @@ export const update = async function (props, fns = { get }) {
       );
     // Identification of attributes to update
     const { id_interface, ...updates } = data;
-    await dbManager.models.INTERFACE.update(updates, { where: { id_interface } });
+    await dbManager.models.INTERFACE.update(updates, {
+      where: { id_interface },
+    });
     return await fns.get(data);
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
@@ -474,8 +593,13 @@ export const attach_nodeselectors = async function (props, fns = { get }) {
   try {
     const schema = z.object({
       id_interface: z.coerce.number().int().positive(),
-      ids_node_selector: z.array(z.coerce.number().int().positive({ message: "Each ID must be a positive integer." }),
-        { invalid_type_error: "Arrays of ids should be an array." })
+      ids_node_selector: z.array(
+        z.coerce
+          .number()
+          .int()
+          .positive({ message: 'Each ID must be a positive integer.' }),
+        { invalid_type_error: 'Arrays of ids should be an array.' }
+      ),
     });
     const data = Guard.validateProps(schema, props);
     // Checking that the interface exists
@@ -523,14 +647,21 @@ export const attach_ports = async function (props, fns = { get }) {
     const schema = z.object({
       id_interface: z.coerce.number().int().positive(),
       ports: z.array(
-        z.object({
-          port: z.coerce.number().int().positive(),
-          id_port_type: z.coerce.number().int().positive(),
-          icon: z.string().min(2).max(255),
-          label: z.string().min(2).max(255),
-          display_name: z.string().min(2).max(255),
-        }, { invalid_type_error: "Each port must be an object with the required keys." }),
-        { invalid_type_error: "Ports should be an array of port objects" })
+        z.object(
+          {
+            port: z.coerce.number().int().positive(),
+            id_port_type: z.coerce.number().int().positive(),
+            icon: z.string().min(2).max(255),
+            label: z.string().min(2).max(255),
+            display_name: z.string().min(2).max(255),
+          },
+          {
+            invalid_type_error:
+              'Each port must be an object with the required keys.',
+          }
+        ),
+        { invalid_type_error: 'Ports should be an array of port objects' }
+      ),
     });
     const data = Guard.validateProps(schema, props);
     // Checking that the interface exists
@@ -539,7 +670,12 @@ export const attach_ports = async function (props, fns = { get }) {
 
     const promises = [];
     for (const port of data.ports) {
-      promises.push(dbManager.models.INTERFACE_HAS_PORT.create({ ...port, id_interface: data.id_interface }));
+      promises.push(
+        dbManager.models.INTERFACE_HAS_PORT.create({
+          ...port,
+          id_interface: data.id_interface,
+        })
+      );
     }
     await Promise.all(promises);
     return await fns.get(data);
@@ -559,12 +695,22 @@ export const attach_envs = async function (props, fns = { get }) {
     const schema = z.object({
       id_interface: z.coerce.number().int().positive(),
       envs: z.array(
-        z.union([
-          z.object({ id_variable_environment: z.coerce.number().int().positive() }),
-          z.object({ key: z.string().min(1), value: z.string() })
-        ],
-          { errorMap: () => ({ message: 'The env object should have: key and value OR id_variable_environment.' }) }),
-        { invalid_type_error: 'Envs should be an array.' })
+        z.union(
+          [
+            z.object({
+              id_variable_environment: z.coerce.number().int().positive(),
+            }),
+            z.object({ key: z.string().min(1), value: z.string() }),
+          ],
+          {
+            errorMap: () => ({
+              message:
+                'The env object should have: key and value OR id_variable_environment.',
+            }),
+          }
+        ),
+        { invalid_type_error: 'Envs should be an array.' }
+      ),
     });
     const data = Guard.validateProps(schema, props);
 
@@ -584,7 +730,8 @@ export const attach_envs = async function (props, fns = { get }) {
       let opt;
       if (!variableId) {
         opt = { key, value };
-        const variable = await dbManager.models.VARIABLE_ENVIRONMENT.create(opt);
+        const variable =
+          await dbManager.models.VARIABLE_ENVIRONMENT.create(opt);
         variableId = variable.id_variable_environment;
       }
       if (
@@ -607,7 +754,6 @@ export const attach_envs = async function (props, fns = { get }) {
     await Promise.all(promises);
     return await fns.get(data);
   } catch (err) {
-    console.log(err)
     throw dbManager.sequelizeErrorManagement(err);
   }
 };
