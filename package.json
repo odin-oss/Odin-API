@@ -26,19 +26,15 @@
       "text"
     ],
     "exclude": [
+      "**/src/models/*.js",
       "**/*.test.js",
-      "index.js",
-      "prerequisites.js",
-      "swagger.js",
       "coverage/**/*.js",
-      "**/config/models-*/*.js",
       "**/src/routes/*.js",
       "**/src/routes/**/*.js",
       "**/src/modules/router.module.js",
-      "**/src/config/db-init.config.js",
       "**/src/config/db.config.js",
-      "**/src/config/winston.config.js",
-      "**/src/utils/health.service.js"
+      "**/src/middlewares/winston.js",
+      "**/src/server.js"
     ],
     "report-dir": "./coverage",
     "extension": [
@@ -53,14 +49,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/caelus-team/application-cirrus/ms-api.git"
+    "url": "git+https://github.com/odin-oss/monolith-api.git"
   },
   "author": "Benoit Lefebvre",
   "license": "ISC",
   "bugs": {
-    "url": "https://gitlab.com/caelus-team/application-cirrus/ms-api/issues"
+    "url": "https://github.com/odin-oss/monolith-api/issues"
   },
-  "homepage": "https://gitlab.com/caelus-team/application-cirrus/ms-api#readme",
+  "homepage": "https://github.com/odin-oss/monolith-api#readme",
   "dependencies": {
     "@hapi/joi": "^17.1.1",
     "bcrypt": "^5.1.1",
@@ -70,6 +66,7 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
+    "esmock": "^2.7.3",
     "express": "^4.18.2",
     "express-winston": "^4.2.0",
     "jsonwebtoken": "^9.0.2",

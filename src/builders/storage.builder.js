@@ -288,9 +288,7 @@ export const getIdsEnumStates = async function (props) {
           `The state(s) "${missingStatuses.join(', ')}" could not be found.`
         );
       }
-      return Array.from(new Set(res_statuses)).map(
-        (r) => r.id_enum_export_state
-      );
+      return results.map((r) => r.dataValues.id_enum_export_state);
     }
   );
 };

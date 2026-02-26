@@ -1,26 +1,24 @@
-import * as application_builder from '../../src/builders/applications.builder.js';
 import * as chai from 'chai';
-import db from '../../src/config/db.config.js';
 import * as sinon from 'sinon';
 import moment from 'moment-timezone';
-import Sequelize, { Op } from 'sequelize';
 import sinonChai from 'sinon-chai';
-import {
-  DBObjectNotFound,
-  DBConnexionRefused,
-  MissingArgumentError,
-  ParameterMisformed,
-  DBForeignKeyConstraintError,
-} from '../../src/utils/errors.service.js';
-import CONFIG from '../../src/config/config.js';
-import { Environment } from '../../src/objects/Environment.js';
+import dbManager from '../../src/config/db.config.js';
+import * as application_builder from '../../src/builders/applications.builder.js';
 import { Application } from '../../src/objects/Application.js';
+import { Environment } from '../../src/objects/Environment.js';
+import CONFIG from '../../src/config/config.js';
+import { DBObjectNotFound, MissingArgumentError, ParameterMisformed } from '../../src/utils/errors.util.js';
 chai.use(sinonChai);
 
 describe('applications.builder.get()', () => {
-  let fakeFindOne;
+  let findOneStub;
+
+  before(async () => {
+    await dbManager.initModels(); 
+  });
+
   beforeEach(() => {
-    fakeFindOne = sinon.stub(db.cirrus.APPLICATION, 'findOne');
+    findOneStub = sinon.stub(dbManager.models.APPLICATION, 'findOne');
   });
 
   afterEach(() => {
@@ -28,7 +26,7 @@ describe('applications.builder.get()', () => {
   });
 
   it('called with good id_application and should returns hash.', async () => {
-    fakeFindOne.resolves({
+    findOneStub.resolves({
       id_application: 1,
       custom_label: 'Un vrai react',
       generated_label: 'colibri-dore-man',
@@ -43,23 +41,23 @@ describe('applications.builder.get()', () => {
         label: 'Linux Alpine',
       },
       ENUM_STATE_APPLICATION: {
-        label: 'Prête',
+        label: 'Ready',
       },
       state_changed_date: new Date('2025-01-10T15:49:06.000Z'),
       programming_shutdown_date: new Date('2025-01-11T15:49:06.000Z'),
     });
     const result = await application_builder.get({ id_application: 1 });
-    chai.expect(fakeFindOne.calledOnce).to.be.true;
+    chai.expect(findOneStub.calledOnce).to.be.true;
     chai.expect(
-      fakeFindOne.calledWith({
+      findOneStub.calledWith({
         where: { id_application: 1 },
         include: [
           {
-            model: db.cirrus.ENUM_STATE_APPLICATION,
+            model: dbManager.models.ENUM_STATE_APPLICATION,
             required: true,
           },
           {
-            model: db.cirrus.ENVIRONMENT,
+            model: dbManager.models.ENVIRONMENT,
             required: true,
           },
         ],
@@ -96,7 +94,7 @@ describe('applications.builder.get()', () => {
     );
   });
   it('called with good key and should returns hash.', async () => {
-    fakeFindOne.resolves({
+    findOneStub.resolves({
       id_application: 1,
       custom_label: 'Un vrai react',
       generated_label: 'colibri-dore-man',
@@ -111,23 +109,23 @@ describe('applications.builder.get()', () => {
         label: 'Linux Alpine',
       },
       ENUM_STATE_APPLICATION: {
-        label: 'Prête',
+        label: 'Ready',
       },
       state_changed_date: new Date('2025-01-10T15:49:06.000Z'),
       programming_shutdown_date: new Date('2025-01-11T15:49:06.000Z'),
     });
     const result = await application_builder.get({ key: 'colibri-dore-man' });
-    chai.expect(fakeFindOne.calledOnce).to.be.true;
+    chai.expect(findOneStub.calledOnce).to.be.true;
     chai.expect(
-      fakeFindOne.calledWith({
+      findOneStub.calledWith({
         where: { generated_label: 'colibri-dore-man' },
         include: [
           {
-            model: db.cirrus.ENUM_STATE_APPLICATION,
+            model: dbManager.models.ENUM_STATE_APPLICATION,
             required: true,
           },
           {
-            model: db.cirrus.ENVIRONMENT,
+            model: dbManager.models.ENVIRONMENT,
             required: true,
           },
         ],
@@ -164,7 +162,7 @@ describe('applications.builder.get()', () => {
     );
   });
   it('called with both id_application & key and should returns hash.', async () => {
-    fakeFindOne.resolves({
+    findOneStub.resolves({
       id_application: 1,
       custom_label: 'Un vrai react',
       generated_label: 'colibri-dore-man',
@@ -179,7 +177,7 @@ describe('applications.builder.get()', () => {
         label: 'Linux Alpine',
       },
       ENUM_STATE_APPLICATION: {
-        label: 'Prête',
+        label: 'Ready',
       },
       state_changed_date: new Date('2025-01-10T15:49:06.000Z'),
       programming_shutdown_date: new Date('2025-01-11T15:49:06.000Z'),
@@ -188,17 +186,17 @@ describe('applications.builder.get()', () => {
       key: 'colibri-dore-man',
       id_application: 1,
     });
-    chai.expect(fakeFindOne.calledOnce).to.be.true;
+    chai.expect(findOneStub.calledOnce).to.be.true;
     chai.expect(
-      fakeFindOne.calledWith({
+      findOneStub.calledWith({
         where: { generated_label: 'colibri-dore-man', id_application: 1 },
         include: [
           {
-            model: db.cirrus.ENUM_STATE_APPLICATION,
+            model: dbManager.models.ENUM_STATE_APPLICATION,
             required: true,
           },
           {
-            model: db.cirrus.ENVIRONMENT,
+            model: dbManager.models.ENVIRONMENT,
             required: true,
           },
         ],
@@ -236,24 +234,24 @@ describe('applications.builder.get()', () => {
   });
   it('called with inexisting id_application argument and should reject with an error.', async () => {
     try {
-      fakeFindOne.resolves(null);
+      findOneStub.resolves(null);
       await application_builder.get({ id_application: 100 });
 
       chai.expect.fail(
         'chai.expected to throw DBObjectNotFound, but it did not.'
       );
     } catch (err) {
-      chai.expect(fakeFindOne.calledOnce).to.be.true;
+      chai.expect(findOneStub.calledOnce).to.be.true;
       chai.expect(
-        fakeFindOne.calledWith({
+        findOneStub.calledWith({
           where: { id_application: 100 },
           include: [
             {
-              model: db.cirrus.ENUM_STATE_APPLICATION,
+              model: dbManager.models.ENUM_STATE_APPLICATION,
               required: true,
             },
             {
-              model: db.cirrus.ENVIRONMENT,
+              model: dbManager.models.ENVIRONMENT,
               required: true,
             },
           ],
@@ -273,12 +271,12 @@ describe('applications.builder.get()', () => {
         'chai.expected to throw MissingArgumentError, but it did not.'
       );
     } catch (err) {
-      chai.expect(fakeFindOne).to.have.not.been.called;
+      chai.expect(findOneStub).to.have.not.been.called;
       chai.expect(err).to.be.instanceOf(MissingArgumentError);
       chai
         .expect(err.message)
         .to.equal(
-          'One or multiple arguments (id_application,key,hash) are missing.'
+          'Either id_application, key, hash must be sent.'
         );
     }
   });
@@ -287,18 +285,18 @@ describe('applications.builder.get()', () => {
       await application_builder.get({ id_application: 'test' });
 
       chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
+        'chai.expected to throw MissingArgumentError, but it did not.'
       );
     } catch (err) {
-      chai.expect(fakeFindOne).to.have.not.been.called;
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
+      chai.expect(findOneStub).to.have.not.been.called;
+      chai.expect(err).to.be.instanceOf(MissingArgumentError);
       chai
         .expect(err.message)
-        .to.equal('The props.id_application parameter is misformed.');
+        .to.equal('Missing arguments: id_application');
     }
   });
   it('called with good hash and should return application data.', async () => {
-    fakeFindOne.resolves({
+    findOneStub.resolves({
       id_application: 1,
       custom_label: 'Un vrai react',
       generated_label: 'colibri-dore-man',
@@ -320,17 +318,17 @@ describe('applications.builder.get()', () => {
       programming_shutdown_date: new Date('2025-01-11T15:49:06.000Z'),
     });
     const result = await application_builder.get({ hash: 'e3ea6f' });
-    chai.expect(fakeFindOne.calledOnce).to.be.true;
+    chai.expect(findOneStub.calledOnce).to.be.true;
     chai.expect(
-      fakeFindOne.calledWith({
+      findOneStub.calledWith({
         where: { hash: 'e3ea6f' },
         include: [
           {
-            model: db.cirrus.ENUM_STATE_APPLICATION,
+            model: dbManager.models.ENUM_STATE_APPLICATION,
             required: true,
           },
           {
-            model: db.cirrus.ENVIRONMENT,
+            model: dbManager.models.ENVIRONMENT,
             required: true,
           },
         ],
@@ -374,34 +372,506 @@ describe('applications.builder.get()', () => {
         'chai.expected to throw ParameterMisformed, but it did not.'
       );
     } catch (err) {
-      chai.expect(fakeFindOne).to.have.not.been.called;
+      chai.expect(findOneStub).to.have.not.been.called;
       chai.expect(err).to.be.instanceOf(ParameterMisformed);
       chai
         .expect(err.message)
-        .to.equal('The props.hash parameter is misformed.');
+        .to.equal('Too big: expected string to have <=6 characters');
     }
   });
 });
+
 describe('applications.builder.list()', () => {
-  let fakeFindAll;
+  let findAllStub;
+
+  before(async () => {
+    await dbManager.initModels();
+  });
+
   beforeEach(() => {
-    fakeFindAll = sinon.stub(db.cirrus.APPLICATION, 'findAll');
+    findAllStub = sinon.stub(dbManager.models.APPLICATION, 'findAll');
   });
 
   afterEach(() => {
     sinon.restore();
   });
 
-  it('called with good argument and should returns hash.', async () => {
-    fakeFindAll.resolves([
+  it('called without arguments and should return all applications.', async () => {
+    findAllStub.resolves([
       {
         id_application: 1,
-        custom_label: 'Un vrai react',
-        generated_label: 'colibri-dore-man',
+        custom_label: 'App 1',
+        generated_label: 'app-one',
         creation_date: new Date('2025-01-10T15:49:06.000Z'),
         hash: 'e3ea6f',
-        username: 'b_lefebvre',
-        password: 'repaire-queen-roi',
+        username: 'user1',
+        password: 'pass1',
+        id_user: 1,
+        id_environment: 3,
+        id_datacenter: 1,
+        ENVIRONMENT: {
+          id_environment: 1,
+          label: 'Linux Alpine',
+        },
+        ENUM_STATE_APPLICATION: {
+          label: 'Ready',
+        },
+        state_changed_date: new Date('2025-01-10T15:49:06.000Z'),
+        programming_shutdown_date: new Date('2025-01-11T15:49:06.000Z'),
+      },
+    ]);
+
+    const result = await application_builder.list({});
+    chai.expect(findAllStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.an('array');
+    chai.expect(result).to.have.lengthOf(1);
+  });
+
+  it('called with id_user and should return filtered applications.', async () => {
+    findAllStub.resolves([
+      {
+        id_application: 1,
+        custom_label: 'App 1',
+        generated_label: 'app-one',
+        id_user: 5,
+        id_datacenter: 1,
+        ENVIRONMENT: { id_environment: 1, label: 'Linux Alpine' },
+        ENUM_STATE_APPLICATION: { label: 'Ready' },
+      },
+    ]);
+
+    const result = await application_builder.list({ id_user: 5 });
+    chai.expect(findAllStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.an('array');
+  });
+
+  it('called with filter array and should return filtered applications.', async () => {
+    findAllStub.resolves([]);
+    const result = await application_builder.list({
+      filter: ['Ready', 'Getting ready'],
+    });
+    chai.expect(findAllStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.an('array');
+  });
+});
+
+describe('applications.builder.create()', () => {
+  let createStub;
+  let findOneStub;
+
+  before(async () => {
+    await dbManager.initModels();
+  });
+
+  beforeEach(() => {
+    createStub = sinon.stub(dbManager.models.APPLICATION, 'create');
+    findOneStub = sinon.stub(
+      dbManager.models.ENUM_STATE_APPLICATION,
+      'findOne'
+    );
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('called with valid parameters and should create application.', async () => {
+    findOneStub.resolves({ id_enum_state_application: 1, label: 'Scheduled' });
+    createStub.resolves({
+      id_application: 1,
+      id_environment: 3,
+    });
+
+    const result = await application_builder.create({
+      id_user: 1,
+      id_environment: 3,
+      id_datacenter: 1,
+      custom_label: 'My App',
+      generated_label: 'my-test-app',
+      hash: 'abc123',
+      username: 'testuser',
+      password: 'testpass',
+    });
+
+    chai.expect(createStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.instanceOf(Application);
+    chai.expect(result.id_application).to.equal(1);
+  });
+
+  it('called with missing required parameters and should throw error.', async () => {
+    try {
+      await application_builder.create({
+        id_user: 1,
+        id_environment: 3,
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+});
+
+describe('applications.builder.is_owner()', () => {
+  let findOneStub;
+
+  before(async () => {
+    await dbManager.initModels();
+  });
+
+  beforeEach(() => {
+    findOneStub = sinon.stub(dbManager.models.APPLICATION, 'findOne');
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('called with id_application and id_user and should return true if owner.', async () => {
+    findOneStub.resolves({
+      id_application: 1,
+      id_user: 5,
+    });
+
+    const result = await application_builder.is_owner({
+      id_user: 5,
+      id_application: 1,
+    });
+
+    chai.expect(findOneStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.true;
+  });
+
+  it('called with id_application and id_user and should return false if not owner.', async () => {
+    findOneStub.resolves(null);
+
+    const result = await application_builder.is_owner({
+      id_user: 5,
+      id_application: 1,
+    });
+
+    chai.expect(findOneStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.false;
+  });
+
+  it('called with key and id_user and should return true if owner.', async () => {
+    findOneStub.resolves({
+      generated_label: 'my-app',
+      id_user: 5,
+    });
+
+    const result = await application_builder.is_owner({
+      id_user: 5,
+      key: 'my-app',
+    });
+
+    chai.expect(findOneStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.true;
+  });
+});
+
+describe('applications.builder.nameExists()', () => {
+  let findOneStub;
+
+  before(async () => {
+    await dbManager.initModels();
+  });
+
+  beforeEach(() => {
+    findOneStub = sinon.stub(dbManager.models.APPLICATION, 'findOne');
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('called with existing name and should return true.', async () => {
+    findOneStub.resolves({ generated_label: 'existing-app' });
+
+    const result = await application_builder.nameExists({ name: 'existing-app' });
+
+    chai.expect(findOneStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.true;
+  });
+
+  it('called with non-existing name and should return false.', async () => {
+    findOneStub.resolves(null);
+
+    const result = await application_builder.nameExists({
+      name: 'non-existing-app',
+    });
+
+    chai.expect(findOneStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.false;
+  });
+});
+
+describe('applications.builder.hashExists()', () => {
+  let findOneStub;
+
+  before(async () => {
+    await dbManager.initModels();
+  });
+
+  beforeEach(() => {
+    findOneStub = sinon.stub(dbManager.models.APPLICATION, 'findOne');
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('called with existing hash and should return true.', async () => {
+    findOneStub.resolves({ hash: 'abc123' });
+
+    const result = await application_builder.hashExists({ hash: 'abc123' });
+
+    chai.expect(findOneStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.true;
+  });
+
+  it('called with non-existing hash and should return false.', async () => {
+    findOneStub.resolves(null);
+
+    const result = await application_builder.hashExists({
+      hash: 'xyz789',
+    });
+
+    chai.expect(findOneStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.false;
+  });
+});
+
+describe('applications.builder.renew_expiration()', () => {
+  let findOneStub;
+  let updateStub;
+
+  before(async () => {
+    await dbManager.initModels();
+  });
+
+  beforeEach(() => {
+    findOneStub = sinon.stub(dbManager.models.APPLICATION, 'findOne');
+    updateStub = sinon.stub(dbManager.models.APPLICATION, 'update');
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('called with valid id_application and should update expiration date.', async () => {
+    findOneStub.resolves({
+      id_application: 1,
+      programming_shutdown_date: new Date('2025-01-11T15:49:06.000Z'),
+    });
+    updateStub.resolves([1]);
+
+    const result = await application_builder.renew_expiration({
+      id_application: 1,
+    });
+
+    chai.expect(findOneStub.calledOnce).to.be.true;
+    chai.expect(updateStub.calledOnce).to.be.true;
+    chai.expect(result).to.equal('The application expiration have been renewed.');
+  });
+
+  it('called with non-existing application and should throw error.', async () => {
+    findOneStub.resolves(null);
+
+    try {
+      await application_builder.renew_expiration({ id_application: 999 });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.be.instanceOf(DBObjectNotFound);
+    }
+  });
+});
+
+describe('applications.builder.deletion()', () => {
+  let updateStub;
+  let findOneStub;
+
+  before(async () => {
+    await dbManager.initModels();
+  });
+
+  beforeEach(() => {
+    updateStub = sinon.stub(dbManager.models.APPLICATION, 'update');
+    findOneStub = sinon.stub(
+      dbManager.models.ENUM_STATE_APPLICATION,
+      'findOne'
+    );
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('called with valid id_application and should mark as deleted.', async () => {
+    findOneStub.resolves({ id_enum_state_application: 5 });
+    updateStub.resolves([1]);
+
+    const result = await application_builder.deletion({
+      id_application: 1,
+    });
+
+    chai.expect(updateStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.true;
+  });
+
+  it('called with non-existing application and should return false.', async () => {
+    findOneStub.resolves({ id_enum_state_application: 5 });
+    updateStub.resolves([0]);
+
+    const result = await application_builder.deletion({
+      id_application: 999,
+    });
+
+    chai.expect(result).to.be.false;
+  });
+});
+
+describe('applications.builder.download_deletion()', () => {
+  let updateStub;
+  let findOneStub;
+
+  before(async () => {
+    await dbManager.initModels();
+  });
+
+  beforeEach(() => {
+    updateStub = sinon.stub(dbManager.models.APPLICATION, 'update');
+    findOneStub = sinon.stub(
+      dbManager.models.ENUM_STATE_APPLICATION,
+      'findOne'
+    );
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('called with valid id_application and should mark as deleted with launch.', async () => {
+    findOneStub.resolves({ id_enum_state_application: 6 });
+    updateStub.resolves([1]);
+
+    const result = await application_builder.download_deletion({
+      id_application: 1,
+    });
+
+    chai.expect(updateStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.true;
+  });
+
+  it('called with non-existing application and should return false.', async () => {
+    findOneStub.resolves({ id_enum_state_application: 6 });
+    updateStub.resolves([0]);
+
+    const result = await application_builder.download_deletion({
+      id_application: 999,
+    });
+
+    chai.expect(result).to.be.false;
+  });
+});
+
+describe('applications.builder.update_state()', () => {
+  let updateStub;
+  let findOneStub;
+
+  before(async () => {
+    await dbManager.initModels();
+  });
+
+  beforeEach(() => {
+    updateStub = sinon.stub(dbManager.models.APPLICATION, 'update');
+    findOneStub = sinon.stub(
+      dbManager.models.ENUM_STATE_APPLICATION,
+      'findOne'
+    );
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('called with id_application and state Ready and should update state.', async () => {
+    findOneStub.resolves({ id_enum_state_application: 2 });
+    updateStub.resolves([1]);
+
+    const result = await application_builder.update_state({
+      id_application: 1,
+      state_application: 'Ready',
+    });
+
+    chai.expect(updateStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.true;
+  });
+
+  it('called with hash and state Off and should update state.', async () => {
+    findOneStub.resolves({ id_enum_state_application: 1 });
+    updateStub.resolves([1]);
+
+    const result = await application_builder.update_state({
+      hash: 'abc123',
+      state_application: 'Off',
+    });
+
+    chai.expect(updateStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.true;
+  });
+
+  it('called without id_application and hash and should throw error.', async () => {
+    try {
+      await application_builder.update_state({
+        state_application: 'Ready',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.be.instanceOf(MissingArgumentError);
+    }
+  });
+
+  it('called with non-existing application and should throw error.', async () => {
+    findOneStub.resolves({ id_enum_state_application: 2 });
+    updateStub.resolves([0]);
+
+    try {
+      await application_builder.update_state({
+        id_application: 999,
+        state_application: 'Ready',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.be.instanceOf(DBObjectNotFound);
+    }
+  });
+});
+
+describe('applications.builder.getScheduledApplications()', () => {
+  let findAllStub;
+
+  before(async () => {
+    await dbManager.initModels();
+  });
+
+  beforeEach(() => {
+    findAllStub = sinon.stub(dbManager.models.APPLICATION, 'findAll');
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should return list of scheduled applications.', async () => {
+    findAllStub.resolves([
+      {
+        id_application: 1,
+        custom_label: 'App 1',
+        generated_label: 'app-one',
+        creation_date: new Date('2025-01-10T15:49:06.000Z'),
+        hash: 'e3ea6f',
+        username: 'user1',
+        password: 'pass1',
         id_user: 1,
         id_environment: 3,
         ENVIRONMENT: {
@@ -409,1153 +879,234 @@ describe('applications.builder.list()', () => {
           label: 'Linux Alpine',
         },
         ENUM_STATE_APPLICATION: {
-          label: 'Prête',
+          label: 'Scheduled',
+        },
+        DATACENTER: {
+          id_datacenter: 1,
+          label: 'DC1',
         },
         state_changed_date: new Date('2025-01-10T15:49:06.000Z'),
         programming_shutdown_date: new Date('2025-01-11T15:49:06.000Z'),
       },
     ]);
-    const result = await application_builder.list({ id_user: 1 });
-    chai.expect(fakeFindAll.calledOnce).to.be.true;
-    chai.expect(
-      fakeFindAll.calledWith({
-        where: { id_user: 1 },
-        include: [
-          {
-            model: db.cirrus.ENUM_STATE_APPLICATION,
-            required: true,
-          },
-          {
-            model: db.cirrus.ENVIRONMENT,
-            required: true,
-          },
-        ],
-      })
-    ).to.be.true;
 
-    chai.expect(result).to.deep.equal([
-      new Application({
+    const result = await application_builder.getScheduledApplications();
+
+    chai.expect(findAllStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.an('array');
+    chai.expect(result).to.have.lengthOf(1);
+    chai.expect(result[0]).to.be.instanceOf(Application);
+  });
+
+  it('should return empty array when no scheduled applications.', async () => {
+    findAllStub.resolves([]);
+
+    const result = await application_builder.getScheduledApplications();
+
+    chai.expect(findAllStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.an('array');
+    chai.expect(result).to.have.lengthOf(0);
+  });
+});
+
+describe('applications.builder.getApplicationToShutdown()', () => {
+  let findAllStub;
+
+  before(async () => {
+    await dbManager.initModels();
+  });
+
+  beforeEach(() => {
+    findAllStub = sinon.stub(dbManager.models.APPLICATION, 'findAll');
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should return list of applications to shutdown.', async () => {
+    findAllStub.resolves([
+      {
         id_application: 1,
-        custom_label: 'Un vrai react',
-        generated_label: 'colibri-dore-man',
-        creation_date: moment(new Date('2025-01-10T15:49:06.000Z')).tz(
-          CONFIG.APP_TZ
-        ),
+        custom_label: 'App 1',
+        generated_label: 'app-one',
+        creation_date: new Date('2025-01-10T15:49:06.000Z'),
         hash: 'e3ea6f',
-        username: 'b_lefebvre',
-        password: 'repaire-queen-roi',
+        username: 'user1',
+        password: 'pass1',
         id_user: 1,
         id_environment: 3,
-        state_application: 'Prête',
-        state_changed_date: moment(new Date('2025-01-11T15:49:06.000Z')).tz(
-          CONFIG.APP_TZ
-        ),
-        programming_shutdown_date: moment(
-          new Date('2025-01-10T15:49:06.000Z')
-        ).tz(CONFIG.APP_TZ),
-        environment: new Environment({
+        ENVIRONMENT: {
           id_environment: 1,
           label: 'Linux Alpine',
-          icon: 'ereteret',
-          interfaces: [],
-        }),
-      }),
+        },
+        ENUM_STATE_APPLICATION: {
+          label: 'Ready',
+        },
+        DATACENTER: {
+          id_datacenter: 1,
+          label: 'DC1',
+        },
+        state_changed_date: new Date('2025-01-10T15:49:06.000Z'),
+        programming_shutdown_date: new Date('2025-01-11T15:49:06.000Z'),
+      },
     ]);
-  });
-  it('called with missing argument and should reject with an error.', async () => {
-    try {
-      await application_builder.list({});
 
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindAll).to.have.not.been.called;
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal('One or multiple arguments (id_user) are missing.');
-    }
-  });
-  it('called with misformed argument and should reject with an error.', async () => {
-    try {
-      await application_builder.list({ id_user: 'test' });
+    const result = await application_builder.getApplicationToShutdown();
 
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindAll).to.have.not.been.called;
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.id_user parameter is misformed.');
-    }
+    chai.expect(findAllStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.an('array');
   });
-  it('called with missing argument and should reject with Sequelize.ForeignKeyConstraintError error.', async () => {
-    try {
-      fakeFindAll.resolves(
-        Promise.reject(new Sequelize.ForeignKeyConstraintError())
-      );
-      await application_builder.list({ id_user: 1 });
 
-      chai.expect.fail(
-        'chai.expected to throw DBForeignKeyConstraintError, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindAll).to.have.been.calledOnceWith({
-        where: { id_user: 1 },
-        include: [
-          {
-            model: db.cirrus.ENUM_STATE_APPLICATION,
-            required: true,
-          },
-          {
-            model: db.cirrus.ENVIRONMENT,
-            required: true,
-          },
-        ],
-      });
-      chai.expect(err).to.be.instanceOf(DBForeignKeyConstraintError);
-      chai
-        .expect(err.message)
-        .to.equal(
-          'The foreign key cannot be deleted because it is still in use.'
-        );
-    }
+  it('should return empty array when no applications to shutdown.', async () => {
+    findAllStub.resolves([]);
+
+    const result = await application_builder.getApplicationToShutdown();
+
+    chai.expect(result).to.be.an('array');
+    chai.expect(result).to.have.lengthOf(0);
   });
 });
-describe('applications.builder.create()', () => {
-  let saveConfig, fakeApplicationCreate, fakeEnumStateAppFindOne;
+
+describe('applications.builder.getApplicationToDelete()', () => {
+  let findAllStub;
+
+  before(async () => {
+    await dbManager.initModels();
+  });
+
   beforeEach(() => {
-    fakeApplicationCreate = sinon.stub(db.cirrus.APPLICATION, 'create');
-    fakeEnumStateAppFindOne = sinon.stub(
-      db.cirrus.ENUM_STATE_APPLICATION,
-      'findOne'
-    );
-    saveConfig = {
-      ms_deployment_activated: CONFIG.ms_deployment_activated,
-    };
+    findAllStub = sinon.stub(dbManager.models.APPLICATION, 'findAll');
   });
-  afterEach(() => {
-    CONFIG.ms_deployment_activated = saveConfig.ms_deployment_activated;
-    sinon.restore();
-  });
-  it('called with the good arguments and ms_deployment_activated on false and should create an application.', async () => {
-    CONFIG.ms_deployment_activated = false;
-    const props = {
-      id_user: 1,
-      id_datacenter: 1,
-      id_environment: 2,
-      custom_label: 'Application de travail super géniale',
-      generated_label: 'shrek-fiona-donkey',
-      hash: 'hash12',
-      username: 'b_lefebvre',
-      password: 'shrek-donkey-fiona',
-      state_changed_date: moment.tz(CONFIG.APP_TZ),
-    };
-    fakeEnumStateAppFindOne.resolves(
-      Promise.resolve({
-        id_enum_state_application: 1,
-      })
-    );
-    fakeApplicationCreate.resolves(
-      Promise.resolve({
-        id_application: 8,
-        custom_label: 'Application de travail super géniale',
-        generated_label: 'shrek-fiona-donkey',
-        creation_date: moment.tz(CONFIG.APP_TZ),
-        hash: 'hash12',
-        username: 'b_lefebvre',
-        password: 'shrek-donkey-fiona',
-        id_datacenter: 1,
-        id_user: 1,
-        id_environment: 2,
-        state_application: 'Ready',
-        state_changed_date: moment.tz(CONFIG.APP_TZ),
-        programming_shutdown_date: moment.tz(CONFIG.APP_TZ),
-      })
-    );
-    const result = await application_builder.create(props);
-    const expected_app = new Application({
-      id_application: 8,
-      custom_label: 'Application de travail super géniale',
-      generated_label: 'shrek-fiona-donkey',
-      creation_date: moment.tz(CONFIG.APP_TZ),
-      hash: 'hash12',
-      username: 'b_lefebvre',
-      password: 'shrek-donkey-fiona',
-      id_user: 1,
-      id_environment: 2,
-      state_application: 'Ready',
-      state_changed_date: moment.tz(CONFIG.APP_TZ),
-      programming_shutdown_date: moment.tz(CONFIG.APP_TZ),
-      environment: new Environment({
-        id_environnement: 2,
-        label: '',
-        icon: '',
-        interfaces: [],
-      }),
-    });
-    chai.expect(fakeEnumStateAppFindOne).to.have.been.calledOnceWithExactly({
-      where: { label: 'Ready' },
-    });
-    chai.expect(result.id_application).to.be.equal(expected_app.id_application);
-    chai.expect(result.custom_label).to.be.equal(expected_app.custom_label);
-    chai
-      .expect(result.generated_label)
-      .to.be.equal(expected_app.generated_label);
-    chai.expect(result.hash).to.be.equal(expected_app.hash);
-    chai.expect(result.username).to.be.equal(expected_app.username);
-    chai.expect(result.password).to.be.equal(expected_app.password);
-    chai.expect(result.id_user).to.be.equal(expected_app.id_user);
-    chai.expect(result.id_environment).to.be.equal(expected_app.id_environment);
-    chai
-      .expect(result.state_application)
-      .to.be.equal(expected_app.state_application);
-    chai.expect(result.environment).to.be.deep.equal(expected_app.environment);
-  });
-  it('called with the good arguments and ms_deployment_activated on true and should create an application.', async () => {
-    CONFIG.ms_deployment_activated = true;
-    const props = {
-      id_user: 1,
-      id_datacenter: 1,
-      id_environment: 2,
-      custom_label: 'Application de travail super géniale',
-      generated_label: 'shrek-fiona-donkey',
-      hash: 'hash12',
-      username: 'b_lefebvre',
-      password: 'shrek-donkey-fiona',
-      state_changed_date: moment.tz(CONFIG.APP_TZ),
-    };
-    fakeEnumStateAppFindOne.resolves(
-      Promise.resolve({
-        id_enum_state_application: 3,
-      })
-    );
-    fakeApplicationCreate.resolves(
-      Promise.resolve({
-        id_application: 8,
-        custom_label: 'Application de travail super géniale',
-        generated_label: 'shrek-fiona-donkey',
-        creation_date: moment.tz(CONFIG.APP_TZ),
-        hash: 'hash12',
-        username: 'b_lefebvre',
-        password: 'shrek-donkey-fiona',
-        id_user: 1,
-        id_environment: 2,
-        state_application: 'Scheduled',
-        state_changed_date: moment.tz(CONFIG.APP_TZ),
-        programming_shutdown_date: moment.tz(CONFIG.APP_TZ),
-      })
-    );
-    const result = await application_builder.create(props);
-    const expected_app = new Application({
-      id_application: 8,
-      custom_label: 'Application de travail super géniale',
-      generated_label: 'shrek-fiona-donkey',
-      creation_date: moment.tz(CONFIG.APP_TZ),
-      hash: 'hash12',
-      username: 'b_lefebvre',
-      password: 'shrek-donkey-fiona',
-      id_user: 1,
-      id_environment: 2,
-      state_application: 'Scheduled',
-      state_changed_date: moment.tz(CONFIG.APP_TZ),
-      programming_shutdown_date: moment.tz(CONFIG.APP_TZ),
-      environment: new Environment({
-        id_environnement: 2,
-        label: '',
-        icon: '',
-        interfaces: [],
-      }),
-    });
-    chai.expect(fakeEnumStateAppFindOne).to.have.been.calledOnceWithExactly({
-      where: { label: 'Scheduled' },
-    });
-    chai.expect(result.id_application).to.be.equal(expected_app.id_application);
-    chai.expect(result.custom_label).to.be.equal(expected_app.custom_label);
-    chai
-      .expect(result.generated_label)
-      .to.be.equal(expected_app.generated_label);
-    chai.expect(result.hash).to.be.equal(expected_app.hash);
-    chai.expect(result.username).to.be.equal(expected_app.username);
-    chai.expect(result.password).to.be.equal(expected_app.password);
-    chai.expect(result.id_user).to.be.equal(expected_app.id_user);
-    chai.expect(result.id_environment).to.be.equal(expected_app.id_environment);
-    chai
-      .expect(result.state_application)
-      .to.be.equal(expected_app.state_application);
-    chai.expect(result.environment).to.be.deep.equal(expected_app.environment);
-  });
-  it('called with the good arguments and ms_deployment_activated and schedule date in 11min and should create an application.', async () => {
-    CONFIG.ms_deployment_activated = true;
-    const scheduled_creation_date = moment.tz(CONFIG.APP_TZ).add(11, 'minutes');
-    const props = {
-      id_user: 1,
-      id_environment: 2,
-      id_datacenter: 1,
-      custom_label: 'Application de travail super géniale',
-      generated_label: 'shrek-fiona-donkey',
-      hash: 'hash12',
-      username: 'b_lefebvre',
-      password: 'shrek-donkey-fiona',
-      state_changed_date: scheduled_creation_date.clone(),
-    };
-    fakeEnumStateAppFindOne.resolves(
-      Promise.resolve({
-        id_enum_state_application: 5,
-      })
-    );
-    fakeApplicationCreate.resolves(
-      Promise.resolve({
-        id_application: 8,
-        custom_label: 'Application de travail super géniale',
-        generated_label: 'shrek-fiona-donkey',
-        creation_date: moment.tz(CONFIG.APP_TZ),
-        hash: 'hash12',
-        username: 'b_lefebvre',
-        password: 'shrek-donkey-fiona',
-        id_user: 1,
-        id_environment: 2,
-        state_application: 'Scheduled',
-        state_changed_date: scheduled_creation_date.clone(),
-        programming_shutdown_date: null,
-      })
-    );
-    const result = await application_builder.create(props);
-    const expected_app = new Application({
-      id_application: 8,
-      custom_label: 'Application de travail super géniale',
-      generated_label: 'shrek-fiona-donkey',
-      creation_date: moment.tz(CONFIG.APP_TZ),
-      hash: 'hash12',
-      username: 'b_lefebvre',
-      password: 'shrek-donkey-fiona',
-      id_user: 1,
-      id_environment: 2,
-      state_application: 'Scheduled',
-      state_changed_date: scheduled_creation_date.clone(),
-      programming_shutdown_date: null,
-      environment: new Environment({
-        id_environnement: 2,
-        label: '',
-        icon: '',
-        interfaces: [],
-      }),
-    });
-    chai.expect(fakeEnumStateAppFindOne).to.have.been.calledOnceWithExactly({
-      where: { label: 'Scheduled' },
-    });
-    chai.expect(result.id_application).to.be.equal(expected_app.id_application);
-    chai.expect(result.custom_label).to.be.equal(expected_app.custom_label);
-    chai
-      .expect(result.generated_label)
-      .to.be.equal(expected_app.generated_label);
-    chai.expect(result.hash).to.be.equal(expected_app.hash);
-    chai.expect(result.username).to.be.equal(expected_app.username);
-    chai.expect(result.password).to.be.equal(expected_app.password);
-    chai.expect(result.id_user).to.be.equal(expected_app.id_user);
-    chai.expect(result.id_environment).to.be.equal(expected_app.id_environment);
-    chai
-      .expect(result.state_application)
-      .to.be.equal(expected_app.state_application);
-    chai.expect(result.environment).to.be.deep.equal(expected_app.environment);
-    chai.expect(result.programming_shutdown_date).to.be.equal(null);
-    chai.expect(result.state_changed_date.isSame(scheduled_creation_date)).to.be
-      .true;
-  });
-  it('called with without args and should reject with a MissingArgument error.', async () => {
-    try {
-      await application_builder.create({});
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeApplicationCreate).to.not.have.been.called;
-      chai.expect(fakeEnumStateAppFindOne).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal(
-          'One or multiple arguments (id_user,id_environment,id_datacenter,custom_label,generated_label,hash,username,password,state_changed_date) are missing.'
-        );
-    }
-  });
-  it('called with with a misformed id_environment and should reject with a ParameterMisformed error.', async () => {
-    try {
-      const props = {
-        id_user: 1,
-        id_datacenter: 1,
-        id_environment: 'misformed',
-        custom_label: 'Application de travail super géniale',
-        generated_label: 'shrek-fiona-donkey',
-        hash: 'hash12',
-        username: 'b_lefebvre',
-        password: 'shrek-donkey-fiona',
-        state_changed_date: moment.tz(CONFIG.APP_TZ),
-      };
-      await application_builder.create(props);
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeApplicationCreate).to.not.have.been.called;
-      chai.expect(fakeEnumStateAppFindOne).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.id_environment parameter is misformed.');
-    }
-  });
-  it('called with with a misformed id_datacenter and should reject with a ParameterMisformed error.', async () => {
-    try {
-      const props = {
-        id_user: 1,
-        id_datacenter: 'misformed',
-        id_environment: 1,
-        custom_label: 'Application de travail super géniale',
-        generated_label: 'shrek-fiona-donkey',
-        hash: 'hash12',
-        username: 'b_lefebvre',
-        password: 'shrek-donkey-fiona',
-        state_changed_date: moment.tz(CONFIG.APP_TZ),
-      };
-      await application_builder.create(props);
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeApplicationCreate).to.not.have.been.called;
-      chai.expect(fakeEnumStateAppFindOne).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.id_datacenter parameter is misformed.');
-    }
-  });
-  it('called with with a misformed generated_label and should reject with a ParameterMisformed error.', async () => {
-    try {
-      const props = {
-        id_user: 1,
-        id_datacenter: 1,
-        id_environment: 1,
-        custom_label: 'Application de travail super géniale',
-        generated_label: 'shrek-fiona',
-        hash: 'hash12',
-        username: 'b_lefebvre',
-        password: 'shrek-donkey-fiona',
-        state_changed_date: moment.tz(CONFIG.APP_TZ),
-      };
-      await application_builder.create(props);
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeApplicationCreate).to.not.have.been.called;
-      chai.expect(fakeEnumStateAppFindOne).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.generated_label parameter is misformed.');
-    }
-  });
-  it('called but should get a DBConnexionError.', async () => {
-    try {
-      CONFIG.ms_deployment_activated = false;
-      const props = {
-        id_user: 1,
-        id_environment: 2,
-        id_datacenter: 1,
-        custom_label: 'Application de travail super géniale',
-        generated_label: 'shrek-fiona-donkey',
-        hash: 'hash12',
-        username: 'b_lefebvre',
-        password: 'shrek-donkey-fiona',
-        state_changed_date: moment.tz(CONFIG.APP_TZ),
-      };
-      fakeEnumStateAppFindOne.resolves(
-        Promise.reject(new Sequelize.ConnectionRefusedError('error'))
-      );
-      await application_builder.create(props);
-      chai.expect.fail(
-        'chai.expected to throw DBConnexionRefused, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeApplicationCreate).to.not.have.been.called;
-      chai.expect(fakeEnumStateAppFindOne).to.have.been.called;
-      chai.expect(err).to.be.instanceOf(DBConnexionRefused);
-      chai.expect(err.message).to.equal('Connexion to the database refused.');
-    }
-  });
-});
-describe('applications.builder.is_owner()', () => {
-  let fakeFindOne;
-  beforeEach(() => {
-    fakeFindOne = sinon.stub(db.cirrus.APPLICATION, 'findOne');
-  });
+
   afterEach(() => {
     sinon.restore();
   });
-  it('called with a key and should return with true.', async () => {
-    fakeFindOne.resolves(Promise.resolve('found'));
-    const result = await application_builder.is_owner({
-      id_user: 1,
-      key: 'shrek-fiona-donkey',
-    });
-    chai.expect(result).to.be.true;
-    chai.expect(fakeFindOne).to.have.been.calledOnceWithExactly({
-      where: {
-        [Op.and]: [{ generated_label: 'shrek-fiona-donkey' }, { id_user: 1 }],
-      },
-    });
-  });
-  it('called with a key and should return with false.', async () => {
-    fakeFindOne.resolves(Promise.resolve(null));
-    const result = await application_builder.is_owner({
-      id_user: 1,
-      key: 'shrek-fiona-donkey',
-    });
-    chai.expect(result).to.be.false;
-    chai.expect(fakeFindOne).to.have.been.calledOnceWithExactly({
-      where: {
-        [Op.and]: [{ generated_label: 'shrek-fiona-donkey' }, { id_user: 1 }],
-      },
-    });
-  });
-  it('called with an id_application and should return with true.', async () => {
-    fakeFindOne.resolves(Promise.resolve('found'));
-    const result = await application_builder.is_owner({
-      id_user: 1,
-      id_application: 1,
-    });
-    chai.expect(result).to.be.true;
-    chai.expect(fakeFindOne).to.have.been.calledOnceWithExactly({
-      where: {
-        [Op.and]: [{ id_application: 1 }, { id_user: 1 }],
-      },
-    });
-  });
-  it('called with an id_application and should return with false.', async () => {
-    fakeFindOne.resolves(Promise.resolve(null));
-    const result = await application_builder.is_owner({
-      id_user: 1,
-      id_application: 1,
-    });
-    chai.expect(result).to.be.false;
-    chai.expect(fakeFindOne).to.have.been.calledOnceWithExactly({
-      where: {
-        [Op.and]: [{ id_application: 1 }, { id_user: 1 }],
-      },
-    });
-  });
-  it('called missing id_user and should reject with MissingArgumentError.', async () => {
-    try {
-      await application_builder.is_owner({
+
+  it('should return list of applications to delete.', async () => {
+    findAllStub.resolves([
+      {
         id_application: 1,
-      });
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.not.have.been.called;
-
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal('One or multiple arguments (id_user) are missing.');
-    }
-  });
-  it('called with no key and no id_application and should reject with MissingArgumentError.', async () => {
-    try {
-      await application_builder.is_owner({
+        custom_label: 'App 1',
+        generated_label: 'app-one',
+        creation_date: new Date('2025-01-10T15:49:06.000Z'),
+        hash: 'e3ea6f',
+        username: 'user1',
+        password: 'pass1',
         id_user: 1,
-      });
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.not.have.been.called;
+        id_environment: 3,
+        ENVIRONMENT: {
+          id_environment: 1,
+          label: 'Linux Alpine',
+        },
+        ENUM_STATE_APPLICATION: {
+          label: 'DeletedDone',
+        },
+        DATACENTER: {
+          id_datacenter: 1,
+          label: 'DC1',
+        },
+        state_changed_date: new Date('2025-01-10T15:49:06.000Z'),
+        programming_shutdown_date: new Date('2025-01-11T15:49:06.000Z'),
+      },
+    ]);
 
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal('You need to pass either id_application or key.');
-    }
+    const result = await application_builder.getApplicationToDelete();
+
+    chai.expect(findAllStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.an('array');
+    chai.expect(result).to.have.lengthOf(1);
   });
-  it('called with misformed id_user and should reject with ParameterMisformed.', async () => {
-    try {
-      await application_builder.is_owner({
-        id_user: 'misformed',
-        id_application: 1,
-      });
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.not.have.been.called;
 
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.id_user parameter is misformed.');
-    }
-  });
-  it('called with misformed key and should reject with ParameterMisformed.', async () => {
-    try {
-      await application_builder.is_owner({
-        id_user: 1,
-        key: 'misformed',
-      });
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.not.have.been.called;
+  it('should return empty array when no applications to delete.', async () => {
+    findAllStub.resolves([]);
 
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.key parameter is misformed.');
-    }
-  });
-  it('called with misformed id_application and should reject with ParameterMisformed.', async () => {
-    try {
-      await application_builder.is_owner({
-        id_user: 1,
-        id_application: 'misformed',
-      });
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.not.have.been.called;
+    const result = await application_builder.getApplicationToDelete();
 
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.id_application parameter is misformed.');
-    }
-  });
-  it('called with misformed id_application and should reject with ParameterMisformed.', async () => {
-    try {
-      fakeFindOne.resolves(
-        Promise.reject(new Sequelize.ConnectionRefusedError('error'))
-      );
-      await application_builder.is_owner({
-        id_user: 1,
-        id_application: 1,
-      });
-      chai.expect.fail(
-        'chai.expected to throw DBConnexionRefused, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.have.been.called;
-
-      chai.expect(err).to.be.instanceOf(DBConnexionRefused);
-      chai.expect(err.message).to.equal('Connexion to the database refused.');
-    }
+    chai.expect(result).to.be.an('array');
+    chai.expect(result).to.have.lengthOf(0);
   });
 });
-describe('applications.builder.nameExists()', () => {
-  let fakeFindOne;
-  beforeEach(() => {
-    fakeFindOne = sinon.stub(db.cirrus.APPLICATION, 'findOne');
+
+describe('applications.builder.update_application_export_state()', () => {
+  let updateStub;
+  let findOneStub;
+
+  before(async () => {
+    await dbManager.initModels();
   });
+
+  beforeEach(() => {
+    updateStub = sinon.stub(dbManager.models.APPLICATION_EXPORT, 'update');
+    findOneStub = sinon.stub(dbManager.models.ENUM_EXPORT_STATE, 'findOne');
+  });
+
   afterEach(() => {
     sinon.restore();
   });
-  it('called with existing argument and should return true.', async () => {
-    fakeFindOne.resolves(Promise.resolve(true));
-    const result = await application_builder.nameExists({
-      name: 'shrek-fiona-donkey',
+
+  it('called with valid parameters and should update export state.', async () => {
+    findOneStub.resolves({ id_enum_export_state: 2 });
+    updateStub.resolves([1]);
+
+    const result = await application_builder.update_application_export_state({
+      id_export: 1,
+      hash: 'abc123',
+      state: 'Available',
     });
+
+    chai.expect(findOneStub.calledOnce).to.be.true;
+    chai.expect(updateStub.calledOnce).to.be.true;
     chai.expect(result).to.be.true;
-    chai.expect(fakeFindOne).to.have.been.calledOnceWith({
-      where: { generated_label: 'shrek-fiona-donkey' },
-    });
   });
-  it('called with non-existing argument and should return false.', async () => {
-    fakeFindOne.resolves(Promise.resolve(null));
-    const result = await application_builder.nameExists({
-      name: 'shrek-fiona-donkey',
-    });
-    chai.expect(result).to.be.false;
-    chai.expect(fakeFindOne).to.have.been.calledOnceWith({
-      where: { generated_label: 'shrek-fiona-donkey' },
-    });
-  });
-  it('called without name argument and should return MissingArgumentError.', async () => {
-    try {
-      await application_builder.nameExists({});
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.not.have.been.called;
 
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal('One or multiple arguments (name) are missing.');
-    }
-  });
-  it('called with misformed name and should reject with ParameterMisformed.', async () => {
-    try {
-      await application_builder.nameExists({
-        name: 'misformed',
-      });
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.not.have.been.called;
+  it('called with app_deletion flag and should update export state and delete app.', async () => {
+    findOneStub.resolves({ id_enum_export_state: 2 });
+    updateStub.resolves([1]);
 
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.name parameter is misformed.');
-    }
-  });
-  it('called with misformed name and should reject with DBForeignKeyConstraintError.', async () => {
-    try {
-      fakeFindOne.resolves(
-        Promise.reject(new Sequelize.ForeignKeyConstraintError())
-      );
-      await application_builder.nameExists({
-        name: 'shrek-fiona-donkey',
-      });
-      chai.expect.fail(
-        'chai.expected to throw DBForeignKeyConstraintError, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.have.been.calledOnceWith({
-        where: {
-          generated_label: 'shrek-fiona-donkey',
-        },
-      });
+    const mockUpdateState = sinon.stub().resolves(true);
+    const result = await application_builder.update_application_export_state(
+      {
+        id_export: 1,
+        hash: 'abc123',
+        state: 'Available',
+        app_deletion: 'true',
+      },
+      { update_state: mockUpdateState }
+    );
 
-      chai.expect(err).to.be.instanceOf(DBForeignKeyConstraintError);
-      chai
-        .expect(err.message)
-        .to.equal(
-          'The foreign key cannot be deleted because it is still in use.'
-        );
-    }
-  });
-});
-describe('applications.builder.hashExists()', () => {
-  let fakeFindOne;
-  beforeEach(() => {
-    fakeFindOne = sinon.stub(db.cirrus.APPLICATION, 'findOne');
-  });
-  afterEach(() => {
-    sinon.restore();
-  });
-  it('called with existing argument and should return true.', async () => {
-    fakeFindOne.resolves(Promise.resolve(true));
-    const result = await application_builder.hashExists({ hash: 'hash12' });
+    chai.expect(mockUpdateState.calledOnce).to.be.true;
     chai.expect(result).to.be.true;
-    chai
-      .expect(fakeFindOne)
-      .to.have.been.calledOnceWith({ where: { hash: 'hash12' } });
   });
-  it('called with non-existing argument and should return false.', async () => {
-    fakeFindOne.resolves(Promise.resolve(null));
-    const result = await application_builder.hashExists({ hash: 'hash12' });
-    chai.expect(result).to.be.false;
-    chai.expect(fakeFindOne).to.have.been.calledOnceWith({
-      where: { hash: 'hash12' },
-    });
-  });
-  it('called without name argument and should return MissingArgumentError.', async () => {
-    try {
-      await application_builder.hashExists({});
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.not.have.been.called;
 
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal('One or multiple arguments (hash) are missing.');
-    }
-  });
-  it('called with misformed name and should reject with ParameterMisformed.', async () => {
-    try {
-      await application_builder.hashExists({
-        hash: 'misformed',
-      });
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.not.have.been.called;
+  it('called with non-existing export and should throw error.', async () => {
+    findOneStub.resolves({ id_enum_export_state: 2 });
+    updateStub.resolves([0]);
 
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.hash parameter is misformed.');
-    }
-  });
-  it('called with misformed name and should reject with ParameterMisformed.', async () => {
     try {
-      fakeFindOne.resolves(
-        Promise.reject(new Sequelize.ForeignKeyConstraintError())
-      );
-      await application_builder.hashExists({
-        hash: 'hash12',
+      await application_builder.update_application_export_state({
+        id_export: 999,
+        hash: 'abc123',
+        state: 'Available',
       });
-      chai.expect.fail(
-        'chai.expected to throw DBForeignKeyConstraintError, but it did not.'
-      );
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeFindOne).to.have.been.calledOnceWithExactly({
-        where: { hash: 'hash12' },
-      });
-
-      chai.expect(err).to.be.instanceOf(DBForeignKeyConstraintError);
-      chai
-        .expect(err.message)
-        .to.equal(
-          'The foreign key cannot be deleted because it is still in use.'
-        );
-    }
-  });
-});
-describe('applications.builder.deletion()', () => {
-  let fakeDestroy, fakeGet;
-  beforeEach(() => {
-    fakeDestroy = sinon.stub(db.cirrus.APPLICATION, 'update');
-    fakeGet = sinon
-      .stub(db.cirrus.ENUM_STATE_APPLICATION, 'findOne')
-      .resolves(Promise.resolve({ id_enum_state_application: 4 }));
-  });
-  afterEach(() => {
-    sinon.restore();
-  });
-  it('called with existing id_application and should delete the application from db.', async () => {
-    fakeDestroy.resolves(Promise.resolve(1));
-    const result = await application_builder.deletion({
-      id_application: 1,
-    });
-    chai.expect(result).to.be.true;
-    chai.expect(fakeDestroy).to.have.been.calledOnceWithExactly(
-      {
-        id_enum_state_application: 4,
-      },
-      {
-        where: {
-          id_application: 1,
-        },
-      }
-    );
-  });
-  it('called with no-existing id_application and should return false.', async () => {
-    fakeDestroy.resolves(Promise.resolve(0));
-    const result = await application_builder.deletion({
-      id_application: 1,
-    });
-    chai.expect(result).to.be.false;
-    chai.expect(fakeDestroy).to.have.been.calledOnceWithExactly(
-      {
-        id_enum_state_application: 4,
-      },
-      {
-        where: {
-          id_application: 1,
-        },
-      }
-    );
-  });
-  it('called without id_application argument and should return MissingArgumentError.', async () => {
-    try {
-      await application_builder.deletion({});
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeDestroy).to.not.have.been.called;
-
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal('One or multiple arguments (id_application) are missing.');
-    }
-  });
-  it('called with misformed name and should reject with ParameterMisformed.', async () => {
-    try {
-      await application_builder.deletion({
-        id_application: 'misformed',
-      });
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeDestroy).to.not.have.been.called;
-
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.id_application parameter is misformed.');
-    }
-  });
-  it('called with misformed name and should reject with ParameterMisformed.', async () => {
-    try {
-      fakeDestroy.resolves(
-        Promise.reject(new Sequelize.ForeignKeyConstraintError())
-      );
-      await application_builder.deletion({
-        id_application: 1,
-      });
-      chai.expect.fail(
-        'chai.expected to throw DBForeignKeyConstraintError, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeDestroy).to.have.been.calledOnceWith(
-        {
-          id_enum_state_application: 4,
-        },
-        {
-          where: {
-            id_application: 1,
-          },
-        }
-      );
-
-      chai.expect(err).to.be.instanceOf(DBForeignKeyConstraintError);
-      chai
-        .expect(err.message)
-        .to.equal(
-          'The foreign key cannot be deleted because it is still in use.'
-        );
-    }
-  });
-});
-describe('applications.builder.update_state()', () => {
-  let fakeFindOne, fakeUpdate, clock, fakeMoment;
-  beforeEach(() => {
-    fakeFindOne = sinon.stub(db.cirrus.ENUM_STATE_APPLICATION, 'findOne');
-    fakeUpdate = sinon.stub(db.cirrus.APPLICATION, 'update');
-
-    const fixedTime = '2025-03-06T12:00:00Z';
-    clock = sinon.useFakeTimers(new Date(fixedTime).getTime());
-    fakeMoment = sinon
-      .stub(moment, 'tz')
-      .callsFake(() => moment(fixedTime).tz('Europe/Paris'));
-  });
-  afterEach(() => {
-    sinon.restore();
-    clock.restore();
-    fakeMoment.restore();
-  });
-  it('called with good argument to stop application and should update the state of the application.', async () => {
-    fakeFindOne.resolves(
-      Promise.resolve({
-        id_enum_state_application: 2,
-      })
-    );
-    fakeUpdate.resolves(Promise.resolve([1]));
-    const result = await application_builder.update_state({
-      id_application: 8,
-      state_application: 'Off',
-    });
-    chai.expect(result).to.be.true;
-    chai.expect(fakeFindOne).to.have.been.calledOnceWithExactly({
-      where: {
-        label: 'Off',
-      },
-    });
-    chai.expect(fakeUpdate).to.have.been.calledOnce;
-    chai.expect(fakeUpdate).to.have.been.calledOnceWithExactly(
-      {
-        id_enum_state_application: 2,
-        state_changed_date: moment.tz(CONFIG.APP_TZ).utc().format(),
-        programming_shutdown_date: null,
-      },
-      {
-        where: {
-          id_application: 8,
-        },
-      }
-    );
-  });
-  it('called with good argument to start application and should update the state of the application.', async () => {
-    fakeFindOne.resolves(
-      Promise.resolve({
-        id_enum_state_application: 1,
-      })
-    );
-    fakeUpdate.resolves(Promise.resolve([1]));
-    const result = await application_builder.update_state({
-      id_application: 8,
-      state_application: 'Ready',
-    });
-    chai.expect(result).to.be.true;
-    chai.expect(fakeFindOne).to.have.been.calledOnceWithExactly({
-      where: {
-        label: 'Ready',
-      },
-    });
-    chai.expect(fakeUpdate).to.have.been.calledOnce;
-    chai.expect(fakeUpdate).to.have.been.calledOnceWithExactly(
-      {
-        id_enum_state_application: 1,
-        state_changed_date: moment.tz(CONFIG.APP_TZ).utc().format(),
-        programming_shutdown_date: moment
-          .tz(CONFIG.APP_TZ)
-          .clone()
-          .utc()
-          .add(CONFIG.expiration, 's')
-          .format(),
-      },
-      {
-        where: {
-          id_application: 8,
-        },
-      }
-    );
-  });
-  it('called with with non existing state_application and should reject with a ParameterMisformed error.', async () => {
-    try {
-      await application_builder.update_state({
-        id_application: 8,
-        state_application: 'Non existing',
-      });
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.not.have.been.called;
-      chai.expect(fakeUpdate).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal("The props.state_application must be in ['Off','Ready'].");
-    }
-  });
-  it('called with with misformed id_application and should reject with a ParameterMisformed error.', async () => {
-    try {
-      await application_builder.update_state({
-        id_application: 'misformed',
-        state_application: 'Ready',
-      });
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.not.have.been.called;
-      chai.expect(fakeUpdate).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.id_application parameter is misformed.');
-    }
-  });
-  it('called with without args and should reject with a MissingArgument error.', async () => {
-    try {
-      await application_builder.update_state({});
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.not.have.been.called;
-      chai.expect(fakeUpdate).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal(
-          'One or multiple arguments (id_application,state_application) are missing.'
-        );
-    }
-  });
-  it('called with without args and should reject with a DBObjectNotFound error.', async () => {
-    try {
-      fakeFindOne.resolves(
-        Promise.resolve({
-          id_enum_state_application: 1,
-        })
-      );
-      fakeUpdate.resolves(Promise.resolve([0]));
-      await application_builder.update_state({
-        id_application: 8,
-        state_application: 'Off',
-      });
-      chai.expect.fail(
-        'chai.expected to throw DBObjectNotFound, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeFindOne).to.have.been.called;
-      chai.expect(fakeUpdate).to.have.been.called;
       chai.expect(err).to.be.instanceOf(DBObjectNotFound);
-      chai
-        .expect(err.message)
-        .to.equal('The application to update does not exist.');
     }
-  });
-  it('called with without args and should reject with a DBObjectNotFound error.', async () => {
-    try {
-      fakeUpdate.resolves(
-        Promise.reject(new Sequelize.ForeignKeyConstraintError())
-      );
-      fakeFindOne.resolves(
-        Promise.resolve({
-          id_enum_state_application: 1,
-        })
-      );
-      await application_builder.update_state({
-        id_application: 8,
-        state_application: 'Off',
-      });
-      chai.expect.fail(
-        'chai.expected to throw DBForeignKeyConstraintError, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(err).to.be.instanceOf(DBForeignKeyConstraintError);
-      chai
-        .expect(err.message)
-        .to.equal(
-          'The foreign key cannot be deleted because it is still in use.'
-        );
-    }
-  });
-});
-describe('applications.builder.renew_expiration()', () => {
-  let fakeFindOne, fakeUpdate;
-  beforeEach(() => {
-    fakeFindOne = sinon.stub(db.cirrus.APPLICATION, 'findOne');
-    fakeUpdate = sinon.stub(db.cirrus.APPLICATION, 'update');
-  });
-  afterEach(() => {
-    sinon.restore();
   });
 
-  it('called without id_application and should reject MissingArgumentError', async () => {
+  it('called with invalid state and should throw error.', async () => {
+
     try {
-      await application_builder.renew_expiration();
-    } catch (err) {
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-    }
-  });
-  it('called with misformed id_application and should reject ParameterMisformed', async () => {
-    try {
-      await application_builder.renew_expiration({
-        id_application: 'misformed',
+      await application_builder.update_application_export_state({
+        id_export: 1,
+        hash: 'abc123',
+        state: 'InvalidState',
       });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
+      console.log(err)
       chai.expect(err).to.be.instanceOf(ParameterMisformed);
-    }
-  });
-  it('called but DBConnectionError', async () => {
-    try {
-      fakeFindOne.resolves(
-        Promise.reject(new Sequelize.ConnectionRefusedError())
-      );
-      await application_builder.renew_expiration({ id_application: 1 });
-    } catch (err) {
-      chai.expect(err).to.be.instanceOf(DBConnexionRefused);
     }
   });
 });
