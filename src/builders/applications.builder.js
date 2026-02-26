@@ -245,17 +245,17 @@ export const is_owner = async function (props) {
     const whereOpt =
       data.key === undefined
         ? {
-            [Op.and]: [
-              { id_application: data.id_application },
-              { id_user: data.id_user },
-            ],
-          }
+          [Op.and]: [
+            { id_application: data.id_application },
+            { id_user: data.id_user },
+          ],
+        }
         : {
-            [Op.and]: [
-              { generated_label: data.key },
-              { id_user: data.id_user },
-            ],
-          };
+          [Op.and]: [
+            { generated_label: data.key },
+            { id_user: data.id_user },
+          ],
+        };
 
     return await dbManager.models.APPLICATION.findOne({ where: whereOpt }).then(
       (r) => r != null
@@ -366,17 +366,7 @@ export const download_deletion = async function (props) {
       await dbManager.models.ENUM_STATE_APPLICATION.findOne(options).then(
         (r) => r.id_enum_state_application
       );
-
-    const opt_update = {
-      id_enum_state_application: id_enum_state_application,
-    };
-
-    options = {
-      where: {
-        id_application: data.id_application,
-      },
-    };
-    return await dbManager.models.APPLICATION.update(opt_update, options).then(
+    return await dbManager.models.APPLICATION.update({ id_enum_state_application }, { where: { id_application: data.id_application } }).then(
       (r) => r > 0
     );
   } catch (err) {
@@ -409,18 +399,17 @@ export const update_state = async function (props) {
       await dbManager.models.ENUM_STATE_APPLICATION.findOne(options).then(
         (r) => r.id_enum_state_application
       );
-
     const opt_update = {
       id_enum_state_application: id_enum_state_application,
       state_changed_date: moment.tz(CONFIG.APP_TZ).utc().format(),
       programming_shutdown_date:
         data.state_application === 'Ready'
           ? moment
-              .tz(CONFIG.APP_TZ)
-              .clone()
-              .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 's')
-              .utc()
-              .format()
+            .tz(CONFIG.APP_TZ)
+            .clone()
+            .add(CONFIG.USER_APPS_EXPIRATION_HOURS, 'h')
+            .utc()
+            .format()
           : null,
     };
     const opt_condition = { where: {} };

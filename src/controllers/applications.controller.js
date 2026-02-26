@@ -10,12 +10,12 @@ import {
 } from '../middlewares/prometheus.js';
 import CONFIG from '../config/config.js';
 import {
-  MissingArgumentError,
-  ParameterMisformed,
+  MissingArgumentError
 } from '../utils/errors.util.js';
 import { ApiResponse } from '../utils/response.util.js';
 import Guard from '../utils/guard.util.js';
 import logs from '../middlewares/winston.js';
+import z from 'zod';
 
 /**
  * Controllers that checks parameters and return the list of all applications in public format.
@@ -192,24 +192,15 @@ export const deletion = async (
 
   //Request
   try {
-    Guard.check_query(req, ['id_application']);
-
-    // Validate backup_storage parameter
-    if (req.body.backup_storage !== undefined) {
-      const backupStorage = req.body.backup_storage.toString().toLowerCase();
-      if (backupStorage !== 'true' && backupStorage !== 'false') {
-        throw new ParameterMisformed(
-          'backup_storage must be a boolean string ("true" or "false").'
-        );
-      }
-      req.body.backup_storage = backupStorage === 'true';
-    }
-
+    const schema = z.object({
+      id_application: z.coerce.number().int().positive(),
+      backup_storage: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+          .transform((val) => val === 'true')
+          .default(true),
+    })
+    const data = Guard.validateProps(schema, req.query);
     await fns
-      .application_delete({
-        id_application: req.query.id_application,
-        backup_storage: req.body.backup_storage ?? true,
-      })
+      .application_delete(data)
       .then((application) =>
         ApiResponse.success(
           req,

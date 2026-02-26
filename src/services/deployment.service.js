@@ -40,8 +40,7 @@ export const exec_deletion = async function (
   });
   const data = Guard.validateProps(schema, props);
   const promises = [
-    fns.delete_network_policy({ ...data }),
-    fns.delete_authorization_policy({ ...data }),
+    //fns.delete_network_policy({ ...data }),
     fns.external_name_deletion({ ...data }),
     fns.namespace_deletion({ ...data }),
     fns.registry_hub_deletion({ ...data }),
@@ -49,7 +48,8 @@ export const exec_deletion = async function (
     fns.service_deletion({ ...data }),
     fns.deleteFromKong({ ...data }),
   ];
-
+  if (CONFIG.KUBERNETES_ISTIO_ACTIVATED)
+    promises.push(fns.delete_authorization_policy({ ...data }));
   return await Promise.all(promises).then((r) => ({ ...data }));
 };
 

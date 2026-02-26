@@ -24,9 +24,8 @@ export const deletion = async function (
     hash: z.string().min(6).max(6),
   });
   const data = Guard.validateProps(schema, props);
-  const list = fns.get_service({ ...data }).then((r) => r.result);
-  const promises = list.map((name) => fns.delete_service({ ...data, name }));
-  return await Promise.all(promises);
+  const list = await fns.get_service({ ...data }).then((r) => r.result);
+  return await Promise.all(list.map((name) => fns.delete_service({ ...data, name })));
 };
 /**
  * Function that will launch the creation of the service in the Kubernetes cluster.

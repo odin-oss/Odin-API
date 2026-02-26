@@ -48,7 +48,7 @@ export const scale = async function (
 ) {
   const schema = z.object({
     hash: z.string().min(6).max(6),
-    replicas: z.number().int().positive().default(0),
+    replicas: z.number().int().default(0),
   });
   const data = Guard.validateProps(schema, props);
   const list = await fns.get_deployment({ ...data }).then((r) => r.result);
@@ -187,10 +187,15 @@ export const create = async function (props, fetch = kapi.fetch) {
           },
         },
         spec: {
+          securityContext: {
+            runAsUser: 1000,
+            runAsGroup: 1000,
+            fsGroup: 1000,
+          },
           containers: [
             {
               name: `pod${data.label}${data.hash}`,
-              image: `${data.image}:${data.image_tag}`,
+              image: `${data.registry_link.image}:${data.registry_link.image_tag}`,
               imagePullPolicy: 'IfNotPresent',
               readinessProbe: {
                 exec: {
@@ -256,7 +261,7 @@ export const create = async function (props, fetch = kapi.fetch) {
       generated_label: data.generated_label,
     });
     body = add_storage({
-      body: body,
+      body,
       username: data.username,
       label: data.label,
       hash: data.hash,

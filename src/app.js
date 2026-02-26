@@ -68,62 +68,28 @@ await dbManager
     logger.debug(error);
     process.exit(0);
   });
-
-// TEST CONNECT TO KAFKA
-logger.info(`[SYSTEM][100] / : Trying to connect to Kafka.`);
-if (CONFIG.KAFKA_ACTIVATED) {
-  await createKafkaTopics()
-    .then(() => logger.info(`[SYSTEM][200] / : 2/5. Kafka topics created.`))
-    .catch((error) => {
-      logger.error(
-        `[SYSTEM][500] / : 2/5. Kafka error during topic creation: The server encountered an error : ${error}`
-      );
-      logger.debug(error);
-      process.exit(0);
-    });
-  await startKafkaConsumption()
-    .then(() => logger.info(`[SYSTEM][200] / : 2/5. Kafka consumer connected.`))
-    .catch((error) => {
-      logger.error(
-        `[SYSTEM][500] / : 2/5. Kafka consumer Error: The server encountered an error : ${error}`
-      );
-      logger.debug(error);
-      process.exit(0);
-    });
-
-  await startKafkaPublication()
-    .then(() => logger.info(`[SYSTEM][200] / : 2/5. Kafka producer connected.`))
-    .catch((error) => {
-      logger.error(
-        `[SYSTEM][500] / : 2/5. Kafka consumer Error: The server encountered an error : ${error}`
-      );
-      logger.debug(error);
-      process.exit(0);
-    });
-} else logger.warn(`[SYSTEM][200] / : 2/5. Kafka consumer disabled.`);
-
 // TEST CONNECT TO KONG
 logger.info(`[SYSTEM][100] / : Trying to connect to KONG (APPS-INGRESS).`);
 if (CONFIG.APPS_INGRESS_ACTIVATED)
   await kong({ url: '/status', method: 'get' })
-    .then(() => logger.info(`[SYSTEM][200] / : 3/5. KONG reachable.`))
+    .then(() => logger.info(`[SYSTEM][200] / : 2/5. KONG reachable.`))
     .catch((error) => {
       logger.error(
-        `[SYSTEM][500] / : 3/5. KONG Error: The server encountered an error : ${error}`
+        `[SYSTEM][500] / : 2/5. KONG Error: The server encountered an error : ${error}`
       );
       logger.debug(error);
       process.exit(0);
     });
-else logger.warn(`[SYSTEM][200] / : 3/5. KONG disabled.`);
+else logger.warn(`[SYSTEM][200] / : 2/5. KONG disabled.`);
 
 // TEST CONNECT TO Kubernetes API
 logger.info(`[SYSTEM][100] / : Trying to connect to Kubernetes API.`);
 if (CONFIG.KUBERNETES_ACTIVATED) {
   await kapi({ url: '/healthz', method: 'get' })
-    .then(() => logger.info(`[SYSTEM][200] / : 4/5. Kubernetes API reachable.`))
+    .then(() => logger.info(`[SYSTEM][200] / : 3/5. Kubernetes API reachable.`))
     .catch((error) => {
       logger.error(
-        `[SYSTEM][500] / : 4/5. Kubernetes API Error: The server encountered an error : ${error}`
+        `[SYSTEM][500] / : 3/5. Kubernetes API Error: The server encountered an error : ${error}`
       );
       logger.debug(error);
       process.exit(0);
@@ -131,17 +97,55 @@ if (CONFIG.KUBERNETES_ACTIVATED) {
   await create({ hash: 'odin' })
     .then(() =>
       logger.info(
-        `[SYSTEM][200] / : 4/5. Odin has created the 'odin' namespace on the cluster.`
+        `[SYSTEM][200] / : 3/5. Odin has created the 'odin' namespace on the cluster.`
       )
     )
     .catch((error) => {
       logger.error(
-        `[SYSTEM][500] / : 4/5. Kubernetes API Error during creation of 'odin' namespace : ${error}`
+        `[SYSTEM][500] / : 3/5. Kubernetes API Error during creation of 'odin' namespace : ${error}`
       );
       logger.debug(error);
       process.exit(0);
     });
-} else logger.warn(`[SYSTEM][200] / : 4/5. Kubernetes API disabled.`);
+} else logger.warn(`[SYSTEM][200] / : 3/5. Kubernetes API disabled.`);
+
+// TEST CONNECT TO KAFKA
+logger.info(`[SYSTEM][100] / : Trying to connect to Kafka.`);
+if (CONFIG.KAFKA_ACTIVATED) {
+  await createKafkaTopics()
+    .then(() => logger.info(`[SYSTEM][200] / : 4/5. Kafka topics created.`))
+    .catch((error) => {
+      logger.error(
+        `[SYSTEM][500] / : 4/5. Kafka error during topic creation: The server encountered an error : ${error}`
+      );
+      logger.debug(error);
+      process.exit(0);
+    });
+  await startKafkaConsumption()
+    .then(() => logger.info(`[SYSTEM][200] / : 4/5. Kafka consumer connected.`))
+    .catch((error) => {
+      logger.error(
+        `[SYSTEM][500] / : 4/5. Kafka consumer Error: The server encountered an error : ${error}`
+      );
+      logger.debug(error);
+      process.exit(0);
+    });
+  logger.info(
+    `[SYSTEM][CRON] / : Starting publication of states in kafka.`
+  );
+  cron.schedule('*/10 * * * * *', () => {
+    logger.debug('[CRON][200] Checking applications scheduled to be started.');
+    startKafkaPublication()
+      .then(() => logger.debug(`[SYSTEM][200] / : States published in kafka broker.`))
+      .catch((error) => {
+        logger.error(
+          `[SYSTEM][500] / : 4/5. Kafka producer Error: The server encountered an error : ${error}`
+        );
+        logger.debug(error);
+        process.exit(0);
+      });
+  });
+} else logger.warn(`[SYSTEM][200] / : 4/5. Kafka disabled.`);
 
 // ADVICES AND WARNINGS
 if (CONFIG.KUBERNETES_ACTIVATED && !CONFIG.KUBERNETES_ISTIO_ACTIVATED)
@@ -188,6 +192,7 @@ cron.schedule('*/30 * * * * *', () => {
       logger.info('[CRON][200] ' + response + ' application deleted.')
   );
 });
+
 
 const optionsJSdoc = {
   definition: {

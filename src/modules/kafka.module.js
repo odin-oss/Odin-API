@@ -348,7 +348,6 @@ export const startKafkaPublication = async (
         })
       ).map((app) => app.hash);
       const content = await fns.get_k8s_object({ hashes });
-
       if (CONFIG.KAFKA_ACTIVATED) {
         for (const element of content) {
           await fns.send({
@@ -364,10 +363,6 @@ export const startKafkaPublication = async (
           });
         }
       }
-
-      logs.info(
-        '[SYSTEM][100] / : The states of applications have been published.'
-      );
     } catch (error) {
       logs.error('[SYSTEM][100] / : Error producing message :', error.name);
       logs.debug(error);

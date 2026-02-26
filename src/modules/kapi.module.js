@@ -64,9 +64,9 @@ export const fetch = async function (
         );
       else if (res.status === 409 && res.statusText === 'Conflict') {
         logs.debug(
-          `[KUBERNETES][${res.status}] / : ${body.kind} ${body.metadata.name} Already present on the cluster (in namespace ${body.metadata.namespace}).`
+          `[KUBERNETES][${res.status}] / : ${body?.kind} ${body?.metadata?.name} Already present on the cluster (in namespace ${body?.metadata?.namespace}).`
         );
-        return `${body.kind} ${body.metadata.name} Already present on the cluster (in namespace ${body.metadata.namespace}).`;
+        return `${body?.kind} ${body?.metadata?.name} Already present on the cluster (in namespace ${body?.metadata?.namespace}).`;
       }
 
       let fetchData;
@@ -75,10 +75,9 @@ export const fetch = async function (
       } else {
         fetchData = await res.text();
       }
-
       if (res.status >= 400) {
         logs.debug(
-          `[KUBERNETES][${res.status}] / : ${body.kind} ${body.metadata.name} (in namespace ${body.metadata.namespace}) says : `,
+          `[KUBERNETES][${res.status}] / : ${body?.kind} ${body?.metadata?.name} (in namespace ${body?.metadata?.namespace}) says : `,
           fetchData
         );
         throw new KubernetesErrorNotDefined(
