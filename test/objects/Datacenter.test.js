@@ -1,60 +1,64 @@
 import * as chai from 'chai';
-import sinonChai from 'sinon-chai';
 import { Datacenter } from '../../src/objects/Datacenter.js';
-chai.use(sinonChai);
 
-describe('<object> Datacenter', () => {
-  it('creates and checks value of Datacenter object.', () => {
-    const dc = new Datacenter({
-      id_datacenter: 3,
-      label: 'testdc',
-      city: 'paradise',
-      provider: 'prov',
+describe('Datacenter object', () => {
+  it('creates with valid properties', () => {
+    const datacenter = new Datacenter({
+      id_datacenter: 1,
+      label: 'US-East',
+      provider: 'AWS',
+      city: 'Virginia',
     });
-    chai.expect(dc.id_datacenter).to.be.equal(3);
-    chai.expect(dc.label).to.be.equal('testdc');
-    chai.expect(dc.city).to.be.equal('paradise');
-    chai.expect(dc.provider).to.be.equal('prov');
-  });
-  it('creates, updates and checks value of Category object.', () => {
-    const dc = new Datacenter({
-      id_datacenter: 3,
-      label: 'testdc',
-      city: 'paradise',
-      provider: 'prov',
-    });
-    dc.id_datacenter = 2;
-    dc.label = 'testte';
-    dc.city = 'hell';
-    dc.provider = 'dc';
 
-    chai.expect(dc.id_datacenter).to.be.equal(2);
-    chai.expect(dc.label).to.be.equal('testte');
-    chai.expect(dc.provider).to.be.equal('dc');
-    chai.expect(dc.city).to.be.equal('hell');
+    chai.expect(datacenter.id_datacenter).to.equal(1);
+    chai.expect(datacenter.label).to.equal('US-East');
+    chai.expect(datacenter.provider).to.equal('AWS');
+    chai.expect(datacenter.city).to.equal('Virginia');
   });
-  it('creates and checks value of toJSON and public_format object.', () => {
-    const dc = new Datacenter({
-      id_datacenter: 3,
-      label: 'testdc',
-      city: 'paradise',
-      provider: 'prov',
+
+  it('throws on non-positive id_datacenter', () => {
+    chai
+      .expect(() => {
+        new Datacenter({ id_datacenter: -1 });
+      })
+      .to.throw();
+  });
+
+  it('throws on empty label', () => {
+    chai
+      .expect(() => {
+        new Datacenter({ id_datacenter: 1, label: '' });
+      })
+      .to.throw();
+  });
+
+  it('serializes with toJSON', () => {
+    const datacenter = new Datacenter({
+      id_datacenter: 2,
+      label: 'EU-West',
+      provider: 'Azure',
+      city: 'Amsterdam',
     });
-    chai.expect(dc.id_datacenter).to.be.equal(3);
-    chai.expect(dc.label).to.be.equal('testdc');
-    chai.expect(dc.city).to.be.equal('paradise');
-    chai.expect(dc.provider).to.be.equal('prov');
-    chai.expect(dc.toJSON()).to.deep.equal({
+
+    const json = datacenter.toJSON();
+    chai.expect(json.id_datacenter).to.equal(2);
+    chai.expect(json.label).to.equal('EU-West');
+    chai.expect(json.provider).to.equal('Azure');
+    chai.expect(json.city).to.equal('Amsterdam');
+  });
+
+  it('serializes with public_format', () => {
+    const datacenter = new Datacenter({
       id_datacenter: 3,
-      label: 'testdc',
-      city: 'paradise',
-      provider: 'prov',
+      label: 'Asia-Pacific',
+      provider: 'GCP',
+      city: 'Singapore',
     });
-    chai.expect(dc.public_format()).to.deep.equal({
-      id_datacenter: 3,
-      label: 'testdc',
-      city: 'paradise',
-      provider: 'prov',
-    });
+
+    const format = datacenter.public_format();
+    chai.expect(format.id_datacenter).to.equal(3);
+    chai.expect(format.label).to.equal('Asia-Pacific');
+    chai.expect(format.provider).to.equal('GCP');
+    chai.expect(format.city).to.equal('Singapore');
   });
 });

@@ -1,56 +1,48 @@
-import * as image_type_service from '../../src/services/image_type.service.js';
-import { ImageType } from '../../src/objects/Image_type.js';
-import { DBConnexionRefused } from '../../src/utils/errors.service.js';
 import * as chai from 'chai';
 import * as sinon from 'sinon';
 import sinonChai from 'sinon-chai';
+import * as image_type_service from '../../src/services/image_type.service.js';
+
 chai.use(sinonChai);
 
 describe('image_type.service.list()', () => {
-  let fakeImageTypeList;
-  beforeEach(() => {
-    fakeImageTypeList = sinon.stub();
-  });
-  afterEach(() => {
-    sinon.restore();
-  });
-  it('called and should return the list of ImageType.', async () => {
-    fakeImageTypeList.resolves(
-      Promise.resolve([
-        new ImageType({ id_type: 1, label: 'linux' }),
-        new ImageType({ id_type: 2, label: 'windows' }),
-        new ImageType({ id_type: 3, label: 'macosx' }),
-        new ImageType({ id_type: 4, label: 'kasm' }),
-      ])
-    );
+  it('should list all image types successfully', async () => {
+    const mockImageTypes = [
+      { id_type: 1, label: 'Image Type 1' },
+      { id_type: 2, label: 'Image Type 2' },
+    ];
+    const mockList = sinon.stub().resolves(mockImageTypes);
+
     const result = await image_type_service.list({
-      image_type_list: fakeImageTypeList,
+      image_type_list: mockList,
     });
-    chai.expect(fakeImageTypeList).to.have.been.calledOnce;
-    chai
-      .expect(result)
-      .to.deep.equal([
-        new ImageType({ id_type: 1, label: 'linux' }),
-        new ImageType({ id_type: 2, label: 'windows' }),
-        new ImageType({ id_type: 3, label: 'macosx' }),
-        new ImageType({ id_type: 4, label: 'kasm' }),
-      ]);
+
+    chai.expect(result).to.deep.equal(mockImageTypes);
+    chai.expect(mockList.calledOnce).to.be.true;
   });
-  it('should throw the DBConnexionRefused error.', async () => {
+
+  it('should return empty array when no image types exist', async () => {
+    const mockList = sinon.stub().resolves([]);
+
+    const result = await image_type_service.list({
+      image_type_list: mockList,
+    });
+
+    chai.expect(result).to.deep.equal([]);
+    chai.expect(mockList.calledOnce).to.be.true;
+  });
+
+  it('should propagate error when builder throws', async () => {
+    const mockError = new Error('Database error');
+    const mockList = sinon.stub().rejects(mockError);
+
     try {
-      fakeImageTypeList.resolves(
-        Promise.reject(
-          new DBConnexionRefused('Connexion to the database refused.')
-        )
-      );
-      await image_type_service.list({ image_type_list: fakeImageTypeList });
-      chai.expect.fail(
-        'chai.expected to throw DBConnexionRefused, but it did not.'
-      );
+      await image_type_service.list({
+        image_type_list: mockList,
+      });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeImageTypeList).to.have.been.calledOnce;
-      chai.expect(err).to.be.instanceOf(DBConnexionRefused);
-      chai.expect(err.message).to.equal('Connexion to the database refused.');
+      chai.expect(err.message).to.equal('Database error');
     }
   });
 });

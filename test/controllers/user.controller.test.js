@@ -2,82 +2,83 @@ import * as user_controller from '../../src/controllers/user.controller.js';
 import * as chai from 'chai';
 import * as sinon from 'sinon';
 import sinonChai from 'sinon-chai';
-import * as token_service from '../../src/utils/token.service.js';
-import { User } from '../../src/objects/User.js';
+import * as token_service from '../../src/utils/token.util.js';
 import {
   DBConnexionRefused,
-  DBObjectNotFound,
-  MissingArgumentError,
-  PasswordIsTooShort,
-} from '../../src/utils/errors.service.js';
+  ParameterMisformed,
+} from '../../src/utils/errors.util.js';
+import { User } from '../../src/objects/User.js';
+
 chai.use(sinonChai);
 
 describe('user_controller.me()', () => {
-  let fakeUserGet, fakeReq, fakeRes;
+  let fakeGet, fakeReq, fakeRes;
+
   beforeEach(() => {
-    fakeUserGet = sinon.stub();
+    fakeGet = sinon.stub();
     const token = token_service.generateToken({ id_user: 1 });
     fakeReq = {
       headers: {
         authorization: 'Bearer ' + token,
       },
       method: 'GET',
-      originalUrl: '/me',
+      originalUrl: '/user/me',
     };
     fakeRes = {
       status: sinon.stub().returnsThis(),
       json: sinon.stub(),
     };
   });
+
   afterEach(() => {
     sinon.restore();
   });
-  it("called with good arguments and should send the current user's informations.", async () => {
-    fakeUserGet.resolves(
-      Promise.resolve(
-        new User({
-          id_user: 1,
-          lastname: 'LEFEBVRE',
-          firstname: 'Benoit',
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          role: 'PROFESSEUR',
-          pwd: undefined,
-        })
-      )
-    );
+
+  it('called and should return current user information.', async () => {
+    const mockUser = new User({
+      id_user: 1,
+      lastname: 'Doe',
+      firstname: 'John',
+      mail: 'john.doe@example.com',
+      role: 'ETUDIANT',
+    });
+
+    fakeGet.resolves(Promise.resolve(mockUser));
+
     await user_controller.me(fakeReq, fakeRes, {
-      user_get: fakeUserGet,
+      user_get: fakeGet,
     });
-    chai.expect(fakeRes.json).to.have.been.calledOnceWithExactly({
-      result: new User({
-        id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-        pwd: undefined,
-      }).public_format(),
-    });
-    chai.expect(fakeRes.status.calledOnceWith(200)).to.be.true;
+
+    chai.expect(fakeGet).to.have.been.calledOnceWithExactly({ id_user: 1 });
+    chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
+    chai.expect(fakeRes.json).to.have.been.calledOnce;
+    const jsonCall = fakeRes.json.firstCall.args[0];
+    chai.expect(jsonCall.success).to.equal(true);
+    chai.expect(jsonCall.message).to.equal('Informations transmitted.');
   });
-  it('called with good arguments and should return with a user not found error.', async () => {
-    fakeUserGet.resolves(
-      Promise.reject(new DBObjectNotFound('The user could not be found.'))
+
+  it('called but should reject with DBConnexionRefused error.', async () => {
+    fakeGet.rejects(
+      new DBConnexionRefused('Connexion to the database refused.')
     );
+
     await user_controller.me(fakeReq, fakeRes, {
-      user_get: fakeUserGet,
+      user_get: fakeGet,
     });
-    chai.expect(fakeRes.json).to.have.been.calledOnceWithExactly({
-      result: {
-        error: 'DBObjectNotFound',
-        message: 'The user could not be found.',
-      },
-    });
-    chai.expect(fakeRes.status.calledOnceWith(404)).to.be.true;
+
+    chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(500);
+    const jsonCall = fakeRes.json.firstCall.args[0];
+    chai.expect(jsonCall.success).to.equal(false);
+    chai
+      .expect(jsonCall.message)
+      .to.equal('Connexion to the database refused.');
+    chai.expect(jsonCall.error.type).to.equal('DBConnexionRefused');
   });
 });
+
 describe('user_controller.update_password()', () => {
   let fakeUpdate, fakeReq, fakeRes;
+
   beforeEach(() => {
     fakeUpdate = sinon.stub();
     const token = token_service.generateToken({ id_user: 1 });
@@ -86,8 +87,8 @@ describe('user_controller.update_password()', () => {
         authorization: 'Bearer ' + token,
       },
       body: {
-        password: 'Test1.dze',
-        old_password: 'ezraer',
+        old_password: 'old_password_123',
+        password: 'new_password_123',
       },
       method: 'PUT',
       originalUrl: '/user/password',
@@ -97,172 +98,189 @@ describe('user_controller.update_password()', () => {
       json: sinon.stub(),
     };
   });
+
   afterEach(() => {
     sinon.restore();
   });
-  it("called with good arguments and should current user's password.", async () => {
-    fakeUpdate.resolves(
-      Promise.resolve(
-        new User({
-          id_user: 1,
-          lastname: 'LEFEBVRE',
-          firstname: 'Benoit',
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          role: 'PROFESSEUR',
-          pwd: undefined,
-        })
-      )
-    );
+
+  it('called with good arguments and should update password.', async () => {
+    fakeUpdate.resolves(Promise.resolve());
+
     await user_controller.update_password(fakeReq, fakeRes, {
       user_update_password: fakeUpdate,
     });
-    chai.expect(fakeRes.json).to.have.been.calledOnceWithExactly({
-      result: new User({
-        id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-        pwd: undefined,
-      }).public_format(),
+
+    chai.expect(fakeUpdate).to.have.been.calledOnceWithExactly({
+      id_user: 1,
+      old_password: 'old_password_123',
+      password: 'new_password_123',
     });
-    chai.expect(fakeRes.status.calledOnceWith(200)).to.be.true;
+    chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
+    chai.expect(fakeRes.json).to.have.been.calledOnce;
+    const jsonCall = fakeRes.json.firstCall.args[0];
+    chai.expect(jsonCall.success).to.equal(true);
+    chai.expect(jsonCall.message).to.equal('Password changed.');
   });
-  it('called with non convenient password and should return with .', async () => {
-    const token = token_service.generateToken({ id_user: 1 });
-    fakeReq = {
-      headers: {
-        authorization: 'Bearer ' + token,
-      },
-      body: {
-        password: 'Tes',
-        old_password: 'zerzef',
-      },
-      method: 'PUT',
-      originalUrl: '/user/password',
+
+  it('called without old_password and should reject with validation error.', async () => {
+    fakeReq.body = {
+      password: 'new_password_123',
     };
-    fakeUpdate.resolves(
-      Promise.reject(
-        new PasswordIsTooShort(
-          'The password must contains at least 8 characters.'
-        )
-      )
-    );
+
     await user_controller.update_password(fakeReq, fakeRes, {
       user_update_password: fakeUpdate,
     });
-    chai.expect(fakeRes.json).to.have.been.calledOnceWithExactly({
-      result: {
-        error: 'PasswordIsTooShort',
-        message: 'The password must contains at least 8 characters.',
-      },
+
+    chai.expect(fakeUpdate).to.not.have.been.called;
+    chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(400);
+    const jsonCall = fakeRes.json.firstCall.args[0];
+    chai.expect(jsonCall.success).to.equal(false);
+  });
+
+  it('called without password and should reject with validation error.', async () => {
+    fakeReq.body = {
+      old_password: 'old_password_123',
+    };
+
+    await user_controller.update_password(fakeReq, fakeRes, {
+      user_update_password: fakeUpdate,
     });
-    chai.expect(fakeRes.status.calledOnceWith(401)).to.be.true;
+
+    chai.expect(fakeUpdate).to.not.have.been.called;
+    chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(400);
+    const jsonCall = fakeRes.json.firstCall.args[0];
+    chai.expect(jsonCall.success).to.equal(false);
+  });
+
+  it('called but should reject with DBConnexionRefused error.', async () => {
+    fakeUpdate.rejects(
+      new DBConnexionRefused('Connexion to the database refused.')
+    );
+
+    await user_controller.update_password(fakeReq, fakeRes, {
+      user_update_password: fakeUpdate,
+    });
+
+    chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(500);
+    const jsonCall = fakeRes.json.firstCall.args[0];
+    chai.expect(jsonCall.success).to.equal(false);
+    chai
+      .expect(jsonCall.message)
+      .to.equal('Connexion to the database refused.');
+    chai.expect(jsonCall.error.type).to.equal('DBConnexionRefused');
   });
 });
+
 describe('user_controller.list()', () => {
-  let fakeUserList, fakeReq, fakeRes;
+  let fakeList, fakeReq, fakeRes;
+
   beforeEach(() => {
-    fakeUserList = sinon.stub();
+    fakeList = sinon.stub();
     const token = token_service.generateToken({ id_user: 1 });
     fakeReq = {
       headers: {
         authorization: 'Bearer ' + token,
+      },
+      query: {
+        user_role: 'ETUDIANT',
       },
       method: 'GET',
-      originalUrl: '/session/list_by_role',
+      originalUrl: '/user/list?user_role=ETUDIANT',
     };
     fakeRes = {
       status: sinon.stub().returnsThis(),
       json: sinon.stub(),
     };
   });
+
   afterEach(() => {
     sinon.restore();
   });
-  it("called with good arguments and should send the current user's informations.", async () => {
-    fakeUserList.resolves(
-      Promise.resolve([
-        new User({
-          id_user: 1,
-          lastname: 'LEFEBVRE',
-          firstname: 'Benoit',
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          role: 'ETUDIANT',
-          pwd: undefined,
-        }),
-        new User({
-          id_user: 4,
-          lastname: 'URBANSKI',
-          firstname: 'Daphné',
-          mail: 'daphne.urbanski@getcaelus.cloud',
-          role: 'ETUDIANT',
-          pwd: undefined,
-        }),
-      ])
+
+  it('called with valid role and should return list of users.', async () => {
+    const mockUsers = [
+      new User({
+        id_user: 1,
+        lastname: 'Doe',
+        firstname: 'John',
+        mail: 'john.doe@example.com',
+        role: 'ETUDIANT',
+      }),
+      new User({
+        id_user: 2,
+        lastname: 'Smith',
+        firstname: 'Jane',
+        mail: 'jane.smith@example.com',
+        role: 'ETUDIANT',
+      }),
+    ];
+
+    fakeList.resolves(Promise.resolve(mockUsers));
+
+    await user_controller.list(fakeReq, fakeRes, {
+      user_list: fakeList,
+    });
+
+    chai.expect(fakeList).to.have.been.calledOnceWithExactly({
+      user_role: 'ETUDIANT',
+    });
+    chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
+    chai.expect(fakeRes.json).to.have.been.calledOnce;
+    const jsonCall = fakeRes.json.firstCall.args[0];
+    chai.expect(jsonCall.success).to.equal(true);
+    chai.expect(jsonCall.message).to.equal('List of users transmitted.');
+  });
+
+  it('called without user_role and should reject with validation error.', async () => {
+    fakeReq.query = {};
+
+    await user_controller.list(fakeReq, fakeRes, {
+      user_list: fakeList,
+    });
+
+    chai.expect(fakeList).to.not.have.been.called;
+    chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(400);
+    const jsonCall = fakeRes.json.firstCall.args[0];
+    chai.expect(jsonCall.success).to.equal(false);
+  });
+
+  it('called with invalid user_role and should reject with validation error.', async () => {
+    fakeReq.query = {
+      user_role: 'INVALID',
+    };
+
+    await user_controller.list(fakeReq, fakeRes, {
+      user_list: fakeList,
+    });
+
+    chai.expect(fakeList).to.not.have.been.called;
+    chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(400);
+    const jsonCall = fakeRes.json.firstCall.args[0];
+    chai.expect(jsonCall.success).to.equal(false);
+  });
+
+  it('called but should reject with DBConnexionRefused error.', async () => {
+    fakeList.rejects(
+      new DBConnexionRefused('Connexion to the database refused.')
     );
-    fakeReq.query = {
-      user_role: 'ETUDIANT',
-    };
+
     await user_controller.list(fakeReq, fakeRes, {
-      user_list: fakeUserList,
+      user_list: fakeList,
     });
-    chai.expect(fakeRes.json).to.have.been.calledOnceWithExactly({
-      result: [
-        new User({
-          id_user: 1,
-          lastname: 'LEFEBVRE',
-          firstname: 'Benoit',
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          role: 'ETUDIANT',
-          pwd: undefined,
-        }).public_format(),
-        new User({
-          id_user: 4,
-          lastname: 'URBANSKI',
-          firstname: 'Daphné',
-          mail: 'daphne.urbanski@getcaelus.cloud',
-          role: 'ETUDIANT',
-          pwd: undefined,
-        }).public_format(),
-      ],
-    });
-    chai.expect(fakeRes.status.calledOnceWith(200)).to.be.true;
-  });
-  it('called with good arguments and should return with a user not found error.', async () => {
-    fakeUserList.resolves(Promise.reject(new DBConnexionRefused('Oops.')));
-    fakeReq.query = {
-      user_role: 'ETUDIANT',
-    };
-    await user_controller.list(fakeReq, fakeRes, {
-      user_list: fakeUserList,
-    });
-    chai.expect(fakeRes.json).to.have.been.calledOnceWithExactly({
-      result: {
-        error: 'DBConnexionRefused',
-        message: 'Oops.',
-      },
-    });
-    chai.expect(fakeRes.status.calledOnceWith(500)).to.be.true;
-  });
-  it('called with not allowed user_role and should return with an error.', async () => {
-    fakeReq.query = {
-      user_role: 'DIRECTEUR',
-    };
-    await user_controller.list(fakeReq, fakeRes, {
-      user_list: fakeUserList,
-    });
-    chai.expect(fakeRes.json).to.have.been.calledOnceWithExactly({
-      result: {
-        error: 'ParameterMisformed',
-        message: 'The req.query.user_role parameter is misformed.',
-      },
-    });
-    chai.expect(fakeRes.status.calledOnceWith(400)).to.be.true;
+
+    chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(500);
+    const jsonCall = fakeRes.json.firstCall.args[0];
+    chai.expect(jsonCall.success).to.equal(false);
+    chai
+      .expect(jsonCall.message)
+      .to.equal('Connexion to the database refused.');
+    chai.expect(jsonCall.error.type).to.equal('DBConnexionRefused');
   });
 });
+
 describe('user_controller.create()', () => {
   let fakeCreate, fakeReq, fakeRes;
+
   beforeEach(() => {
     fakeCreate = sinon.stub();
     const token = token_service.generateToken({ id_user: 1 });
@@ -271,70 +289,101 @@ describe('user_controller.create()', () => {
         authorization: 'Bearer ' + token,
       },
       body: {
-        password: 'Test1.dze',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
+        password: 'new_password_123',
+        mail: 'john.doe@example.com',
+        lastname: 'Doe',
+        firstname: 'John',
+        role: 'ETUDIANT',
       },
       method: 'POST',
-      originalUrl: '/user/create',
+      originalUrl: '/user',
     };
     fakeRes = {
       status: sinon.stub().returnsThis(),
       json: sinon.stub(),
     };
   });
+
   afterEach(() => {
     sinon.restore();
   });
-  it("called with good arguments and should current user's password.", async () => {
-    fakeCreate.resolves(
-      Promise.resolve(
-        new User({
-          id_user: 1,
-          lastname: 'LEFEBVRE',
-          firstname: 'Benoit',
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          role: 'PROFESSEUR',
-          pwd: 'Test1.dze',
-        })
-      )
-    );
+
+  it('called with good arguments and should create new user.', async () => {
+    const mockUser = new User({
+      id_user: 1,
+      lastname: 'Doe',
+      firstname: 'John',
+      mail: 'john.doe@example.com',
+      role: 'ETUDIANT',
+    });
+
+    fakeCreate.resolves(Promise.resolve(mockUser));
+
     await user_controller.create(fakeReq, fakeRes, {
       create: fakeCreate,
     });
-    chai.expect(fakeRes.json).to.have.been.calledOnceWithExactly({
-      result: new User({
-        id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-        pwd: 'Test1.dze',
-      }).toJSON(),
+
+    chai.expect(fakeCreate).to.have.been.calledOnceWithExactly({
+      mail: 'john.doe@example.com',
+      pwd: 'new_password_123',
+      role: 'ETUDIANT',
+      lastname: 'Doe',
+      firstname: 'John',
     });
-    chai.expect(fakeRes.status.calledOnceWith(200)).to.be.true;
+    chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(201);
+    chai.expect(fakeRes.json).to.have.been.calledOnce;
+    const jsonCall = fakeRes.json.firstCall.args[0];
+    chai.expect(jsonCall.success).to.equal(true);
+    chai.expect(jsonCall.message).to.equal('User created.');
   });
-  it('called with missing args and should return with an error.', async () => {
-    try {
-      fakeCreate.resolves(
-        Promise.reject(
-          new MissingArgumentError('A required argument is missing.')
-        )
-      );
-      await user_controller.create(fakeReq, fakeRes, {
-        create: fakeCreate,
-      });
-      throw new Error('Should have thrown a MissingArgumentError.');
-    } catch (err) {
-      chai.expect(fakeRes.json).to.have.been.calledOnceWithExactly({
-        result: {
-          error: 'MissingArgumentError',
-          message: 'A required argument is missing.',
-        },
-      });
-      chai.expect(fakeRes.status.calledOnceWith(400)).to.be.true;
-    }
+
+  it('called without mail and should reject with validation error.', async () => {
+    fakeReq.body = {
+      password: 'new_password_123',
+      lastname: 'Doe',
+      firstname: 'John',
+      role: 'ETUDIANT',
+    };
+
+    await user_controller.create(fakeReq, fakeRes, {
+      create: fakeCreate,
+    });
+
+    chai.expect(fakeCreate).to.not.have.been.called;
+    chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(400);
+    const jsonCall = fakeRes.json.firstCall.args[0];
+    chai.expect(jsonCall.success).to.equal(false);
+  });
+
+  it('called with invalid role and should reject with ParameterMisformed.', async () => {
+    fakeReq.body.role = 'ADMINISTRATEUR';
+
+    await user_controller.create(fakeReq, fakeRes, {
+      create: fakeCreate,
+    });
+
+    chai.expect(fakeCreate).to.not.have.been.called;
+    chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(400);
+    const jsonCall = fakeRes.json.firstCall.args[0];
+    chai.expect(jsonCall.success).to.equal(false);
+    chai.expect(jsonCall.error.type).to.equal('ParameterMisformed');
+  });
+
+  it('called but should reject with DBConnexionRefused error.', async () => {
+    fakeCreate.rejects(
+      new DBConnexionRefused('Connexion to the database refused.')
+    );
+
+    await user_controller.create(fakeReq, fakeRes, {
+      create: fakeCreate,
+    });
+
+    chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(500);
+    const jsonCall = fakeRes.json.firstCall.args[0];
+    chai.expect(jsonCall.success).to.equal(false);
+    chai
+      .expect(jsonCall.message)
+      .to.equal('Connexion to the database refused.');
+    chai.expect(jsonCall.error.type).to.equal('DBConnexionRefused');
   });
 });

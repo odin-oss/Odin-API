@@ -1,61 +1,73 @@
 import * as chai from 'chai';
-import * as sinon from 'sinon';
-import sinonChai from 'sinon-chai';
 import { User } from '../../src/objects/User.js';
-chai.use(sinonChai);
 
-describe('<object> User', () => {
-  it('creates and checks values of User test', () => {
+describe('User object', () => {
+  it('creates with valid properties', () => {
     const user = new User({
-      id_user: 3,
-      lastname: 'LEFEBVRE',
-      firstname: 'Ulfi',
-      mail: 'ulfi.lefebvre@getcaelus.cloud',
-      role: 'PROFESSEUR',
-      pwd: 'whatthehellisthat',
+      id_user: 1,
+      lastname: 'Doe',
+      firstname: 'Jane',
+      mail: 'jane.doe@example.com',
+      role: 'ETUDIANT',
+      pwd: 'password123',
     });
-    chai.expect(user.id_user).to.be.eql(3);
-    chai.expect(user.lastname).to.be.eql('LEFEBVRE');
-    chai.expect(user.firstname).to.be.eql('Ulfi');
-    chai.expect(user.mail).to.be.eql('ulfi.lefebvre@getcaelus.cloud');
-    chai.expect(user.role).to.be.eql('PROFESSEUR');
-    chai.expect(user.pwd).to.be.eql('whatthehellisthat');
-    chai.expect(user.toJSON()).to.deep.eql({
-      id_user: 3,
-      lastname: 'LEFEBVRE',
-      firstname: 'Ulfi',
-      mail: 'ulfi.lefebvre@getcaelus.cloud',
+
+    chai.expect(user.id_user).to.equal(1);
+    chai.expect(user.lastname).to.equal('Doe');
+    chai.expect(user.firstname).to.equal('Jane');
+    chai.expect(user.mail).to.equal('jane.doe@example.com');
+    chai.expect(user.role).to.equal('ETUDIANT');
+  });
+
+  it('throws on invalid email', () => {
+    chai
+      .expect(() => {
+        new User({ mail: 'not-an-email' });
+      })
+      .to.throw();
+  });
+
+  it('throws on invalid role', () => {
+    chai
+      .expect(() => {
+        new User({ role: 'INVALID' });
+      })
+      .to.throw();
+  });
+
+  it('serializes with public_format', () => {
+    const user = new User({
+      id_user: 5,
+      lastname: 'Doe',
+      firstname: 'John',
+      mail: 'john.doe@example.com',
       role: 'PROFESSEUR',
     });
-    chai.expect(user.public_format()).to.deep.eql({
-      id_user: 3,
-      lastname: 'LEFEBVRE',
-      firstname: 'Ulfi',
-      mail: 'ulfi.lefebvre@getcaelus.cloud',
+
+    chai.expect(user.public_format()).to.deep.equal({
+      id_user: 5,
+      lastname: 'Doe',
+      firstname: 'John',
+      mail: 'john.doe@example.com',
       role: 'PROFESSEUR',
     });
   });
-  it('creates, updates and checks values of User test', () => {
-    const user = new User({
-      id_user: 3,
-      lastname: 'LEFEBVRE',
-      firstname: 'Ulfi',
-      mail: 'ulfi.lefebvre@getcaelus.cloud',
-      role: 'PROFESSEUR',
-      pwd: 'whatthehellisthat',
-    });
-    user.id_user = 4;
-    user.lastname = 'VIEILLARD';
-    user.firstname = 'Louis';
-    user.mail = 'louis.vieillard@getcaelus.cloud';
-    user.role = 'ETUDIANT';
-    user.pwd = 'keepdreaming';
 
-    chai.expect(user.id_user).to.be.eql(4);
-    chai.expect(user.lastname).to.be.eql('VIEILLARD');
-    chai.expect(user.firstname).to.be.eql('Louis');
-    chai.expect(user.mail).to.be.eql('louis.vieillard@getcaelus.cloud');
-    chai.expect(user.role).to.be.eql('ETUDIANT');
-    chai.expect(user.pwd).to.be.eql('keepdreaming');
+  it('serializes with toJSON', () => {
+    const user = new User({
+      id_user: 10,
+      lastname: 'Smith',
+      firstname: 'Alice',
+      mail: 'alice.smith@example.com',
+      role: 'ADMINISTRATEUR',
+      pwd: 'secret123',
+    });
+
+    const json = user.toJSON();
+    chai.expect(json.id_user).to.equal(10);
+    chai.expect(json.lastname).to.equal('Smith');
+    chai.expect(json.firstname).to.equal('Alice');
+    chai.expect(json.mail).to.equal('alice.smith@example.com');
+    chai.expect(json.role).to.equal('ADMINISTRATEUR');
   });
 });

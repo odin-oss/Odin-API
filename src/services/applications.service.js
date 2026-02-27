@@ -203,14 +203,18 @@ export const deletion = async function (
     backup_storage: z.boolean().default(true),
   });
   const data = Guard.validateProps(schema, props);
-  const app = await fns.application_get({ id_application: data.id_application });
+  const app = await fns.application_get({
+    id_application: data.id_application,
+  });
   if (!['Ready', 'Off'].includes(app.state_application))
     throw new ApplicationInvalidStateError(
       'The application must be in states Ready or Off to be deleted, current state is ' +
         app.state_application
     );
 
-  const datacenter = await fns.datacenter_get({ id_datacenter: app.datacenter.id_datacenter });
+  const datacenter = await fns.datacenter_get({
+    id_datacenter: app.datacenter.id_datacenter,
+  });
   const promises = [];
 
   if (data.backup_storage) {

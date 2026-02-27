@@ -1,121 +1,77 @@
 import * as chai from 'chai';
-import sinonChai from 'sinon-chai';
-import { Environment } from '../../src/objects/Environment.js';
-import { History, Record } from '../../src/objects/History.js';
-import moment from 'moment';
-chai.use(sinonChai);
+import { Record, History } from '../../src/objects/History.js';
 
-describe('<object> History', () => {
-  it('creates and checks value of empty History object.', () => {
-    const history = new History();
-    chai.expect(history.records).to.be.deep.equal([]);
+describe('Record object', () => {
+  it('creates with valid properties', () => {
+    const record = new Record({
+      id_user: 1,
+      id_application: 5,
+      id_history: 10,
+      datetime: '2026-02-27T10:00:00Z',
+    });
+
+    chai.expect(record.id_user).to.equal(1);
+    chai.expect(record.id_application).to.equal(5);
+    chai.expect(record.id_history).to.equal(10);
+    chai.expect(record.datetime).to.exist;
   });
-  it('creates, updates and checks value of History object.', () => {
-    const history = new History({
-      records: [
-        new Record({
-          id_application: 1,
-          id_user: 2,
-          id_history: 3,
-          datetime: moment('2025-09-26 13:19:30').tz('Europe/Paris'),
-        }),
-      ],
-    });
-    chai.expect(history.records).to.be.deep.equal([
-      new Record({
-        id_application: 1,
-        id_user: 2,
-        id_history: 3,
-        datetime: moment('2025-09-26 13:19:30').tz('Europe/Paris'),
-      }),
-    ]);
-    history.records = [];
-    chai.expect(history.records).to.be.deep.equal([]);
+
+  it('throws on invalid datetime', () => {
+    chai
+      .expect(() => {
+        new Record({ datetime: 'not-a-date' });
+      })
+      .to.throw();
   });
-  it('creates and checks value of toJSON and public_format object.', () => {
-    const history = new History({
-      records: [
-        new Record({
-          id_application: 1,
-          id_user: 2,
-          id_history: 3,
-          datetime: moment('2025-09-26 13:19:30').tz('Europe/Paris'),
-        }),
-      ],
+
+  it('serializes with toJSON', () => {
+    const record = new Record({
+      id_user: 2,
+      id_application: 3,
+      datetime: '2026-02-27T10:00:00Z',
     });
-    chai.expect(history.toJSON()).to.deep.equal({
-      records: [
-        {
-          id_application: 1,
-          id_user: 2,
-          id_history: 3,
-          datetime: moment('2025-09-26 13:19:30').tz('Europe/Paris'),
-        },
-      ],
-    });
-    chai.expect(history.public_format()).to.deep.equal({
-      records: [
-        {
-          id_application: 1,
-          id_user: 2,
-          id_history: 3,
-          datetime: moment('2025-09-26 13:19:30').tz('Europe/Paris'),
-        },
-      ],
-    });
+
+    const json = record.toJSON();
+    chai.expect(json.id_user).to.equal(2);
+    chai.expect(json.id_application).to.equal(3);
+    chai.expect(json.datetime).to.exist;
   });
 });
-describe('<object> Record', () => {
-  it('creates and checks value of empty Record object.', () => {
-    const record = new Record();
-    chai.expect(record.datetime).to.be.equal(undefined);
-    chai.expect(record.id_user).to.be.equal(undefined);
-    chai.expect(record.id_application).to.be.equal(undefined);
-    chai.expect(record.id_history).to.be.equal(undefined);
-  });
-  it('creates, updates and checks value of Record object.', () => {
-    const record = new Record({
-      id_application: 1,
-      id_user: 2,
-      id_history: 3,
-      datetime: moment('2025-09-26 13:19:30').tz('Europe/Paris'),
-    });
-    chai.expect(record.toJSON()).to.be.deep.equal({
-      id_application: 1,
-      id_user: 2,
-      id_history: 3,
-      datetime: moment('2025-09-26 13:19:30').tz('Europe/Paris'),
-    });
-    record.id_application = 2;
-    record.id_user = 3;
-    record.id_history = 4;
-    record.datetime = moment('2025-09-27 13:19:30').tz('Europe/Paris');
 
-    chai.expect(record.toJSON()).to.be.deep.equal({
-      id_application: 2,
-      id_user: 3,
-      id_history: 4,
-      datetime: moment('2025-09-27 13:19:30').tz('Europe/Paris'),
+describe('History object', () => {
+  it('creates with records array', () => {
+    const record1 = new Record({
+      id_user: 1,
+      datetime: '2026-02-27T10:00:00Z',
     });
+    const record2 = new Record({
+      id_user: 2,
+      datetime: '2026-02-27T11:00:00Z',
+    });
+
+    const history = new History({ records: [record1, record2] });
+
+    chai.expect(history.records).to.have.lengthOf(2);
+    chai.expect(history.records[0]).to.equal(record1);
+    chai.expect(history.records[1]).to.equal(record2);
   });
-  it('creates and checks value of toJSON and public_format object.', () => {
+
+  it('creates with empty records by default', () => {
+    const history = new History();
+
+    chai.expect(history.records).to.be.an('array');
+    chai.expect(history.records).to.have.lengthOf(0);
+  });
+
+  it('serializes with toJSON', () => {
     const record = new Record({
-      id_application: 1,
-      id_user: 2,
-      id_history: 3,
-      datetime: moment('2025-09-26 13:19:30').tz('Europe/Paris'),
+      id_user: 1,
+      datetime: '2026-02-27T10:00:00Z',
     });
-    chai.expect(record.toJSON()).to.be.deep.equal({
-      id_application: 1,
-      id_user: 2,
-      id_history: 3,
-      datetime: moment('2025-09-26 13:19:30').tz('Europe/Paris'),
-    });
-    chai.expect(record.public_format()).to.be.deep.equal({
-      id_application: 1,
-      id_user: 2,
-      id_history: 3,
-      datetime: moment('2025-09-26 13:19:30').tz('Europe/Paris'),
-    });
+    const history = new History({ records: [record] });
+
+    const json = history.toJSON();
+    chai.expect(json.records).to.be.an('array');
+    chai.expect(json.records).to.have.lengthOf(1);
   });
 });

@@ -1,12 +1,7 @@
-import CONFIG from '../../config/config.js';
 import * as kapi from '../../modules/kapi.module.js';
 import * as fs from 'fs/promises';
-import {
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../../utils/errors.service.js';
-import Guard from '../../utils/guard.service.js';
 import z from 'zod';
+import Guard from '../../utils/guard.util.js';
 
 /**
  * Function that will launch the creation of the ConfigMap into the Kubernets API.

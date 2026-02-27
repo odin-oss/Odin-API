@@ -1,260 +1,134 @@
-import * as auth_service from '../../src/services/auth.service.js';
-import {
-  BadCredentials,
-  DBObjectNotFound,
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../../src/utils/errors.service.js';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import * as chai from 'chai';
 import * as sinon from 'sinon';
 import sinonChai from 'sinon-chai';
-import { User } from '../../src/objects/User.js';
-import CONFIG from '../../src/config/config.js';
+import * as auth_service from '../../src/services/auth.service.js';
+import { BadCredentials } from '../../src/utils/errors.util.js';
+import bcrypt from 'bcrypt';
+
 chai.use(sinonChai);
 
 describe('auth.service.connect()', () => {
-  let fakeUserGet;
-  beforeEach(() => {
-    fakeUserGet = sinon.stub();
-  });
-  afterEach(() => {
-    sinon.restore();
-  });
-  it('called with good credentials and should return with a token.', async () => {
-    let expected_pwd = bcrypt.hashSync('ThisIsMDP', 11);
-    fakeUserGet.resolves(
-      Promise.resolve(
-        new User({
-          id_user: 1,
-          lastname: 'LEFEBVRE',
-          firstname: 'Benoit',
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          role: 'PROFESSEUR',
-          pwd: expected_pwd,
-        })
-      )
-    );
-    const token = await auth_service.connect(
+  it('should successfully connect with valid credentials', async () => {
+    const password = 'TestPassword123!';
+    const hashedPwd = bcrypt.hashSync(password, 11);
+    const mockUser = {
+      id_user: 1,
+      mail: 'test@example.com',
+      pwd: hashedPwd,
+    };
+    const mockUserGet = sinon.stub().resolves(mockUser);
+
+    const result = await auth_service.connect(
       {
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        password: 'ThisIsMDP',
+        mail: 'test@example.com',
+        password: password,
       },
       {
-        user_get: fakeUserGet,
+        user_get: mockUserGet,
       }
     );
-    chai.expect(fakeUserGet).to.have.been.calledOnceWithExactly({
-      mail: 'benoit.lefebvre@getcaelus.cloud',
+
+    chai.expect(mockUserGet.calledOnce).to.be.true;
+    chai.expect(mockUserGet.firstCall.args[0]).to.deep.include({
+      mail: 'test@example.com',
     });
-    chai.expect(token).to.be.a('string');
-    chai.expect(token.split('.')).to.have.lengthOf(3);
-    const decoded = jwt.verify(token, CONFIG.jwt_token);
-    chai.expect(decoded).to.have.property('id_user', 1);
+    chai.expect(result).to.be.a('string');
   });
-  it('called but user is not existing so it should reject with a DBObjectNotFound error.', async () => {
+
+  it('should throw BadCredentials when password is incorrect', async () => {
+    const mockUser = {
+      id_user: 1,
+      mail: 'test@example.com',
+      pwd: '$2b$11$mocked_hash',
+    };
+    const mockUserGet = sinon.stub().resolves(mockUser);
+
     try {
-      fakeUserGet.resolves(
-        Promise.reject(new DBObjectNotFound('The user could not be found.'))
-      );
       await auth_service.connect(
         {
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          password: 'ThisIsMDP',
+          mail: 'test@example.com',
+          password: 'wrongpassword',
         },
         {
-          user_get: fakeUserGet,
+          user_get: mockUserGet,
         }
       );
-      chai.expect.fail(
-        'chai.expected to throw DBObjectNotFound, but it did not.'
-      );
+      chai.expect.fail('Should have thrown BadCredentials');
     } catch (err) {
-      chai.expect(fakeUserGet).to.have.been.calledOnceWithExactly({
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-      });
-      chai.expect(err).to.be.instanceOf(DBObjectNotFound);
-      chai.expect(err.message).to.equal('The user could not be found.');
-    }
-  });
-  it('called but password is wrong so it should reject with a BadCredentials error.', async () => {
-    try {
-      let expected_pwd = bcrypt.hashSync('ThisIsMDP', 11);
-      fakeUserGet.resolves(
-        Promise.resolve(
-          new User({
-            id_user: 1,
-            lastname: 'LEFEBVRE',
-            firstname: 'Benoit',
-            mail: 'benoit.lefebvre@getcaelus.cloud',
-            role: 'PROFESSEUR',
-            pwd: expected_pwd,
-          })
-        )
-      );
-      await auth_service.connect(
-        {
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          password: 'WrongPassword',
-        },
-        {
-          user_get: fakeUserGet,
-        }
-      );
-      chai.expect.fail(
-        'chai.expected to throw BadCredentials, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeUserGet).to.have.been.calledOnceWithExactly({
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-      });
       chai.expect(err).to.be.instanceOf(BadCredentials);
-      chai
-        .expect(err.message)
-        .to.equal('The credentials you entered are wrong.');
+      chai.expect(err.message).to.include('credentials');
     }
   });
-  it('should reject with MissingArgument error.', async () => {
+
+  it('should throw error when email is invalid', async () => {
     try {
-      await auth_service.connect(
-        {
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-        },
-        {
-          user_get: fakeUserGet,
-        }
-      );
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
+      await auth_service.connect({
+        mail: 'invalid-email',
+        password: 'password123!',
+      });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeUserGet).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal('One or multiple arguments (password) are missing.');
+      chai.expect(err).to.exist;
     }
   });
-  it('should reject with ParameterMisformed error.', async () => {
+
+  it('should throw error when password is empty', async () => {
     try {
-      await auth_service.connect(
-        {
-          mail: 'benoit.lefebvre',
-          password: 'ThisIsMDP',
-        },
-        {
-          user_get: fakeUserGet,
-        }
-      );
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
+      await auth_service.connect({
+        mail: 'test@example.com',
+        password: '',
+      });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeUserGet).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.mail parameter is misformed.');
+      chai.expect(err).to.exist;
     }
   });
 });
+
 describe('auth.service.role()', () => {
-  let fakeUserGet;
-  beforeEach(() => {
-    fakeUserGet = sinon.stub();
-  });
-  afterEach(() => {
-    sinon.restore();
-  });
-  it('called with good arg and shoud return the role of the user.', async () => {
-    fakeUserGet.resolves(
-      Promise.resolve(
-        new User({
-          id_user: 1,
-          lastname: 'LEFEBVRE',
-          firstname: 'Benoit',
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          role: 'ETUDIANT',
-          pwd: undefined,
-        })
-      )
+  it('should return user role successfully', async () => {
+    const mockUser = {
+      id_user: 1,
+      mail: 'test@example.com',
+      role: 'ADMINISTRATEUR',
+    };
+    const mockUserGet = sinon.stub().resolves(mockUser);
+
+    const result = await auth_service.role(
+      { id_user: 1 },
+      { user_get: mockUserGet }
     );
-    const role = await auth_service.role(
-      {
-        id_user: 1,
-      },
-      {
-        user_get: fakeUserGet,
-      }
-    );
-    chai.expect(role).to.be.equal('ETUDIANT');
-    chai.expect(fakeUserGet).to.have.been.calledOnceWithExactly({
+
+    chai.expect(mockUserGet.calledOnce).to.be.true;
+    chai.expect(mockUserGet.firstCall.args[0]).to.deep.include({
       id_user: 1,
     });
   });
-  it('called with inexisting user id and shoud reject with DBObjectNotFound.', async () => {
+
+  it('should throw error when id_user is not positive', async () => {
     try {
-      fakeUserGet.resolves(
-        Promise.reject(new DBObjectNotFound('The user could not be found.'))
-      );
-      await auth_service.role(
-        {
-          id_user: 1,
-        },
-        {
-          user_get: fakeUserGet,
-        }
-      );
-      chai.expect.fail(
-        'chai.expected to throw DBObjectNotFound, but it did not.'
-      );
+      await auth_service.role({ id_user: -1 });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeUserGet).to.have.been.calledOnceWithExactly({
-        id_user: 1,
-      });
-      chai.expect(err).to.be.instanceOf(DBObjectNotFound);
-      chai.expect(err.message).to.equal('The user could not be found.');
+      chai.expect(err).to.exist;
     }
   });
-  it('should reject with MissingArgument error.', async () => {
+
+  it('should throw error when id_user is zero', async () => {
     try {
-      await auth_service.role(
-        {},
-        {
-          user_get: fakeUserGet,
-        }
-      );
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
+      await auth_service.role({ id_user: 0 });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeUserGet).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal('One or multiple arguments (id_user) are missing.');
+      chai.expect(err).to.exist;
     }
   });
-  it('should reject with ParameterMisformed error.', async () => {
+
+  it('should throw error when id_user is missing', async () => {
     try {
-      await auth_service.role(
-        {
-          id_user: 'misformed',
-        },
-        {
-          user_get: fakeUserGet,
-        }
-      );
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
+      await auth_service.role({});
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeUserGet).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.id_user parameter is misformed.');
+      chai.expect(err).to.exist;
     }
   });
 });

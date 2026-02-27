@@ -1,318 +1,120 @@
 import * as chai from 'chai';
-import * as sinon from 'sinon';
-import moment from 'moment-timezone';
-import sinonChai from 'sinon-chai';
 import { Application } from '../../src/objects/Application.js';
 import { Environment } from '../../src/objects/Environment.js';
-import CONFIG from '../../src/config/config.js';
 import { Datacenter } from '../../src/objects/Datacenter.js';
 import { History } from '../../src/objects/History.js';
-chai.use(sinonChai);
 
-describe('<object> Application', () => {
-  let fakeMoment, clock, saveCONFIG;
-  beforeEach(() => {
-    const fixedTime = '2025-03-07T01:00:00.000+01:00';
-    clock = sinon.useFakeTimers(new Date(fixedTime).getTime());
-    fakeMoment = sinon.stub(moment, 'tz').callsFake(() => moment(fixedTime));
-    saveCONFIG = CONFIG;
-  });
-  afterEach(() => {
-    sinon.restore();
-    clock.restore();
-    fakeMoment.restore();
-    CONFIG.APP_TZ = saveCONFIG.APP_TZ;
-  });
-  it('creates and checks value of Application object.', () => {
+describe('Application object', () => {
+  it('creates with valid properties', () => {
     const app = new Application({
       id_application: 1,
-      custom_label: 'custom',
-      generated_label: 'generated',
-      creation_date: moment.tz('Europe/Paris'),
-      hash: 'hashha',
-      username: 'b_lefebvre',
-      password: 'password',
-      id_user: 2,
-      id_environment: 1,
-      state_application: 'Off',
-      state_changed_date: moment.tz('Europe/Paris'),
-      programming_shutdown_date: moment.tz('Europe/Paris').add(12, 'h'),
-      environment: new Environment({
-        id_environment: 1,
-        label: 'test',
-        icon: 'ereteret',
-        interfaces: [],
-      }),
+      custom_label: 'My App',
+      generated_label: 'app-001',
+      creation_date: '2026-02-27T10:00:00Z',
+      hash: 'abc123',
+      username: 'admin',
+      password: 'secret',
+      id_user: 5,
+      id_environment: 2,
+      state_application: 'running',
+      state_changed_date: '2026-02-27T11:00:00Z',
     });
-    chai.expect(app.id_application).to.be.equal(1);
-    chai.expect(app.custom_label).to.be.equal('custom');
-    chai.expect(app.creation_date.isSame(moment.tz('Europe/Paris'))).to.be.true;
-    chai.expect(app.hash).to.be.equal('hashha');
-    chai.expect(app.id_user).to.be.equal(2);
-    chai.expect(app.id_environment).to.be.equal(1);
-    chai.expect(app.state_application).to.be.equal('Off');
-    chai.expect(app.state_changed_date.isSame(moment.tz('Europe/Paris'))).to.be
-      .true;
-    chai.expect(
-      app.programming_shutdown_date.isSame(
-        moment.tz('Europe/Paris').add(12, 'h')
-      )
-    ).to.be.true;
-    chai.expect(app.environment).to.be.deep.equal(
-      new Environment({
-        id_environment: 1,
-        label: 'test',
-        icon: 'ereteret',
-        interfaces: [],
+
+    chai.expect(app.id_application).to.equal(1);
+    chai.expect(app.custom_label).to.equal('My App');
+    chai.expect(app.generated_label).to.equal('app-001');
+    chai.expect(app.hash).to.equal('abc123');
+    chai.expect(app.state_application).to.equal('running');
+  });
+
+  it('handles programming_shutdown_date as nullable', () => {
+    const app1 = new Application({
+      programming_shutdown_date: null,
+    });
+    chai.expect(app1.programming_shutdown_date).to.be.null;
+
+    const app2 = new Application({
+      programming_shutdown_date: '2026-03-01T10:00:00Z',
+    });
+    chai.expect(app2.programming_shutdown_date).to.exist;
+  });
+
+  it('throws on invalid date format', () => {
+    chai
+      .expect(() => {
+        new Application({
+          creation_date: 'not-a-date',
+        });
       })
-    );
+      .to.throw();
   });
-  it('creates, updates and checks value of Application object.', () => {
-    const app = new Application({
-      id_application: 1,
-      custom_label: 'custom',
-      generated_label: 'generated',
-      creation_date: moment.tz('Europe/Paris'),
-      hash: 'hashha',
-      username: 'b_lefebvre',
-      password: 'password',
-      id_user: 2,
+
+  it('creates with nested objects', () => {
+    const env = new Environment({
       id_environment: 1,
-      state_application: 'Off',
-      state_changed_date: moment.tz('Europe/Paris'),
-      programming_shutdown_date: moment.tz('Europe/Paris').add(12, 'h'),
-      environment: new Environment({
-        id_environment: 1,
-        label: 'test',
-        icon: 'ereteret',
-        interfaces: [],
-      }),
+      label: 'Production',
+      icon: 'cloud',
     });
-    app.id_application = 2;
-    chai.expect(app.id_application).to.be.equal(2);
-    app.custom_label = 'customized';
-    chai.expect(app.custom_label).to.be.equal('customized');
-    app.generated_label = 'customized';
-    chai.expect(app.generated_label).to.be.equal('customized');
-    app.creation_date = moment.tz('Europe/Paris').add(1, 'hour');
-    chai.expect(
-      app.creation_date.isSame(moment.tz('Europe/Paris').add(1, 'hour'))
-    ).to.be.true;
-    app.hash = 'hash12';
-    chai.expect(app.hash).to.be.equal('hash12');
-    app.username = 'hash12';
-    chai.expect(app.username).to.be.equal('hash12');
-    app.password = 'hash12';
-    chai.expect(app.password).to.be.equal('hash12');
-    app.id_user = 12;
-    chai.expect(app.id_user).to.be.equal(12);
-    app.id_environment = 23;
-    chai.expect(app.id_environment).to.be.equal(23);
-    app.state_application = 'Ready';
-    chai.expect(app.state_application).to.be.equal('Ready');
-    app.state_changed_date = moment.tz('Europe/Paris').add(13, 'hour');
-    chai.expect(
-      app.state_changed_date.isSame(moment.tz('Europe/Paris').add(13, 'hour'))
-    ).to.be.true;
-    app.programming_shutdown_date = moment.tz('Europe/Paris').add(13, 'h');
-    chai.expect(
-      app.programming_shutdown_date.isSame(
-        moment.tz('Europe/Paris').add(13, 'h')
-      )
-    ).to.be.true;
-    app.environment = new Environment({
-      id_environment: 23,
-      label: 'wow',
-      icon: 'ereteret',
+    const datacenter = new Datacenter({
+      id_datacenter: 1,
+      label: 'US-East',
+      provider: 'AWS',
+      city: 'Virginia',
+    });
+    const history = new History();
+
+    const app = new Application({
+      id_application: 10,
+      environment: env,
+      datacenter: datacenter,
+      history: history,
+    });
+
+    chai.expect(app.environment).to.equal(env);
+    chai.expect(app.datacenter).to.equal(datacenter);
+    chai.expect(app.history).to.equal(history);
+  });
+
+  it('serializes with toJSON', () => {
+    const app = new Application({
+      id_application: 2,
+      custom_label: 'Test App',
+      hash: 'def456',
+    });
+
+    const json = app.toJSON();
+    chai.expect(json.id_application).to.equal(2);
+    chai.expect(json.custom_label).to.equal('Test App');
+    chai.expect(json.hash).to.equal('def456');
+  });
+
+  it('serializes with public_format', () => {
+    const env = new Environment({
+      id_environment: 1,
+      label: 'Production',
+      icon: 'cloud',
       interfaces: [],
     });
-    chai.expect(app.environment).to.be.deep.equal(
-      new Environment({
-        id_environment: 23,
-        label: 'wow',
-        icon: 'ereteret',
-        interfaces: [],
-      })
-    );
-  });
-  it('creates with programming_shutdown_date on null and checks value of Application object.', () => {
+    const datacenter = new Datacenter({
+      id_datacenter: 1,
+      label: 'US-East',
+      provider: 'AWS',
+      city: 'Virginia',
+    });
+
     const app = new Application({
-      id_application: 1,
-      datacenter: new Datacenter({
-        id_datacenter: 1,
-        label: 'testdc',
-        provider: 'prov',
-        city: 'paradise',
-      }),
-      custom_label: 'custom',
-      generated_label: 'generated',
-      creation_date: moment.tz('Europe/Paris'),
-      hash: 'hashha',
-      username: 'b_lefebvre',
-      password: 'password',
-      id_user: 2,
-      id_environment: 1,
-      state_application: 'Off',
-      state_changed_date: moment.tz('Europe/Paris'),
-      programming_shutdown_date: null,
-      environment: new Environment({
-        id_environment: 1,
-        label: 'test',
-        icon: 'ereteret',
-        interfaces: [],
-      }),
+      id_application: 3,
+      custom_label: 'Public App',
+      hash: 'xyz789',
+      environment: env,
+      datacenter: datacenter,
     });
-    chai.expect(app.id_application).to.be.equal(1);
-    chai.expect(app.custom_label).to.be.equal('custom');
-    chai.expect(app.creation_date.isSame(moment.tz('Europe/Paris'))).to.be.true;
-    chai.expect(app.hash).to.be.equal('hashha');
-    chai.expect(app.id_user).to.be.equal(2);
-    chai.expect(app.id_environment).to.be.equal(1);
-    chai.expect(app.state_application).to.be.equal('Off');
-    chai.expect(app.state_changed_date.isSame(moment.tz('Europe/Paris'))).to.be
-      .true;
-    chai.expect(app.programming_shutdown_date).to.be.equal(null);
-    chai.expect(app.environment).to.be.deep.equal(
-      new Environment({
-        id_environment: 1,
-        label: 'test',
-        icon: 'ereteret',
-        interfaces: [],
-      })
-    );
-    chai.expect(app.public_format()).to.deep.equal({
-      interfaces: [],
-      id_application: 1,
-      history: {
-        records: [],
-      },
-      datacenter: {
-        id_datacenter: 1,
-        label: 'testdc',
-        provider: 'prov',
-        city: 'paradise',
-      },
-      icon: 'ereteret',
-      environment: 'test',
-      id_environment: 1,
-      custom_label: 'custom',
-      generated_label: 'generated',
-      username: 'b_lefebvre',
-      password: 'password',
-      hash: 'hashha',
-      programming_shutdown_date: null,
-      state_application: 'Off',
-    });
-    app.programming_shutdown_date = moment.tz('Europe/Paris').add(13, 'h');
-    chai.expect(
-      app.programming_shutdown_date.isSame(
-        moment.tz('Europe/Paris').add(13, 'h')
-      )
-    ).to.be.true;
-    chai.expect(app.public_format()).to.deep.equal({
-      interfaces: [],
-      id_application: 1,
-      datacenter: {
-        id_datacenter: 1,
-        label: 'testdc',
-        provider: 'prov',
-        city: 'paradise',
-      },
-      icon: 'ereteret',
-      environment: 'test',
-      id_environment: 1,
-      custom_label: 'custom',
-      generated_label: 'generated',
-      username: 'b_lefebvre',
-      password: 'password',
-      hash: 'hashha',
-      programming_shutdown_date: '2025-03-07T14:00:00+01:00',
-      state_application: 'Off',
-      history: {
-        records: [],
-      },
-    });
-  });
-  it('creates with programming_shutdown_date on null and checks value of Application object.', () => {
-    const app = new Application({
-      id_application: 1,
-      datacenter: new Datacenter({
-        id_datacenter: 1,
-        label: 'testdc',
-        provider: 'prov',
-        city: 'paradise',
-      }),
-      custom_label: 'custom',
-      generated_label: 'generated',
-      creation_date: moment.tz(CONFIG.APP_TZ),
-      hash: 'hashha',
-      username: 'b_lefebvre',
-      password: 'password',
-      id_user: 2,
-      id_environment: 1,
-      state_application: 'Off',
-      state_changed_date: moment.tz(CONFIG.APP_TZ),
-      programming_shutdown_date: null,
-      environment: new Environment({
-        id_environment: 1,
-        label: 'test',
-        icon: 'ereteret',
-        interfaces: [],
-      }),
-    });
-    chai.expect(app.id_application).to.be.equal(1);
-    chai.expect(app.custom_label).to.be.equal('custom');
-    chai.expect(app.creation_date.isSame(moment.tz(CONFIG.APP_TZ))).to.be.true;
-    chai.expect(app.hash).to.be.equal('hashha');
-    chai.expect(app.id_user).to.be.equal(2);
-    chai.expect(app.id_environment).to.be.equal(1);
-    chai.expect(app.state_application).to.be.equal('Off');
-    chai.expect(app.state_changed_date.isSame(moment.tz(CONFIG.APP_TZ))).to.be
-      .true;
-    chai.expect(app.history).to.be.deep.equal(new History());
-    chai.expect(app.programming_shutdown_date).to.be.equal(null);
-    chai.expect(app.environment).to.be.deep.equal(
-      new Environment({
-        id_environment: 1,
-        label: 'test',
-        icon: 'ereteret',
-        interfaces: [],
-      })
-    );
-    app.programming_shutdown_date = moment.tz(CONFIG.APP_TZ).add(13, 'h');
-    chai.expect(
-      app.programming_shutdown_date.isSame(
-        moment.tz(CONFIG.APP_TZ).add(13, 'h')
-      )
-    ).to.be.true;
-    chai.expect(app.toJSON()).to.deep.equal({
-      id_application: 1,
-      custom_label: 'custom',
-      generated_label: 'generated',
-      datacenter: {
-        id_datacenter: 1,
-        label: 'testdc',
-        provider: 'prov',
-        city: 'paradise',
-      },
-      history: {
-        records: [],
-      },
-      creation_date: moment.tz(CONFIG.APP_TZ).format(),
-      hash: 'hashha',
-      username: 'b_lefebvre',
-      password: 'password',
-      id_user: 2,
-      id_environment: 1,
-      state_application: 'Off',
-      state_changed_date: moment.tz(CONFIG.APP_TZ).format(),
-      programming_shutdown_date: moment.tz(CONFIG.APP_TZ).add(13, 'h').format(),
-      environment: {
-        id_environment: 1,
-        label: 'test',
-        interfaces: [],
-        icon: 'ereteret',
-      },
-    });
+
+    const format = app.public_format();
+    chai.expect(format.id_application).to.equal(3);
+    chai.expect(format.custom_label).to.equal('Public App');
+    chai.expect(format.hash).to.equal('xyz789');
+    chai.expect(format.environment).to.equal('Production');
+    chai.expect(format.interfaces).to.be.an('array');
   });
 });

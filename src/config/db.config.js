@@ -48,7 +48,7 @@ class DBManager {
             return next();
           },
         },
-        logging: CONFIG.NODE_ENV === 'development',
+        logging: CONFIG.ENV === 'local',
         timezone: CONFIG.APP_TZ,
       }
     );
@@ -70,38 +70,40 @@ class DBManager {
   async initModels() {
     const sequelize = this.getSequelize();
 
-    const sqlModel = resolve(__dirname, '../../sql/model.sql');
-    const sqlData = resolve(__dirname, '../../sql/data.sql');
-    if (fs.existsSync(sqlModel) && fs.existsSync(sqlData)) {
-      await this.executeInitScript(sqlModel);
-      await this.executeInitScript(sqlData);
-    }
-
-    const auto = new SequelizeAuto(
-      CONFIG.DB_NAME,
-      CONFIG.DB_USER,
-      CONFIG.DB_PASSWORD,
-      {
-        host: CONFIG.DB_HOST,
-        dialect: CONFIG.DB_DIALECT,
-        port: CONFIG.DB_PORT,
-        logging: false,
-        caseModel: 'u',
-        caseFile: 'u',
-        caseProp: 'l',
-        lang: 'esm',
-        noAlias: true,
-        directory: resolve(__dirname, '../models'),
+    if (process.env.ENV !== 'test') {
+      const sqlModel = resolve(__dirname, '../../sql/model.sql');
+      const sqlData = resolve(__dirname, '../../sql/data.sql');
+      if (fs.existsSync(sqlModel) && fs.existsSync(sqlData)) {
+        await this.executeInitScript(sqlModel);
+        await this.executeInitScript(sqlData);
       }
-    );
-    await auto.run();
 
+      const auto = new SequelizeAuto(
+        CONFIG.DB_NAME,
+        CONFIG.DB_USER,
+        CONFIG.DB_PASSWORD,
+        {
+          host: CONFIG.DB_HOST,
+          dialect: CONFIG.DB_DIALECT,
+          port: CONFIG.DB_PORT,
+          logging: false,
+          caseModel: 'u',
+          caseFile: 'u',
+          caseProp: 'l',
+          lang: 'esm',
+          noAlias: true,
+          directory: resolve(__dirname, '../models'),
+        }
+      );
+      await auto.run();
+    }
     const mod = await import('../models/init-models.js');
     const initModels = mod.default || mod.initModels; // ✅ Gère default/named
 
     this.models = initModels(sequelize, Sequelize.DataTypes);
-    await sequelize.authenticate();
-
+    if (process.env.ENV !== 'test') {
+      await sequelize.authenticate();
+    }
     return this.db;
   }
 

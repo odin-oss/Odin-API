@@ -46,15 +46,16 @@ export class ApiResponse {
    */
   static error(req, res, err) {
     const status = Number.isInteger(err.code) ? err.code : 500;
+    const errorMessage = err.message || 'An unexpected error occurred';
     const errorBody = {
       type: err.name || 'InternalError',
-      message: err.message || 'An unexpected error occurred',
+      message: errorMessage,
     };
     logs.error(
-      `[${req.method}][${status}][${err.name || 'Error'}] ${req.originalUrl} : ${err.message}`
+      `[${req.method}][${status}][${err.name || 'Error'}] ${req.originalUrl} : ${errorMessage}`
     );
     res
       .status(status)
-      .json(new ApiResponse(false, null, errorBody, err.message));
+      .json(new ApiResponse(false, null, errorBody, errorMessage));
   }
 }

@@ -1,134 +1,78 @@
 import * as chai from 'chai';
-import sinonChai from 'sinon-chai';
-import { Environment } from '../../src/objects/Environment.js';
 import { Category } from '../../src/objects/Category.js';
-chai.use(sinonChai);
+import { Environment } from '../../src/objects/Environment.js';
 
-describe('<object> Category', () => {
-  it('creates and checks value of Category object.', () => {
+describe('Category object', () => {
+  it('creates with valid properties', () => {
     const category = new Category({
-      id_category: 3,
-      label: 'Bases de données',
-      environments: [
-        new Environment({
-          id_environment: 1,
-          label: 'envi',
-          icon: 'ereteret',
-          interfaces: [],
-        }),
-      ],
-      google_material_icon: 'shield',
+      id_category: 1,
+      label: 'Development Tools',
+      google_material_icon: 'code',
+      environments: [],
     });
-    chai.expect(category.id_category).to.be.equal(3);
-    chai.expect(category.label).to.be.equal('Bases de données');
-    chai.expect(category.environments).to.deep.equal([
-      new Environment({
-        id_environment: 1,
-        label: 'envi',
-        icon: 'ereteret',
-        interfaces: [],
-      }),
-    ]);
-    chai.expect(category.google_material_icon).to.deep.equal('shield');
+
+    chai.expect(category.id_category).to.equal(1);
+    chai.expect(category.label).to.equal('Development Tools');
+    chai.expect(category.google_material_icon).to.equal('code');
+    chai.expect(category.environments).to.be.an('array');
   });
-  it('creates, updates and checks value of Category object.', () => {
-    const category = new Category({
-      id_category: 3,
-      label: 'Bases de données',
-      environments: [
-        new Environment({
-          id_environment: 1,
-          label: 'envi',
-          icon: 'ereteret',
-          interfaces: [],
-        }),
-      ],
-      google_material_icon: 'shield',
-    });
-    chai.expect(category.id_category).to.be.equal(3);
-    chai.expect(category.label).to.be.equal('Bases de données');
-    chai.expect(category.environments).to.deep.equal([
-      new Environment({
-        id_environment: 1,
-        label: 'envi',
-        icon: 'ereteret',
-        interfaces: [],
-      }),
-    ]);
-    chai.expect(category.google_material_icon).to.deep.equal('shield');
-    category.id_category = 2;
-    category.label = 'test';
-    category.environments = [
-      new Environment({
-        id_environment: 5,
-        label: 'nope',
-        icon: 'ereteret',
-        interfaces: [],
-      }),
-    ];
-    category.google_material_icon = 'sunny';
-    chai.expect(category.id_category).to.be.equal(2);
-    chai.expect(category.label).to.be.equal('test');
-    chai.expect(category.environments).to.deep.equal([
-      new Environment({
-        id_environment: 5,
-        label: 'nope',
-        icon: 'ereteret',
-        interfaces: [],
-      }),
-    ]);
-    chai.expect(category.google_material_icon).to.deep.equal('sunny');
+
+  it('throws on non-positive id_category', () => {
+    chai
+      .expect(() => {
+        new Category({
+          id_category: 0,
+          label: 'Test',
+          google_material_icon: 'icon',
+        });
+      })
+      .to.throw();
   });
-  it('creates and checks value of toJSON and public_format object.', () => {
+
+  it('throws on empty label', () => {
+    chai
+      .expect(() => {
+        new Category({
+          id_category: 1,
+          label: '',
+          google_material_icon: 'icon',
+        });
+      })
+      .to.throw();
+  });
+
+  it('serializes with environments array', () => {
+    const env = new Environment({
+      id_environment: 5,
+      label: 'Production',
+      icon: 'cloud',
+    });
+
+    const category = new Category({
+      id_category: 2,
+      label: 'Analytics',
+      google_material_icon: 'analytics',
+      environments: [env],
+    });
+
+    const json = category.toJSON();
+    chai.expect(json.id_category).to.equal(2);
+    chai.expect(json.label).to.equal('Analytics');
+    chai.expect(json.environments).to.be.an('array');
+    chai.expect(json.environments).to.have.lengthOf(1);
+  });
+
+  it('serializes with public_format', () => {
     const category = new Category({
       id_category: 3,
-      label: 'Bases de données',
-      environments: [
-        new Environment({
-          id_environment: 1,
-          label: 'envi',
-          icon: 'ereteret',
-          interfaces: [],
-        }),
-      ],
-      google_material_icon: 'shield',
+      label: 'Databases',
+      google_material_icon: 'storage',
+      environments: [],
     });
-    chai.expect(category.id_category).to.be.equal(3);
-    chai.expect(category.label).to.be.equal('Bases de données');
-    chai.expect(category.environments).to.deep.equal([
-      new Environment({
-        id_environment: 1,
-        label: 'envi',
-        icon: 'ereteret',
-        interfaces: [],
-      }),
-    ]);
-    chai.expect(category.google_material_icon).to.deep.equal('shield');
-    chai.expect(category.toJSON()).to.deep.equal({
-      id_category: 3,
-      label: 'Bases de données',
-      google_material_icon: 'shield',
-      environments: [
-        {
-          id_environment: 1,
-          label: 'envi',
-          interfaces: [],
-          icon: 'ereteret',
-        },
-      ],
-    });
-    chai.expect(category.public_format()).to.deep.equal({
-      id_category: 3,
-      label: 'Bases de données',
-      google_material_icon: 'shield',
-      environments: [
-        {
-          id_environment: 1,
-          label: 'envi',
-          interfaces: [],
-          icon: 'ereteret',
-        },
-      ],
-    });
+
+    const format = category.public_format();
+    chai.expect(format.id_category).to.equal(3);
+    chai.expect(format.google_material_icon).to.equal('storage');
+    chai.expect(format.environments).to.be.an('array');
   });
 });

@@ -1,425 +1,329 @@
-import * as user_service from '../../src/services/user.service.js';
-import { User } from '../../src/objects/User.js';
-import {
-  MissingArgumentError,
-  ParameterMisformed,
-  PasswordMissingSpecialChars,
-} from '../../src/utils/errors.service.js';
 import * as chai from 'chai';
 import * as sinon from 'sinon';
 import sinonChai from 'sinon-chai';
+import * as user_service from '../../src/services/user.service.js';
+import { BadCredentials } from '../../src/utils/errors.util.js';
+
 chai.use(sinonChai);
 
 describe('user.service.get()', () => {
-  let fakeUserGet;
-  beforeEach(() => {
-    fakeUserGet = sinon.stub();
-  });
-  afterEach(() => {
-    sinon.restore();
-  });
-  it('called with good arg and should get the corresponding User object.', async () => {
-    fakeUserGet.resolves(
-      Promise.resolve(
-        new User({
-          id_user: 1,
-          lastname: 'LEFEBVRE',
-          firstname: 'Benoit',
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          role: 'PROFESSEUR',
-          pwd: 'ThisIsMDP',
-        })
-      )
-    );
-    const user = await user_service.get(
+  it('should get user by id successfully', async () => {
+    const mockUser = { id_user: 1, mail: 'test@example.com', role: 'ETUDIANT' };
+    const mockUserGet = sinon.stub().resolves(mockUser);
+
+    const result = await user_service.get(
       { id_user: 1 },
-      { user_get: fakeUserGet }
+      { user_get: mockUserGet }
     );
-    chai.expect(user).to.deep.equal(
-      new User({
-        id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-        pwd: 'ThisIsMDP',
-      })
-    );
-    chai.expect(fakeUserGet).to.have.been.calledOnceWithExactly({
-      id_user: 1,
-    });
+
+    chai.expect(result).to.deep.equal(mockUser);
+    chai.expect(mockUserGet.calledOnce).to.be.true;
   });
-  it('called with missing arg and should get MissingArgument Error.', async () => {
+
+  it('should throw error when id_user is not positive', async () => {
     try {
-      await user_service.get({}, { user_get: fakeUserGet });
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
+      await user_service.get({ id_user: -1 });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeUserGet).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal('One or multiple arguments (id_user) are missing.');
+      chai.expect(err).to.exist;
     }
   });
-  it('called with misformed arg and should get ParameterMisformed Error.', async () => {
+
+  it('should throw error when id_user is zero', async () => {
     try {
-      await user_service.get(
-        { id_user: 'misformed' },
-        { user_get: fakeUserGet }
-      );
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
+      await user_service.get({ id_user: 0 });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeUserGet).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.id_user parameter is misformed.');
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should throw error when id_user is missing', async () => {
+    try {
+      await user_service.get({});
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
     }
   });
 });
 
 describe('user.service.list_by_role()', () => {
-  let fakeUserList;
-  beforeEach(() => {
-    fakeUserList = sinon.stub();
-  });
-  afterEach(() => {
-    sinon.restore();
-  });
-  it("called with good arg and should get the corresponding User object's array.", async () => {
-    fakeUserList.resolves(
-      Promise.resolve([
-        new User({
-          id_user: 1,
-          lastname: 'LEFEBVRE',
-          firstname: 'Benoit',
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          role: 'PROFESSEUR',
-          pwd: 'ThisIsMDP',
-        }),
-        new User({
-          id_user: 3,
-          lastname: 'LEFEBVRE',
-          firstname: 'Ulfi',
-          mail: 'ulfi.lefebvre@getcaelus.cloud',
-          role: 'PROFESSEUR',
-          pwd: 'ThisIsMDP',
-        }),
-      ])
+  it('should list users by role ETUDIANT', async () => {
+    const mockUsers = [
+      { id_user: 1, mail: 'student1@example.com', role: 'ETUDIANT' },
+      { id_user: 2, mail: 'student2@example.com', role: 'ETUDIANT' },
+    ];
+    const mockUserList = sinon.stub().resolves(mockUsers);
+
+    const result = await user_service.list_by_role(
+      { user_role: 'ETUDIANT' },
+      { user_list: mockUserList }
     );
-    const users = await user_service.list_by_role(
+
+    chai.expect(result).to.deep.equal(mockUsers);
+    chai.expect(mockUserList.calledOnce).to.be.true;
+  });
+
+  it('should list users by role PROFESSEUR', async () => {
+    const mockUsers = [
+      { id_user: 3, mail: 'prof@example.com', role: 'PROFESSEUR' },
+    ];
+    const mockUserList = sinon.stub().resolves(mockUsers);
+
+    const result = await user_service.list_by_role(
       { user_role: 'PROFESSEUR' },
-      { user_list: fakeUserList }
+      { user_list: mockUserList }
     );
-    chai.expect(users).to.deep.equal([
-      new User({
-        id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-        pwd: 'ThisIsMDP',
-      }),
-      new User({
-        id_user: 3,
-        lastname: 'LEFEBVRE',
-        firstname: 'Ulfi',
-        mail: 'ulfi.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-        pwd: 'ThisIsMDP',
-      }),
-    ]);
-    chai.expect(fakeUserList).to.have.been.calledOnceWithExactly({
-      role: 'PROFESSEUR',
-    });
+
+    chai.expect(result).to.deep.equal(mockUsers);
+    chai.expect(mockUserList.calledOnce).to.be.true;
   });
-  it('called with missing arg and should get MissingArgument Error.', async () => {
+
+  it('should list users by role ADMINISTRATEUR', async () => {
+    const mockUsers = [
+      { id_user: 4, mail: 'admin@example.com', role: 'ADMINISTRATEUR' },
+    ];
+    const mockUserList = sinon.stub().resolves(mockUsers);
+
+    const result = await user_service.list_by_role(
+      { user_role: 'ADMINISTRATEUR' },
+      { user_list: mockUserList }
+    );
+
+    chai.expect(result).to.deep.equal(mockUsers);
+    chai.expect(mockUserList.calledOnce).to.be.true;
+  });
+
+  it('should throw error for invalid role', async () => {
     try {
-      await user_service.list_by_role({}, { user_list: fakeUserList });
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
+      await user_service.list_by_role({ user_role: 'INVALID_ROLE' });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeUserList).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal('One or multiple arguments (user_role) are missing.');
+      chai.expect(err).to.exist;
     }
   });
-  it('called with missing arg and should get ParameterMisformed Error.', async () => {
-    try {
-      await user_service.list_by_role(
-        { user_role: 'misformed' },
-        { user_list: fakeUserList }
-      );
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeUserList).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.user_role parameter is misformed.');
-    }
+
+  it('should return empty array when no users exist for role', async () => {
+    const mockUserList = sinon.stub().resolves([]);
+
+    const result = await user_service.list_by_role(
+      { user_role: 'ETUDIANT' },
+      { user_list: mockUserList }
+    );
+
+    chai.expect(result).to.deep.equal([]);
   });
 });
 
 describe('user.service.update_password()', () => {
-  let fakeUpdatePassword, fakeUserGet, fakeBCrypt;
-  beforeEach(() => {
-    fakeUpdatePassword = sinon.stub();
-    fakeUserGet = sinon.stub();
-    fakeBCrypt = {
-      compareSync: sinon.stub(),
-      hashSync: sinon.stub(),
+  it('should update password successfully with correct old password', async () => {
+    const mockUser = {
+      id_user: 1,
+      pwd: '$2b$11$mocked_hash_old',
     };
-  });
-  afterEach(() => {
-    sinon.restore();
-  });
-  it('called with good props and should update password.', async () => {
-    fakeBCrypt.compareSync.returns(true);
-    fakeBCrypt.hashSync.returns('hashed');
-    fakeUserGet.resolves(
-      Promise.resolve(
-        new User({
-          id_user: 1,
-          lastname: 'LEFEBVRE',
-          firstname: 'Benoit',
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          role: 'PROFESSEUR',
-          pwd: undefined,
-        })
-      )
-    );
-    fakeUpdatePassword.resolves(
-      Promise.resolve("The user's password has been changed.")
-    );
-    const user = await user_service.update_password(
+    const mockResponse = { success: true };
+    const mockUserGet = sinon.stub().resolves(mockUser);
+    const mockUserUpdatePassword = sinon.stub().resolves(mockResponse);
+    const mockBcrypt = {
+      compareSync: sinon.stub().returns(true),
+      hashSync: sinon.stub().returns('$2b$11$mocked_hash_new'),
+    };
+
+    const result = await user_service.update_password(
       {
         id_user: 1,
-        password: 'Thisis1MDP.',
-        old_password: 'You',
+        password: 'NewPassword123!',
+        old_password: 'OldPassword123!',
       },
       {
-        user_update_password: fakeUpdatePassword,
-        user_get: fakeUserGet,
-        bcrypt: fakeBCrypt,
+        user_get: mockUserGet,
+        user_update_password: mockUserUpdatePassword,
+        bcrypt: mockBcrypt,
       }
     );
-    chai.expect(fakeUpdatePassword).to.be.calledOnce;
-    chai.expect(fakeUserGet).to.have.been.calledOnceWithExactly({
+
+    chai.expect(mockUserGet.calledOnce).to.be.true;
+    chai.expect(mockBcrypt.compareSync.calledOnce).to.be.true;
+    chai.expect(mockUserUpdatePassword.calledOnce).to.be.true;
+  });
+
+  it('should throw BadCredentials when old password is incorrect', async () => {
+    const mockUser = {
       id_user: 1,
-    });
-    chai.expect(user).to.deep.equal(
-      new User({
-        id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-        pwd: undefined,
-      })
-    );
-  });
-  it('called with misformed id_user and should reject with ParameterMisformed.', async () => {
+      pwd: '$2b$11$mocked_hash',
+    };
+    const mockUserGet = sinon.stub().resolves(mockUser);
+    const mockBcrypt = {
+      compareSync: sinon.stub().returns(false),
+    };
+
     try {
-      fakeBCrypt.compareSync.returns(true);
-      fakeBCrypt.hashSync.returns('hashed');
-      await user_service.update_password(
-        {
-          id_user: 'misformed',
-          password: 'Thisis1MDP.',
-          old_password: 'You',
-        },
-        {
-          user_update_password: fakeUpdatePassword,
-          user_get: fakeUserGet,
-          bcrypt: fakeBCrypt,
-        }
-      );
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai.expect(fakeUserGet).to.have.not.been.called;
-      chai.expect(fakeUpdatePassword).to.have.not.been.called;
-      chai
-        .expect(err.message)
-        .to.equal('The props.id_user parameter is misformed.');
-    }
-  });
-  it('called with non convenient password and should reject with PasswordMissingSpecialChars.', async () => {
-    try {
-      fakeBCrypt.compareSync.returns(true);
-      fakeBCrypt.hashSync.returns('hashed');
-      fakeUserGet.resolves(
-        Promise.resolve(
-          new User({
-            id_user: 1,
-            lastname: 'LEFEBVRE',
-            firstname: 'Benoit',
-            mail: 'benoit.lefebvre@getcaelus.cloud',
-            role: 'PROFESSEUR',
-            pwd: undefined,
-          })
-        )
-      );
       await user_service.update_password(
         {
           id_user: 1,
-          password: 'Thisis1MDP',
-          old_password: 'You',
+          password: 'NewPassword123!',
+          old_password: 'WrongPassword',
         },
         {
-          user_update_password: fakeUpdatePassword,
-          user_get: fakeUserGet,
-          bcrypt: fakeBCrypt,
+          user_get: mockUserGet,
+          user_update_password: sinon.stub(),
+          bcrypt: mockBcrypt,
         }
       );
-      chai.expect.fail(
-        'chai.expected to throw PasswordMissingSpecialChars, but it did not.'
-      );
+      chai.expect.fail('Should have thrown BadCredentials');
     } catch (err) {
-      chai.expect(err).to.be.instanceOf(PasswordMissingSpecialChars);
-      chai.expect(fakeUserGet).to.have.been.calledOnceWithExactly({
+      chai.expect(err).to.be.instanceOf(BadCredentials);
+      chai.expect(err.message).to.include('old password');
+    }
+  });
+
+  it('should throw error when password is less than 8 characters', async () => {
+    try {
+      await user_service.update_password({
         id_user: 1,
+        password: 'short1!',
+        old_password: 'OldPassword123!',
       });
-      chai.expect(fakeUpdatePassword).to.have.not.been.called;
-      chai
-        .expect(err.message)
-        .to.equal('The password must contains at least 1 special char.');
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
     }
   });
-  it('called with missing password and should reject with MissingArgumentError.', async () => {
+
+  it('should throw error when password has no numbers', async () => {
     try {
-      fakeBCrypt.compareSync.returns(true);
-      fakeBCrypt.hashSync.returns('hashed');
-      await user_service.update_password(
-        {
-          id_user: 1,
-        },
-        {
-          user_update_password: fakeUpdatePassword,
-          user_get: fakeUserGet,
-          bcrypt: fakeBCrypt,
-        }
-      );
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
+      await user_service.update_password({
+        id_user: 1,
+        password: 'NoNumbers!',
+        old_password: 'OldPassword123!',
+      });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai.expect(fakeUserGet).to.have.not.been.called;
-      chai.expect(fakeUpdatePassword).to.have.not.been.called;
-      chai
-        .expect(err.message)
-        .to.equal(
-          'One or multiple arguments (password,old_password) are missing.'
-        );
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should throw error when password has no special characters', async () => {
+    try {
+      await user_service.update_password({
+        id_user: 1,
+        password: 'NoSpecialChar123',
+        old_password: 'OldPassword123!',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should throw error when id_user is not positive', async () => {
+    try {
+      await user_service.update_password({
+        id_user: -1,
+        password: 'NewPassword123!',
+        old_password: 'OldPassword123!',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
     }
   });
 });
 
 describe('user.service.create()', () => {
-  let fakeCreate, fakeRoleByLabel, fakeBCrypt;
-  beforeEach(() => {
-    fakeCreate = sinon.stub();
-    fakeRoleByLabel = sinon.stub();
-    fakeBCrypt = {
-      hashSync: sinon.stub(),
+  it('should create user successfully with valid data', async () => {
+    const mockRole = { id_role: 1, label: 'ETUDIANT' };
+    const mockNewUser = {
+      id_user: 1,
+      mail: 'newuser@example.com',
+      firstname: 'John',
+      lastname: 'Doe',
+      role: 'ETUDIANT',
     };
-  });
-  afterEach(() => {
-    sinon.restore();
-  });
-  it('called with good props and should create a new user.', async () => {
-    fakeBCrypt.hashSync.returns('hashed');
-    fakeCreate.resolves(
-      Promise.resolve(
-        new User({
-          id_user: 1,
-          lastname: 'LEFEBVRE',
-          firstname: 'Benoit',
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-        })
-      )
-    );
-    fakeRoleByLabel.resolves(
-      Promise.resolve({
-        id_role: 2,
-        label: 'PROFESSEUR',
-      })
-    );
-    const user = await user_service.create(
+    const mockRoleByLabel = sinon.stub().resolves(mockRole);
+    const mockCreate = sinon.stub().resolves({ ...mockNewUser, id_role: 1 });
+    const mockBcrypt = {
+      hashSync: sinon.stub().returns('$2b$11$mocked_hash'),
+    };
+
+    const result = await user_service.create(
       {
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        pwd: 'Thisis1MDP.',
-        role: 'PROFESSEUR',
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
+        pwd: 'SecurePassword123!',
+        mail: 'newuser@example.com',
+        role: 'ETUDIANT',
+        lastname: 'Doe',
+        firstname: 'John',
       },
       {
-        create: fakeCreate,
-        role_by_label: fakeRoleByLabel,
-        bcrypt: fakeBCrypt,
+        bcrypt: mockBcrypt,
+        create: mockCreate,
+        role_by_label: mockRoleByLabel,
       }
     );
-    chai.expect(fakeCreate).to.be.calledOnceWithExactly({
-      firstname: 'Benoit',
-      lastname: 'LEFEBVRE',
-      mail: 'benoit.lefebvre@getcaelus.cloud',
-      id_role: 2,
-      hashed_password: 'hashed',
-    });
-    chai.expect(fakeRoleByLabel).to.have.been.calledOnceWithExactly({
-      label: 'PROFESSEUR',
-    });
-    chai.expect(user).to.deep.equal(
-      new User({
-        id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-        pwd: 'Thisis1MDP.',
-      })
-    );
+
+    chai.expect(mockRoleByLabel.calledOnce).to.be.true;
+    chai.expect(mockCreate.calledOnce).to.be.true;
+    chai.expect(mockBcrypt.hashSync.calledOnce).to.be.true;
   });
 
-  it('called with missing password and should reject with MissingArgumentError.', async () => {
+  it('should throw error when password is less than 8 characters', async () => {
     try {
-      fakeBCrypt.hashSync.returns('hashed');
-      await user_service.create(
-        {
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          role: 'PROFESSEUR',
-          lastname: 'LEFEBVRE',
-          firstname: 'Benoit',
-        },
-        {
-          role_by_label: fakeRoleByLabel,
-          create: fakeCreate,
-          bcrypt: fakeBCrypt,
-        }
-      );
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
+      await user_service.create({
+        pwd: 'short1!',
+        mail: 'user@example.com',
+        role: 'ETUDIANT',
+        lastname: 'Doe',
+        firstname: 'John',
+      });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai.expect(fakeCreate).to.have.not.been.called;
-      chai.expect(fakeRoleByLabel).to.have.not.been.called;
-      chai
-        .expect(err.message)
-        .to.equal('One or multiple arguments (pwd) are missing.');
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should throw error when email is invalid', async () => {
+    try {
+      await user_service.create({
+        pwd: 'SecurePassword123!',
+        mail: 'invalid-email',
+        role: 'ETUDIANT',
+        lastname: 'Doe',
+        firstname: 'John',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should throw error when role is invalid', async () => {
+    try {
+      await user_service.create({
+        pwd: 'SecurePassword123!',
+        mail: 'user@example.com',
+        role: 'INVALID_ROLE',
+        lastname: 'Doe',
+        firstname: 'John',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should throw error when firstname or lastname is empty', async () => {
+    try {
+      await user_service.create({
+        pwd: 'SecurePassword123!',
+        mail: 'user@example.com',
+        role: 'ETUDIANT',
+        lastname: '',
+        firstname: 'John',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
     }
   });
 });

@@ -102,11 +102,14 @@ export const exportStorage = async function (
     id_environment: application.id_environment,
   });
 
-  const interfacesWithStorage = environment_infos.interfaces
-    .filter((interfaces) => interfaces.envs.some((env) => env.key === 'HSTORAGE' && env.value === 'true'));
+  const interfacesWithStorage = environment_infos.interfaces.filter(
+    (interfaces) =>
+      interfaces.envs.some(
+        (env) => env.key === 'HSTORAGE' && env.value === 'true'
+      )
+  );
   if (interfacesWithStorage.length === 0)
     throw new StorageError('Storage is not enabled for this environment.');
-
 
   // Create storage export in database
   const promises = [

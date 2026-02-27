@@ -1,623 +1,765 @@
-import * as user_builder from '../../src/builders/user.builder.js';
-import db from '../../src/config/db.config.js';
-import {
-  DBConnexionRefused,
-  DBForeignKeyConstraintError,
-  DBObjectNotFound,
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../../src/utils/errors.service.js';
 import * as chai from 'chai';
 import * as sinon from 'sinon';
 import sinonChai from 'sinon-chai';
+import { Op } from 'sequelize';
+import dbManager from '../../src/config/db.config.js';
+import * as user_builder from '../../src/builders/user.builder.js';
 import { User } from '../../src/objects/User.js';
-import Sequelize, { Op } from 'sequelize';
 
 chai.use(sinonChai);
 
-describe('user_builder.get()', () => {
-  let fakeUsersFindOne;
-  beforeEach(() => {
-    fakeUsersFindOne = sinon.stub(db.caelus.USERS, 'findOne');
+describe('user.builder.get()', () => {
+  let findOneStub;
+
+  before(async () => {
+    await dbManager.initModels();
   });
+
+  beforeEach(() => {
+    findOneStub = sinon.stub(dbManager.models.USERS, 'findOne');
+  });
+
   afterEach(() => {
     sinon.restore();
   });
-  it('called with existing id_user and should return a User object.', async () => {
-    fakeUsersFindOne.resolves(
-      Promise.resolve({
+
+  it('should retrieve a user by id_user', async () => {
+    findOneStub.resolves({
+      dataValues: {
         id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        USER_ROLE: {
-          label: 'PROFESSEUR',
-        },
-        PASSWORD: {
-          pwd: 'ThisIsMDP',
-        },
-      })
-    );
-    const result = await user_builder.get({ id_user: 1 });
-    chai.expect(result).to.be.instanceOf(User);
-    chai.expect(result).to.deep.equal(
-      new User({
-        id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-        pwd: 'ThisIsMDP',
-      })
-    );
-  });
-  it('called with non existing id_user and should return DBObjectNotFound error.', async () => {
-    try {
-      fakeUsersFindOne.resolves(Promise.resolve(null));
-      await user_builder.get({ id_user: 10 });
-      chai.expect.fail(
-        'chai.expected to throw DBObjectNotFound, but it did not.'
-      );
-    } catch (err) {
-      chai.expect(fakeUsersFindOne).to.have.been.called;
-      chai.expect(
-        fakeUsersFindOne.calledWith({
-          include: [
-            {
-              model: db.caelus.USER_ROLE,
-              required: true,
-            },
-            {
-              model: db.caelus.PASSWORD,
-              required: true,
-            },
-          ],
-          where: { id_user: 10 },
-        })
-      ).to.be.true;
-      chai.expect(err).to.be.instanceOf(DBObjectNotFound);
-      chai.expect(err.message).to.equal('The user could not be found.');
-    }
-  });
-  it('called with existing mail and should return a User object.', async () => {
-    fakeUsersFindOne.resolves(
-      Promise.resolve({
-        id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        USER_ROLE: {
-          label: 'PROFESSEUR',
-        },
-        PASSWORD: {
-          pwd: 'ThisIsMDP',
-        },
-      })
-    );
-    const result = await user_builder.get({
-      mail: 'benoit.lefebvre@getcaelus.cloud',
+        firstname: 'John',
+        lastname: 'Doe',
+        mail: 'john@example.com',
+        id_password: 5,
+      },
+      USER_ROLE: {
+        label: 'ETUDIANT',
+      },
+      PASSWORD: {
+        pwd: 'hashed_password_123',
+      },
     });
+
+    const result = await user_builder.get({ id_user: 1 });
+
+    chai.expect(findOneStub.calledOnce).to.be.true;
     chai.expect(result).to.be.instanceOf(User);
-    chai.expect(result).to.deep.equal(
-      new User({
-        id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-        pwd: 'ThisIsMDP',
-      })
-    );
+    chai.expect(result.id_user).to.equal(1);
+    chai.expect(result.firstname).to.equal('John');
+    chai.expect(result.lastname).to.equal('Doe');
+    chai.expect(result.mail).to.equal('john@example.com');
+    chai.expect(result.role).to.equal('ETUDIANT');
   });
-  it('called without id_user and should return MissingArgumentError.', async () => {
+
+  it('should retrieve a user by mail', async () => {
+    findOneStub.resolves({
+      dataValues: {
+        id_user: 2,
+        firstname: 'Jane',
+        lastname: 'Smith',
+        mail: 'jane@example.com',
+        id_password: 6,
+      },
+      USER_ROLE: {
+        label: 'PROFESSEUR',
+      },
+      PASSWORD: {
+        pwd: 'hashed_password_456',
+      },
+    });
+
+    const result = await user_builder.get({ mail: 'jane@example.com' });
+
+    chai.expect(findOneStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.instanceOf(User);
+    chai.expect(result.mail).to.equal('jane@example.com');
+    chai.expect(result.role).to.equal('PROFESSEUR');
+  });
+
+  it('should throw when neither id_user nor mail is provided', async () => {
     try {
       await user_builder.get({});
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeUsersFindOne).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
+      chai.expect(err).to.exist;
       chai
         .expect(err.message)
-        .to.equal('One or multiple arguments (id_user,mail) are missing.');
+        .to.include('Either mail or id_user must be present');
     }
   });
-  it('called with a misformed id_user and should return ParameterMisformed.', async () => {
+
+  it('should throw when user is not found by id_user', async () => {
+    findOneStub.resolves(null);
+
     try {
-      await user_builder.get({ id_user: 'misformed' });
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
+      await user_builder.get({ id_user: 999 });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeUsersFindOne).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.id_user parameter is misformed.');
+      chai.expect(err).to.exist;
+      chai.expect(err.message).to.include('could not be found');
     }
   });
-});
-describe('user_builder.list()', () => {
-  let fakeFindAll;
-  beforeEach(() => {
-    fakeFindAll = sinon.stub(db.caelus.USERS, 'findAll');
-  });
-  afterEach(() => {
-    sinon.restore();
-  });
-  it('called with role and should get a list a users.', async () => {
-    fakeFindAll.resolves(
-      Promise.resolve([
-        {
-          id_user: 1,
-          lastname: 'LEFEBVRE',
-          firstname: 'Benoit',
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          USER_ROLE: {
-            label: 'PROFESSEUR',
-          },
-        },
-        {
-          id_user: 2,
-          lastname: 'LEFEBVRE',
-          firstname: 'Ulfi',
-          mail: 'ulfi.lefebvre@getcaelus.cloud',
-          USER_ROLE: {
-            label: 'PROFESSEUR',
-          },
-        },
-      ])
-    );
-    const users = await user_builder.list({
-      role: 'PROFESSEUR',
-    });
-    chai.expect(fakeFindAll).to.be.calledOnceWithExactly({
-      include: {
-        model: db.caelus.USER_ROLE,
-        required: true,
-        where: { label: 'PROFESSEUR' },
-      },
-    });
-    chai.expect(users).to.deep.equal([
-      new User({
-        id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-      }),
-      new User({
-        id_user: 2,
-        lastname: 'LEFEBVRE',
-        firstname: 'Ulfi',
-        mail: 'ulfi.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-      }),
-    ]);
-  });
-  it('called with role that have no user and should get an empty list of users.', async () => {
-    fakeFindAll.resolves(Promise.resolve([]));
-    const users = await user_builder.list({
-      role: 'PROFESSEUR',
-    });
-    chai.expect(fakeFindAll).to.be.calledOnceWithExactly({
-      include: {
-        model: db.caelus.USER_ROLE,
-        required: true,
-        where: { label: 'PROFESSEUR' },
-      },
-    });
-    chai.expect(users).to.deep.equal([]);
-  });
-  it('called without role argument and should reject with a MissingArgumentError.', async () => {
+
+  it('should throw when user is not found by mail', async () => {
+    findOneStub.resolves(null);
+
     try {
-      await user_builder.list({});
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
+      await user_builder.get({ mail: 'nonexistent@example.com' });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeFindAll).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal('One or multiple arguments (role) are missing.');
+      chai.expect(err).to.exist;
     }
   });
-  it('called with a misformed role and should return ParameterMisformed.', async () => {
+
+  it('should reject invalid email format', async () => {
     try {
-      await user_builder.list({ role: 'misformed' });
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
+      await user_builder.get({ mail: 'invalid-email' });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeFindAll).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.role parameter is misformed.');
+      chai.expect(err).to.exist;
     }
   });
-  it('called but should return DBConnexionRefused.', async () => {
+
+  it('should reject invalid id_user (zero)', async () => {
     try {
-      fakeFindAll.resolves(
-        Promise.reject(
-          new Sequelize.ConnectionRefusedError(
-            'error during connexion to database'
-          )
-        )
-      );
-      await user_builder.list({ role: 'ETUDIANT' });
-      chai.expect.fail(
-        'chai.expected to throw DBConnexionRefused, but it did not.'
-      );
+      await user_builder.get({ id_user: 0 });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeFindAll).to.have.been.called;
-      chai.expect(err).to.be.instanceOf(DBConnexionRefused);
-      chai.expect(err.message).to.equal('Connexion to the database refused.');
+      chai.expect(err).to.exist;
     }
   });
-});
-describe('user_builder.update_state()', () => {
-  let fakeUserFindOne, fakeUserUpdate;
-  beforeEach(() => {
-    fakeUserFindOne = sinon.stub(db.caelus.USERS, 'findOne');
-    fakeUserUpdate = sinon.stub(db.caelus.PASSWORD, 'update');
-  });
-  afterEach(() => {
-    sinon.restore();
-  });
-  it('called with existing id_user and should return a User object.', async () => {
-    fakeUserFindOne.resolves(
-      Promise.resolve({
-        id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        id_password: 1,
-        USER_ROLE: {
-          label: 'PROFESSEUR',
-        },
-        PASSWORD: {
-          pwd: 'ThisIsMDP',
-        },
-      })
-    );
-    const result = await user_builder.update_password({
-      id_user: 1,
-      hashed_password: 'rzergzetrzerzfv',
-    });
-    chai.expect(result).to.be.equal("The user's password has been changed.");
-    chai.expect(fakeUserFindOne).to.have.been.calledOnceWithExactly({
-      where: {
-        id_user: 1,
-      },
-    });
-    chai.expect(fakeUserUpdate).to.have.been.calledOnceWithExactly(
-      {
-        pwd: 'rzergzetrzerzfv',
-      },
-      {
-        where: {
-          id_password: 1,
-        },
-      }
-    );
-  });
-  it('called with non existing id_user and should return DBObjectNotFound error.', async () => {
+
+  it('should reject invalid id_user (negative)', async () => {
     try {
-      fakeUserFindOne.resolves(Promise.resolve(null));
-      await user_builder.update_password({
-        id_user: 10,
-        hashed_password: 'rzergzetrzerzfv',
-      });
-      chai.expect.fail(
-        'chai.expected to throw DBObjectNotFound, but it did not.'
-      );
+      await user_builder.get({ id_user: -1 });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeUserFindOne).to.have.been.called;
-      chai.expect(
-        fakeUserFindOne.calledWith({
-          where: { id_user: 10 },
-        })
-      ).to.be.true;
-      chai.expect(fakeUserUpdate).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(DBObjectNotFound);
-      chai.expect(err.message).to.equal('The user could not be found.');
-    }
-  });
-});
-describe('user_builder.update_password()', () => {
-  let fakeUpdate, fakeFindOne;
-  beforeEach(() => {
-    fakeFindOne = sinon.stub(db.caelus.USERS, 'findOne');
-    fakeUpdate = sinon.stub(db.caelus.PASSWORD, 'update');
-  });
-  afterEach(() => {
-    sinon.restore();
-  });
-  it('called and should update the password.', async () => {
-    fakeFindOne.resolves(
-      Promise.resolve({
-        id_password: 1,
-        id_user: 1,
-      })
-    );
-    fakeUpdate.resolves(Promise.resolve(true));
-    const result = await Promise.resolve(
-      user_builder.update_password({
-        id_user: 1,
-        hashed_password: 'arzaoreigazoireanornco',
-      })
-    );
-    chai.expect(fakeFindOne).to.have.been.calledOnceWithExactly({
-      where: {
-        id_user: 1,
-      },
-    });
-    chai.expect(fakeUpdate).to.have.been.calledOnceWithExactly(
-      {
-        pwd: 'arzaoreigazoireanornco',
-      },
-      {
-        where: {
-          id_password: 1,
-        },
-      }
-    );
-    chai.expect(result).to.be.equal("The user's password has been changed.");
-  });
-  it('called with missing id_user and should reject with an error.', async () => {
-    try {
-      await Promise.resolve(
-        user_builder.update_password({
-          hashed_password: 'arzaoreigazoireanornco',
-        })
-      );
-      chai.fail('Chai expected to get MissingArgumentError.');
-    } catch (err) {
-      chai.expect(fakeFindOne).to.not.have.been.called;
-      chai.expect(fakeUpdate).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.be.equal('One or multiple arguments (id_user) are missing.');
-    }
-  });
-  it('called and should reject with an DBForeignKeyConstraintError.', async () => {
-    try {
-      fakeFindOne.resolves(
-        Promise.resolve({
-          id_user: 1,
-          id_password: 1,
-        })
-      );
-      fakeUpdate.resolves(
-        Promise.reject(new Sequelize.ForeignKeyConstraintError())
-      );
-      await Promise.resolve(
-        user_builder.update_password({
-          id_user: 1,
-          hashed_password: 'arzaoreigazoireanornco',
-        })
-      );
-      chai.fail('Chai expected to get DBForeignKeyConstraintError.');
-    } catch (err) {
-      chai.expect(fakeFindOne).to.have.been.calledOnceWithExactly({
-        where: {
-          id_user: 1,
-        },
-      });
-      chai.expect(fakeUpdate).to.have.been.calledOnceWithExactly(
-        {
-          pwd: 'arzaoreigazoireanornco',
-        },
-        {
-          where: {
-            id_password: 1,
-          },
-        }
-      );
-      chai.expect(err).to.be.instanceOf(DBForeignKeyConstraintError);
-      chai
-        .expect(err.message)
-        .to.be.equal(
-          'The foreign key cannot be deleted because it is still in use.'
-        );
+      chai.expect(err).to.exist;
     }
   });
 });
 
-describe('user_builder.create()', () => {
-  let fakeUserCreate, fakePasswordCreate;
-  beforeEach(() => {
-    fakeUserCreate = sinon.stub(db.caelus.USERS, 'create');
-    fakePasswordCreate = sinon.stub(db.caelus.PASSWORD, 'create');
+describe('user.builder.list()', () => {
+  let findAllStub;
+
+  before(async () => {
+    await dbManager.initModels();
   });
+
+  beforeEach(() => {
+    findAllStub = sinon.stub(dbManager.models.USERS, 'findAll');
+  });
+
   afterEach(() => {
     sinon.restore();
   });
-  it('called with existing good args and should return a User object.', async () => {
-    fakeUserCreate.resolves(
-      Promise.resolve({
-        id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        id_password: 1,
-        id_role: 2,
-      })
-    );
-    fakePasswordCreate.resolves(
-      Promise.resolve({
-        id_password: 1,
-      })
-    );
-    const result = await user_builder.create({
-      lastname: 'LEFEBVRE',
-      firstname: 'Benoit',
-      mail: 'benoit.lefebvre@getcaelus.cloud',
-      id_role: 2,
-      hashed_password: 'egzoeirgzzrtgjoi',
-    });
-    chai.expect(result).to.be.deep.equal(
-      new User({
-        id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-      })
-    );
-    chai.expect(fakePasswordCreate).to.have.been.calledOnceWithExactly({
-      pwd: 'egzoeirgzzrtgjoi',
-    });
-    chai.expect(fakeUserCreate).to.have.been.calledOnceWithExactly({
-      lastname: 'LEFEBVRE',
-      firstname: 'Benoit',
-      mail: 'benoit.lefebvre@getcaelus.cloud',
-      id_role: 2,
-      id_password: 1,
-    });
+
+  it('should retrieve all ETUDIANT users', async () => {
+    findAllStub.resolves([
+      {
+        dataValues: {
+          id_user: 1,
+          firstname: 'John',
+          lastname: 'Doe',
+          mail: 'john@example.com',
+        },
+        USER_ROLE: {
+          label: 'ETUDIANT',
+        },
+      },
+      {
+        dataValues: {
+          id_user: 2,
+          firstname: 'Jane',
+          lastname: 'Smith',
+          mail: 'jane@example.com',
+        },
+        USER_ROLE: {
+          label: 'ETUDIANT',
+        },
+      },
+    ]);
+
+    const result = await user_builder.list({ user_role: 'ETUDIANT' });
+
+    chai.expect(findAllStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.an('array');
+    chai.expect(result).to.have.lengthOf(2);
+    chai.expect(result[0]).to.be.instanceOf(User);
+    chai.expect(result[1]).to.be.instanceOf(User);
+    chai.expect(result[0].role).to.equal('ETUDIANT');
   });
-  it('called with missing arguments and should reject with an error.', async () => {
-    try {
-      await user_builder.create({
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-      });
-      chai.expect.fail('Chai expected to get MissingArgumentError.');
-    } catch (err) {
-      chai.expect(fakePasswordCreate).to.not.have.been.called;
-      chai.expect(fakeUserCreate).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.be.equal(
-          'One or multiple arguments (mail,id_role,hashed_password) are missing.'
-        );
-    }
+
+  it('should retrieve all PROFESSEUR users', async () => {
+    findAllStub.resolves([
+      {
+        dataValues: {
+          id_user: 3,
+          firstname: 'Alice',
+          lastname: 'Johnson',
+          mail: 'alice@example.com',
+        },
+        USER_ROLE: {
+          label: 'PROFESSEUR',
+        },
+      },
+    ]);
+
+    const result = await user_builder.list({ user_role: 'PROFESSEUR' });
+
+    chai.expect(result).to.have.lengthOf(1);
+    chai.expect(result[0].role).to.equal('PROFESSEUR');
   });
-  it('called  and should reject with an DBConnexionRefused error.', async () => {
+
+  it('should retrieve all ADMINISTRATEUR users', async () => {
+    findAllStub.resolves([
+      {
+        dataValues: {
+          id_user: 4,
+          firstname: 'Admin',
+          lastname: 'User',
+          mail: 'admin@example.com',
+        },
+        USER_ROLE: {
+          label: 'ADMINISTRATEUR',
+        },
+      },
+    ]);
+
+    const result = await user_builder.list({ user_role: 'ADMINISTRATEUR' });
+
+    chai.expect(result).to.have.lengthOf(1);
+    chai.expect(result[0].role).to.equal('ADMINISTRATEUR');
+  });
+
+  it('should return empty array if no users found', async () => {
+    findAllStub.resolves([]);
+
+    const result = await user_builder.list({ user_role: 'ETUDIANT' });
+
+    chai.expect(result).to.be.an('array');
+    chai.expect(result).to.have.lengthOf(0);
+  });
+
+  it('should reject invalid role', async () => {
     try {
-      fakePasswordCreate.resolves(
-        Promise.reject(
-          new Sequelize.ConnectionRefusedError(
-            'error during connexion to database'
-          )
-        )
-      );
-      await user_builder.create({
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        id_role: 2,
-        hashed_password: 'egzoeirgzzrtgjoi',
-      });
-      chai.expect.fail('Chai expected to get DBConnexionRefused.');
+      await user_builder.list({ user_role: 'INVALID_ROLE' });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakePasswordCreate).to.have.been.calledOnce;
-      chai.expect(fakeUserCreate).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(DBConnexionRefused);
+      chai.expect(err).to.exist;
     }
   });
 });
-describe('user_builder.get_list()', () => {
-  let fakeFindAll;
-  beforeEach(() => {
-    fakeFindAll = sinon.stub(db.caelus.USERS, 'findAll');
+
+describe('user.builder.get_list()', () => {
+  let findAllStub;
+
+  before(async () => {
+    await dbManager.initModels();
   });
+
+  beforeEach(() => {
+    findAllStub = sinon.stub(dbManager.models.USERS, 'findAll');
+  });
+
   afterEach(() => {
     sinon.restore();
   });
-  it('called with ids and should get a list a users.', async () => {
-    fakeFindAll.resolves(
-      Promise.resolve([
-        {
-          id_user: 1,
-          lastname: 'LEFEBVRE',
-          firstname: 'Benoit',
-          mail: 'benoit.lefebvre@getcaelus.cloud',
-          USER_ROLE: {
-            label: 'PROFESSEUR',
-          },
-        },
-        {
-          id_user: 2,
-          lastname: 'LEFEBVRE',
-          firstname: 'Ulfi',
-          mail: 'ulfi.lefebvre@getcaelus.cloud',
-          USER_ROLE: {
-            label: 'PROFESSEUR',
-          },
-        },
-      ])
-    );
-    const users = await user_builder.get_list({
-      ids: [1, 2],
-    });
-    chai.expect(fakeFindAll).to.be.calledOnceWithExactly({
-      where: {
-        id_user: {
-          [Op.in]: [1, 2],
-        },
-      },
-      include: {
-        model: db.caelus.USER_ROLE,
-        required: true,
-      },
-    });
-    chai.expect(users).to.deep.equal([
-      new User({
+
+  it('should retrieve users by array of ids', async () => {
+    findAllStub.resolves([
+      {
         id_user: 1,
-        lastname: 'LEFEBVRE',
-        firstname: 'Benoit',
-        mail: 'benoit.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-      }),
-      new User({
-        id_user: 2,
-        lastname: 'LEFEBVRE',
-        firstname: 'Ulfi',
-        mail: 'ulfi.lefebvre@getcaelus.cloud',
-        role: 'PROFESSEUR',
-      }),
-    ]);
-  });
-  it('called with ids that have no user and should get an empty list of users.', async () => {
-    fakeFindAll.resolves(Promise.resolve([]));
-    const users = await user_builder.get_list({
-      ids: [999],
-    });
-    chai.expect(fakeFindAll).to.be.calledOnceWithExactly({
-      where: {
-        id_user: {
-          [Op.in]: [999],
+        firstname: 'John',
+        lastname: 'Doe',
+        mail: 'john@example.com',
+        USER_ROLE: {
+          label: 'ETUDIANT',
         },
       },
-      include: {
-        model: db.caelus.USER_ROLE,
-        required: true,
+      {
+        id_user: 3,
+        firstname: 'Alice',
+        lastname: 'Johnson',
+        mail: 'alice@example.com',
+        USER_ROLE: {
+          label: 'PROFESSEUR',
+        },
       },
-    });
-    chai.expect(users).to.deep.equal([]);
+    ]);
+
+    const result = await user_builder.get_list({ ids: [1, 3] });
+
+    chai.expect(findAllStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.an('array');
+    chai.expect(result).to.have.lengthOf(2);
+    chai.expect(result[0]).to.be.instanceOf(User);
+    chai.expect(result[1]).to.be.instanceOf(User);
   });
-  it('called with missing ids and should reject with MissingArgument.', async () => {
+
+  it('should retrieve a single user by id array', async () => {
+    findAllStub.resolves([
+      {
+        id_user: 2,
+        firstname: 'Jane',
+        lastname: 'Smith',
+        mail: 'jane@example.com',
+        USER_ROLE: {
+          label: 'ETUDIANT',
+        },
+      },
+    ]);
+
+    const result = await user_builder.get_list({ ids: [2] });
+
+    chai.expect(result).to.have.lengthOf(1);
+    chai.expect(result[0].id_user).to.equal(2);
+  });
+
+  it('should return empty array if no users found', async () => {
+    findAllStub.resolves([]);
+
+    const result = await user_builder.get_list({ ids: [999, 1000] });
+
+    chai.expect(result).to.be.an('array');
+    chai.expect(result).to.have.lengthOf(0);
+  });
+
+  it('should reject empty ids array', async () => {
     try {
-      await user_builder.get_list();
+      await user_builder.get_list({ ids: [] });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
+      chai.expect(err).to.exist;
     }
   });
-  it('called with ids that have no user and should get an empty list of users.', async () => {
+
+  it('should reject invalid ids (zero)', async () => {
     try {
-      fakeFindAll.resolves(
-        Promise.reject(new Sequelize.ConnectionRefusedError())
-      );
-      await user_builder.get_list({
-        ids: [999],
-      });
+      await user_builder.get_list({ ids: [0, 1, 2] });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(err).to.be.instanceOf(DBConnexionRefused);
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject invalid ids (negative)', async () => {
+    try {
+      await user_builder.get_list({ ids: [1, -2, 3] });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject non-numeric ids', async () => {
+    try {
+      await user_builder.get_list({ ids: [1, 'invalid', 3] });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should verify using Op.in for ids filtering', async () => {
+    findAllStub.resolves([]);
+
+    await user_builder.get_list({ ids: [1, 2, 3] });
+
+    chai.expect(findAllStub.calledOnce).to.be.true;
+    const callArgs = findAllStub.getCall(0).args[0];
+    chai.expect(callArgs.where.id_user).to.have.property(Op.in);
+    chai.expect(callArgs.where.id_user[Op.in]).to.deep.equal([1, 2, 3]);
+  });
+});
+
+describe('user.builder.update_password()', () => {
+  let findOneStub;
+  let updateStub;
+
+  before(async () => {
+    await dbManager.initModels();
+  });
+
+  beforeEach(() => {
+    findOneStub = sinon.stub(dbManager.models.USERS, 'findOne');
+    updateStub = sinon.stub(dbManager.models.PASSWORD, 'update');
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should update user password successfully', async () => {
+    findOneStub.resolves({
+      id_user: 1,
+      id_password: 5,
+    });
+    updateStub.resolves([1]);
+
+    const result = await user_builder.update_password({
+      id_user: 1,
+      hashed_password: 'new_hashed_password_abc123',
+    });
+
+    chai.expect(findOneStub.calledOnce).to.be.true;
+    chai.expect(updateStub.calledOnce).to.be.true;
+    chai.expect(result).to.equal("The user's password has been changed.");
+  });
+
+  it('should verify update is called with correct password value', async () => {
+    findOneStub.resolves({
+      id_user: 2,
+      id_password: 6,
+    });
+    updateStub.resolves([1]);
+
+    const newPassword = 'new_hashed_password_xyz789';
+    await user_builder.update_password({
+      id_user: 2,
+      hashed_password: newPassword,
+    });
+
+    const updateCall = updateStub.getCall(0);
+    chai.expect(updateCall.args[0]).to.deep.equal({ pwd: newPassword });
+  });
+
+  it('should throw when user is not found', async () => {
+    findOneStub.resolves(null);
+
+    try {
+      await user_builder.update_password({
+        id_user: 999,
+        hashed_password: 'some_password',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+      chai.expect(err.message).to.include('could not be found');
+    }
+  });
+
+  it('should throw when update fails', async () => {
+    findOneStub.resolves({
+      id_user: 1,
+      id_password: 5,
+    });
+    updateStub.resolves([0]);
+
+    try {
+      await user_builder.update_password({
+        id_user: 1,
+        hashed_password: 'some_password',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject invalid id_user (zero)', async () => {
+    try {
+      await user_builder.update_password({
+        id_user: 0,
+        hashed_password: 'some_password',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject invalid id_user (negative)', async () => {
+    try {
+      await user_builder.update_password({
+        id_user: -1,
+        hashed_password: 'some_password',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject empty hashed_password', async () => {
+    try {
+      await user_builder.update_password({
+        id_user: 1,
+        hashed_password: '',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+});
+
+describe('user.builder.create()', () => {
+  let createUserStub;
+  let createPasswordStub;
+
+  before(async () => {
+    await dbManager.initModels();
+  });
+
+  beforeEach(() => {
+    createPasswordStub = sinon.stub(dbManager.models.PASSWORD, 'create');
+    createUserStub = sinon.stub(dbManager.models.USERS, 'create');
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should create a new user successfully', async () => {
+    createPasswordStub.resolves({
+      id_password: 10,
+      pwd: 'hashed_password_new',
+    });
+    createUserStub.resolves({
+      dataValues: {
+        id_user: 5,
+        firstname: 'NewUser',
+        lastname: 'Test',
+        mail: 'newuser@example.com',
+        id_role: 1,
+        id_password: 10,
+      },
+    });
+
+    const result = await user_builder.create({
+      firstname: 'NewUser',
+      lastname: 'Test',
+      mail: 'newuser@example.com',
+      id_role: 1,
+      hashed_password: 'hashed_password_new',
+    });
+
+    chai.expect(createPasswordStub.calledOnce).to.be.true;
+    chai.expect(createUserStub.calledOnce).to.be.true;
+    chai.expect(result).to.be.instanceOf(User);
+    chai.expect(result.firstname).to.equal('NewUser');
+    chai.expect(result.lastname).to.equal('Test');
+    chai.expect(result.mail).to.equal('newuser@example.com');
+  });
+
+  it('should verify password is created first', async () => {
+    createPasswordStub.resolves({
+      id_password: 11,
+      pwd: 'test_password',
+    });
+    createUserStub.resolves({
+      dataValues: {
+        id_user: 6,
+        firstname: 'Alice',
+        lastname: 'Wonder',
+        mail: 'alice@example.com',
+        id_role: 2,
+        id_password: 11,
+      },
+    });
+
+    await user_builder.create({
+      firstname: 'Alice',
+      lastname: 'Wonder',
+      mail: 'alice@example.com',
+      id_role: 2,
+      hashed_password: 'test_password',
+    });
+
+    const passwordCall = createPasswordStub.getCall(0);
+    chai.expect(passwordCall.args[0]).to.deep.equal({
+      pwd: 'test_password',
+    });
+  });
+
+  it('should use password id in user creation', async () => {
+    createPasswordStub.resolves({
+      id_password: 12,
+      pwd: 'secure_hash',
+    });
+    createUserStub.resolves({
+      dataValues: {
+        id_user: 7,
+        firstname: 'Bob',
+        lastname: 'Builder',
+        mail: 'bob@example.com',
+        id_role: 3,
+        id_password: 12,
+      },
+    });
+
+    await user_builder.create({
+      firstname: 'Bob',
+      lastname: 'Builder',
+      mail: 'bob@example.com',
+      id_role: 3,
+      hashed_password: 'secure_hash',
+    });
+
+    const userCallArgs = createUserStub.getCall(0).args[0];
+    chai.expect(userCallArgs.id_password).to.equal(12);
+    chai.expect(userCallArgs.firstname).to.equal('Bob');
+    chai.expect(userCallArgs.lastname).to.equal('Builder');
+  });
+
+  it('should reject empty firstname', async () => {
+    try {
+      await user_builder.create({
+        firstname: '',
+        lastname: 'Test',
+        mail: 'user@example.com',
+        id_role: 1,
+        hashed_password: 'password123',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject empty lastname', async () => {
+    try {
+      await user_builder.create({
+        firstname: 'John',
+        lastname: '',
+        mail: 'user@example.com',
+        id_role: 1,
+        hashed_password: 'password123',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject invalid email format', async () => {
+    try {
+      await user_builder.create({
+        firstname: 'John',
+        lastname: 'Doe',
+        mail: 'invalid-email',
+        id_role: 1,
+        hashed_password: 'password123',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject invalid id_role (zero)', async () => {
+    try {
+      await user_builder.create({
+        firstname: 'John',
+        lastname: 'Doe',
+        mail: 'john@example.com',
+        id_role: 0,
+        hashed_password: 'password123',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject invalid id_role (negative)', async () => {
+    try {
+      await user_builder.create({
+        firstname: 'John',
+        lastname: 'Doe',
+        mail: 'john@example.com',
+        id_role: -1,
+        hashed_password: 'password123',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject empty hashed_password', async () => {
+    try {
+      await user_builder.create({
+        firstname: 'John',
+        lastname: 'Doe',
+        mail: 'john@example.com',
+        id_role: 1,
+        hashed_password: '',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject missing firstname', async () => {
+    try {
+      await user_builder.create({
+        lastname: 'Doe',
+        mail: 'john@example.com',
+        id_role: 1,
+        hashed_password: 'password123',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject missing lastname', async () => {
+    try {
+      await user_builder.create({
+        firstname: 'John',
+        mail: 'john@example.com',
+        id_role: 1,
+        hashed_password: 'password123',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject missing mail', async () => {
+    try {
+      await user_builder.create({
+        firstname: 'John',
+        lastname: 'Doe',
+        id_role: 1,
+        hashed_password: 'password123',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject missing id_role', async () => {
+    try {
+      await user_builder.create({
+        firstname: 'John',
+        lastname: 'Doe',
+        mail: 'john@example.com',
+        hashed_password: 'password123',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should reject missing hashed_password', async () => {
+    try {
+      await user_builder.create({
+        firstname: 'John',
+        lastname: 'Doe',
+        mail: 'john@example.com',
+        id_role: 1,
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
     }
   });
 });

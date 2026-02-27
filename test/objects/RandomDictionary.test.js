@@ -1,20 +1,18 @@
 import * as chai from 'chai';
-import * as sinon from 'sinon';
-import sinonChai from 'sinon-chai';
 import { RandomDictionary } from '../../src/objects/RandomDictionary.js';
-chai.use(sinonChai);
 
-describe('<object> RandomDictionary', () => {
-  it('creates, updates and checks value of Interface object.', () => {
-    const dico = new RandomDictionary({
-      words: ['un', 'deux'],
-    });
-    dico.add('trois');
-    chai.expect(dico.words).to.deep.equal(['un', 'deux', 'trois']);
-    dico.words = ['un'];
-    chai.expect(dico.words).to.deep.equal(['un']);
-    chai.expect(dico.toJSON()).to.deep.equal({
-      words: ['un'],
-    });
+describe('RandomDictionary object', () => {
+  it('creates with default words', () => {
+    const dict = new RandomDictionary();
+
+    chai.expect(dict.words).to.deep.equal([]);
+  });
+
+  it('adds words and serializes', () => {
+    const dict = new RandomDictionary({ words: ['one'] });
+    dict.add('two');
+
+    chai.expect(dict.words).to.deep.equal(['one', 'two']);
+    chai.expect(dict.toJSON()).to.deep.equal({ words: ['one', 'two'] });
   });
 });

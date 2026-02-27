@@ -1,143 +1,106 @@
 import * as chai from 'chai';
-import * as sinon from 'sinon';
-import sinonChai from 'sinon-chai';
 import { Session } from '../../src/objects/Session.js';
-import CONFIG from '../../src/config/config.js';
-import moment from 'moment-timezone';
-chai.use(sinonChai);
+import { Environment } from '../../src/objects/Environment.js';
+import { Datacenter } from '../../src/objects/Datacenter.js';
+import { Application } from '../../src/objects/Application.js';
+import { User } from '../../src/objects/User.js';
 
-describe('<object> Session', () => {
-  it('creates and checks values of Session object.', () => {
-    const begin = moment('2020-01-01T00:00:00Z').tz(CONFIG.APP_TZ);
-    const end = moment('2020-02-01T00:00:00Z').tz(CONFIG.APP_TZ);
+describe('Session object', () => {
+  it('creates with valid properties', () => {
+    const environment = new Environment({
+      id_environment: 1,
+      label: 'env',
+      icon: 'icon',
+    });
+    const datacenter = new Datacenter({
+      id_datacenter: 1,
+      label: 'dc',
+      provider: 'provider',
+      city: 'city',
+    });
+    const applications = [new Application({})];
+    const users = [
+      new User({
+        id_user: 1,
+        lastname: 'Doe',
+        firstname: 'Jane',
+        mail: 'jane.doe@example.com',
+        role: 'ETUDIANT',
+      }),
+    ];
 
-    const env = {
-      toJSON: () => ({ env: 'env_json' }),
-      public_format: () => ({ env: 'env_public' }),
-    };
-
-    const app = {
-      toJSON: () => ({ app_id: 1 }),
-      public_format: () => ({ app_public: 1 }),
-    };
-
-    const user = {
-      toJSON: () => ({ user_id: 2 }),
-      public_format: () => ({ user_public: 2 }),
-    };
-
-    const prof = {
-      toJSON: () => ({ prof_id: 3 }),
-      public_format: () => ({ prof_public: 3 }),
-    };
-
-    const dc = {
-      toJSON: () => ({ dc: 'dc_json' }),
-      public_format: () => ({ dc: 'dc_public' }),
-    };
-
-    const s = new Session({
-      id_session: 5,
-      label: 'session_label',
-      begin_date: begin,
-      end_date: end,
-      environment: env,
-      applications: [app],
-      users: [user],
-      professors: [prof],
-      datacenter: dc,
+    const session = new Session({
+      id_session: 10,
+      label: 'Session A',
+      begin_date: '2026-02-27T10:00:00Z',
+      end_date: '2026-02-27T12:00:00Z',
+      environment,
+      applications,
+      users,
+      professors: users,
+      datacenter,
     });
 
-    chai.expect(s.id_session).to.equal(5);
-    chai.expect(s.label).to.equal('session_label');
-    chai.expect(s.begin_date).to.equal(begin);
-    chai.expect(s.end_date).to.equal(end);
-    chai.expect(s.environment).to.equal(env);
-    chai.expect(s.applications).to.deep.equal([app]);
-    chai.expect(s.users).to.deep.equal([user]);
-    chai.expect(s.professors).to.deep.equal([prof]);
-    chai.expect(s.datacenter).to.equal(dc);
+    chai.expect(session.id_session).to.equal(10);
+    chai.expect(session.label).to.equal('Session A');
+    chai.expect(session.environment).to.equal(environment);
+    chai.expect(session.datacenter).to.equal(datacenter);
   });
 
-  it('updates fields and returns proper toJSON and public_format structures.', () => {
-    const begin1 = moment('2021-03-01T00:00:00Z').tz(CONFIG.APP_TZ);
-    const end1 = moment('2021-04-01T00:00:00Z').tz(CONFIG.APP_TZ);
+  it('throws on invalid dates', () => {
+    const environment = new Environment({
+      id_environment: 1,
+      label: 'env',
+      icon: 'icon',
+    });
+    const datacenter = new Datacenter({
+      id_datacenter: 1,
+      label: 'dc',
+      provider: 'provider',
+      city: 'city',
+    });
 
-    const env1 = {
-      toJSON: () => ({ env: 'env1_json' }),
-      public_format: () => ({ env: 'env1_public' }),
-    };
+    chai
+      .expect(() => {
+        new Session({
+          label: 'Session A',
+          begin_date: 'invalid',
+          end_date: 'invalid',
+          environment,
+          datacenter,
+        });
+      })
+      .to.throw();
+  });
 
-    const app1 = {
-      toJSON: () => ({ app_id: 11 }),
-      public_format: () => ({ app_public: 11 }),
-    };
+  it('serializes to JSON', () => {
+    const environment = new Environment({
+      id_environment: 2,
+      label: 'env',
+      icon: 'icon',
+    });
+    const datacenter = new Datacenter({
+      id_datacenter: 2,
+      label: 'dc',
+      provider: 'provider',
+      city: 'city',
+    });
 
-    const user1 = {
-      toJSON: () => ({ user_id: 12 }),
-      public_format: () => ({ user_public: 12 }),
-    };
+    const session = new Session({
+      id_session: 2,
+      label: 'Session B',
+      begin_date: '2026-02-27T10:00:00Z',
+      end_date: '2026-02-27T12:00:00Z',
+      environment,
+      applications: [],
+      users: [],
+      professors: [],
+      datacenter,
+    });
 
-    const prof1 = {
-      toJSON: () => ({ prof_id: 13 }),
-      public_format: () => ({ prof_public: 13 }),
-    };
-
-    const dc1 = {
-      toJSON: () => ({ dc: 'dc1_json' }),
-      public_format: () => ({ dc: 'dc1_public' }),
-    };
-
-    const s = new Session();
-
-    // Update all fields via setters
-    s.id_session = 42;
-    s.label = 'updated_session';
-    s.begin_date = begin1;
-    s.end_date = end1;
-    s.environment = env1;
-    s.applications = [app1];
-    s.users = [user1];
-    s.professors = [prof1];
-    s.datacenter = dc1;
-
-    // Verify getters reflect updates
-    chai.expect(s.id_session).to.equal(42);
-    chai.expect(s.label).to.equal('updated_session');
-    chai.expect(s.begin_date).to.equal(begin1);
-    chai.expect(s.end_date).to.equal(end1);
-    chai.expect(s.environment).to.equal(env1);
-    chai.expect(s.applications).to.deep.equal([app1]);
-    chai.expect(s.users).to.deep.equal([user1]);
-    chai.expect(s.professors).to.deep.equal([prof1]);
-    chai.expect(s.datacenter).to.equal(dc1);
-
-    // Expected outputs
-    const expectedJSON = {
-      id_session: 42,
-      label: 'updated_session',
-      begin_date: begin1,
-      end_date: end1,
-      environment: { env: 'env1_json' },
-      applications: [{ app_id: 11 }],
-      users: [{ user_id: 12 }],
-      professors: [{ prof_id: 13 }],
-      datacenter: { dc: 'dc1_json' },
-    };
-
-    const expectedPublic = {
-      id_session: 42,
-      label: 'updated_session',
-      begin_date: begin1,
-      end_date: end1,
-      environment: { env: 'env1_public' },
-      applications: [{ app_public: 11 }],
-      users: [{ user_public: 12 }],
-      professors: [{ prof_public: 13 }],
-      datacenter: { dc: 'dc1_public' },
-    };
-
-    chai.expect(s.toJSON()).to.deep.equal(expectedJSON);
-    chai.expect(s.public_format()).to.deep.equal(expectedPublic);
+    const json = session.toJSON();
+    chai.expect(json.id_session).to.equal(2);
+    chai.expect(json.label).to.equal('Session B');
+    chai.expect(json.environment).to.deep.equal(environment.toJSON());
   });
 });

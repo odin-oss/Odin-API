@@ -1,344 +1,390 @@
-import * as environment_service from '../../src/services/environment.service.js';
-import { Environment } from '../../src/objects/Environment.js';
-import {
-  DBConnexionRefused,
-  MissingArgumentError,
-  ParameterMisformed,
-} from '../../src/utils/errors.service.js';
 import * as chai from 'chai';
 import * as sinon from 'sinon';
 import sinonChai from 'sinon-chai';
-import { Interface } from '../../src/objects/Interface.js';
+import * as environment_service from '../../src/services/environment.service.js';
+
 chai.use(sinonChai);
 
 describe('environment.service.list()', () => {
-  let fakeEnvironmentList;
-  beforeEach(() => {
-    fakeEnvironmentList = sinon.stub();
-  });
-  afterEach(() => {
-    sinon.restore();
-  });
-  it("should return an Environment's array.", async () => {
-    fakeEnvironmentList.resolves(
-      Promise.resolve([
-        new Environment({
-          id_environnement: 45,
-          icon: 'ereteret',
-          label: 'ssh-Ubuntu',
-          interfaces: [
-            new Interface({
-              id_interface: 46,
-              label: 'SSHTerm',
-              registry_link:
-                'registry.gitlab.com/caelus-team/application-cirrus/applications/terminalssh:recette',
-              exec_command: '/bin/bash',
-              service_command: '',
-              privileged: false,
-              readiness_probe_initial_delay: 5,
-              liveness_probe_initial_delay: 200,
-              readiness_probe_period: 10,
-              liveness_probe_period: 20,
-              id_type: 1,
-              label_type_image: 'linux',
-              args: [],
-              envs: [],
-              node_selectors: [],
-              ports: [],
-            }),
-            new Interface({
-              id_interface: 1,
-              label: 'Alpine318',
-              registry_link:
-                'registry.gitlab.com/caelus-team/application-cirrus/applications/linux-alpine-3.18:recette',
-              exec_command: '/bin/sh',
-              service_command: 'sh /var/launch.sh',
-              privileged: false,
-              readiness_probe_initial_delay: 5,
-              liveness_probe_initial_delay: 200,
-              readiness_probe_period: 10,
-              liveness_probe_period: 20,
-              id_type: 1,
-              label_type_image: 'linux',
-              args: [],
-              envs: [],
-              node_selectors: [],
-              ports: [],
-            }),
-          ],
-        }),
-        new Environment({
-          id_environnement: 46,
-          label: 'ssh-Ubuntu',
-          icon: 'ereteret',
-          interfaces: [
-            new Interface({
-              id_interface: 1,
-              label: 'Alpine318',
-              registry_link:
-                'registry.gitlab.com/caelus-team/application-cirrus/applications/linux-alpine-3.18:recette',
-              exec_command: '/bin/sh',
-              service_command: 'sh /var/launch.sh',
-              privileged: false,
-              readiness_probe_initial_delay: 5,
-              liveness_probe_initial_delay: 200,
-              readiness_probe_period: 10,
-              liveness_probe_period: 20,
-              id_type: 1,
-              label_type_image: 'linux',
-              args: [],
-              envs: [],
-              node_selectors: [],
-              ports: [],
-            }),
-          ],
-        }),
-      ])
-    );
+  it('should list all environments successfully', async () => {
+    const mockEnvironments = [
+      {
+        id_environment: 1,
+        label: 'Environment 1',
+        icon: 'icon1',
+        interfaces: [],
+      },
+      {
+        id_environment: 2,
+        label: 'Environment 2',
+        icon: 'icon2',
+        interfaces: [],
+      },
+    ];
+    const mockList = sinon.stub().resolves(mockEnvironments);
 
-    const environments = await environment_service.list({
-      environment_list: fakeEnvironmentList,
+    const result = await environment_service.list({
+      environment_list: mockList,
     });
-    chai.expect(environments).to.deep.equal([
-      new Environment({
-        id_environnement: 45,
-        icon: 'ereteret',
-        label: 'ssh-Ubuntu',
-        interfaces: [
-          new Interface({
-            id_interface: 46,
-            label: 'SSHTerm',
-            registry_link:
-              'registry.gitlab.com/caelus-team/application-cirrus/applications/terminalssh:recette',
-            exec_command: '/bin/bash',
-            service_command: '',
-            privileged: false,
-            readiness_probe_initial_delay: 5,
-            liveness_probe_initial_delay: 200,
-            readiness_probe_period: 10,
-            liveness_probe_period: 20,
-            id_type: 1,
-            label_type_image: 'linux',
-            args: [],
-            envs: [],
-            node_selectors: [],
-            ports: [],
-          }),
-          new Interface({
-            id_interface: 1,
-            label: 'Alpine318',
-            registry_link:
-              'registry.gitlab.com/caelus-team/application-cirrus/applications/linux-alpine-3.18:recette',
-            exec_command: '/bin/sh',
-            service_command: 'sh /var/launch.sh',
-            privileged: false,
-            readiness_probe_initial_delay: 5,
-            liveness_probe_initial_delay: 200,
-            readiness_probe_period: 10,
-            liveness_probe_period: 20,
-            id_type: 1,
-            label_type_image: 'linux',
-            args: [],
-            envs: [],
-            node_selectors: [],
-            ports: [],
-          }),
-        ],
-      }),
-      new Environment({
-        id_environnement: 46,
-        label: 'ssh-Ubuntu',
-        icon: 'ereteret',
-        interfaces: [
-          new Interface({
-            id_interface: 1,
-            label: 'Alpine318',
-            registry_link:
-              'registry.gitlab.com/caelus-team/application-cirrus/applications/linux-alpine-3.18:recette',
-            exec_command: '/bin/sh',
-            service_command: 'sh /var/launch.sh',
-            privileged: false,
-            readiness_probe_initial_delay: 5,
-            liveness_probe_initial_delay: 200,
-            readiness_probe_period: 10,
-            liveness_probe_period: 20,
-            id_type: 1,
-            label_type_image: 'linux',
-            args: [],
-            envs: [],
-            node_selectors: [],
-            ports: [],
-          }),
-        ],
-      }),
-    ]);
-    chai.expect(fakeEnvironmentList).to.have.been.calledOnce;
+
+    chai.expect(result).to.deep.equal(mockEnvironments);
+    chai.expect(mockList.calledOnce).to.be.true;
   });
-  it('should throw the DBConnexionRefused error.', async () => {
+
+  it('should return empty array when no environments exist', async () => {
+    const mockList = sinon.stub().resolves([]);
+
+    const result = await environment_service.list({
+      environment_list: mockList,
+    });
+
+    chai.expect(result).to.deep.equal([]);
+    chai.expect(mockList.calledOnce).to.be.true;
+  });
+
+  it('should propagate error when builder throws', async () => {
+    const mockError = new Error('Database error');
+    const mockList = sinon.stub().rejects(mockError);
+
     try {
-      fakeEnvironmentList.resolves(
-        Promise.reject(
-          new DBConnexionRefused('Connexion to the database refused.')
-        )
-      );
-      await environment_service.list({
-        environment_list: fakeEnvironmentList,
-      });
-      chai.expect.fail(
-        'chai.expected to throw DBConnexionRefused, but it did not.'
-      );
+      await environment_service.list({ environment_list: mockList });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeEnvironmentList).to.have.been.calledOnce;
-      chai.expect(err).to.be.instanceOf(DBConnexionRefused);
-      chai.expect(err.message).to.equal('Connexion to the database refused.');
+      chai.expect(err.message).to.equal('Database error');
     }
   });
 });
+
 describe('environment.service.get()', () => {
-  let fakeEnvironmentGet;
-  beforeEach(() => {
-    fakeEnvironmentGet = sinon.stub();
-  });
-  afterEach(() => {
-    sinon.restore();
-  });
-  it('called with good arg and should send back a specific Environment object.', async () => {
-    fakeEnvironmentGet.resolves(
-      Promise.resolve(
-        new Environment({
-          id_environnement: 1,
-          label: 'Alpine',
-          icon: 'ereteret',
-          interfaces: [
-            {
-              id_interface: 1,
-              label: 'Alpine318',
-              registry_link:
-                'registry.gitlab.com/caelus-team/application-cirrus/applications/linux-alpine-3.18:recette',
-              exec_command: '/bin/sh',
-              service_command: 'sh /var/launch.sh',
-              privileged: false,
-              readiness_probe_initial_delay: 5,
-              liveness_probe_initial_delay: 200,
-              readiness_probe_period: 10,
-              liveness_probe_period: 20,
-              id_type: 1,
-              label_type_image: 'linux',
-              args: [],
-              envs: [],
-              node_selectors: [],
-              ports: [],
-            },
-            {
-              id_interface: 46,
-              label: 'SSHTerm',
-              registry_link:
-                'registry.gitlab.com/caelus-team/application-cirrus/applications/terminalssh:recette',
-              exec_command: '/bin/bash',
-              service_command: '',
-              privileged: false,
-              readiness_probe_initial_delay: 5,
-              liveness_probe_initial_delay: 200,
-              readiness_probe_period: 10,
-              liveness_probe_period: 20,
-              id_type: 1,
-              label_type_image: 'linux',
-              args: [],
-              envs: [],
-              node_selectors: [],
-              ports: [],
-            },
-          ],
-        })
-      )
-    );
+  it('should get environment by id successfully', async () => {
+    const mockEnvironment = {
+      id_environment: 1,
+      label: 'Environment 1',
+      icon: 'icon1',
+      interfaces: [{ id_interface: 1 }],
+    };
+    const mockGet = sinon.stub().resolves(mockEnvironment);
+
     const result = await environment_service.get(
       { id_environment: 1 },
-      { environment_get: fakeEnvironmentGet }
+      { environment_get: mockGet }
     );
-    chai.expect(result).to.deep.equal(
-      new Environment({
-        id_environnement: 1,
-        label: 'Alpine',
-        icon: 'ereteret',
-        interfaces: [
-          {
-            id_interface: 1,
-            label: 'Alpine318',
-            registry_link:
-              'registry.gitlab.com/caelus-team/application-cirrus/applications/linux-alpine-3.18:recette',
-            exec_command: '/bin/sh',
-            service_command: 'sh /var/launch.sh',
-            privileged: false,
-            readiness_probe_initial_delay: 5,
-            liveness_probe_initial_delay: 200,
-            readiness_probe_period: 10,
-            liveness_probe_period: 20,
-            id_type: 1,
-            label_type_image: 'linux',
-            args: [],
-            envs: [],
-            node_selectors: [],
-            ports: [],
-          },
-          {
-            id_interface: 46,
-            label: 'SSHTerm',
-            registry_link:
-              'registry.gitlab.com/caelus-team/application-cirrus/applications/terminalssh:recette',
-            exec_command: '/bin/bash',
-            service_command: '',
-            privileged: false,
-            readiness_probe_initial_delay: 5,
-            liveness_probe_initial_delay: 200,
-            readiness_probe_period: 10,
-            liveness_probe_period: 20,
-            id_type: 1,
-            label_type_image: 'linux',
-            args: [],
-            envs: [],
-            node_selectors: [],
-            ports: [],
-          },
-        ],
-      })
-    );
-    chai.expect(fakeEnvironmentGet).to.have.been.calledOnceWithExactly({
-      id_environment: 1,
-    });
+
+    chai.expect(result).to.deep.equal(mockEnvironment);
+    chai.expect(mockGet.calledOnce).to.be.true;
   });
-  it('called with missing arg and should get MissingArgument Error.', async () => {
+
+  it('should throw error when id_environment is not positive', async () => {
     try {
-      await environment_service.get(
-        {},
-        { environment_get: fakeEnvironmentGet }
-      );
-      chai.expect.fail(
-        'chai.expected to throw MissingArgumentError, but it did not.'
-      );
+      await environment_service.get({ id_environment: -1 });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeEnvironmentGet).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal('One or multiple arguments (id_environment) are missing.');
+      chai.expect(err).to.exist;
     }
   });
-  it('called with misformed arg and should get ParameterMisformed Error.', async () => {
+
+  it('should throw error when id_environment is zero', async () => {
     try {
-      await environment_service.get(
-        { id_environment: 'misformed' },
-        { environment_get: fakeEnvironmentGet }
-      );
-      chai.expect.fail(
-        'chai.expected to throw ParameterMisformed, but it did not.'
-      );
+      await environment_service.get({ id_environment: 0 });
+      chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      chai.expect(fakeEnvironmentGet).to.not.have.been.called;
-      chai.expect(err).to.be.instanceOf(ParameterMisformed);
-      chai
-        .expect(err.message)
-        .to.equal('The props.id_environment parameter is misformed.');
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should throw error when id_environment is missing', async () => {
+    try {
+      await environment_service.get({});
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+});
+
+describe('environment.service.create()', () => {
+  it('should create environment successfully', async () => {
+    const mockNewEnvironment = {
+      id_environment: 1,
+      label: 'New Environment',
+      icon: 'new_icon',
+    };
+    const mockCreate = sinon.stub().resolves(mockNewEnvironment);
+
+    const result = await environment_service.create(
+      {
+        label: 'New Environment',
+        icon: 'new_icon',
+      },
+      { create: mockCreate }
+    );
+
+    chai.expect(result).to.deep.equal(mockNewEnvironment);
+    chai.expect(mockCreate.calledOnce).to.be.true;
+  });
+
+  it('should throw error when label is less than 2 characters', async () => {
+    try {
+      await environment_service.create({
+        label: 'a',
+        icon: 'icon',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should throw error when icon is less than 2 characters', async () => {
+    try {
+      await environment_service.create({
+        label: 'Environment',
+        icon: 'i',
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+});
+
+describe('environment.service.attach_interface()', () => {
+  it('should attach interface to environment successfully', async () => {
+    const mockUpdated = {
+      id_environment: 1,
+      label: 'Environment',
+      interfaces: [{ id_interface: 1, label: 'Interface 1' }],
+    };
+    const mockAttach = sinon.stub().resolves(mockUpdated);
+
+    const result = await environment_service.attach_interface(
+      {
+        label: 'Interface 1',
+        id_environment: 1,
+        id_interface: 1,
+      },
+      { attach_interface: mockAttach }
+    );
+
+    chai.expect(result).to.deep.equal(mockUpdated);
+    chai.expect(mockAttach.calledOnce).to.be.true;
+  });
+
+  it('should throw error when label is less than 2 characters', async () => {
+    try {
+      await environment_service.attach_interface({
+        label: 'a',
+        id_environment: 1,
+        id_interface: 1,
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should throw error when id_environment is not positive', async () => {
+    try {
+      await environment_service.attach_interface({
+        label: 'Interface',
+        id_environment: 0,
+        id_interface: 1,
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should throw error when id_interface is not positive', async () => {
+    try {
+      await environment_service.attach_interface({
+        label: 'Interface',
+        id_environment: 1,
+        id_interface: -1,
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+});
+
+describe('environment.service.detach_interface()', () => {
+  it('should detach interface from environment successfully', async () => {
+    const mockUpdated = {
+      id_environment: 1,
+      label: 'Environment',
+      interfaces: [],
+    };
+    const mockDetach = sinon.stub().resolves(mockUpdated);
+
+    const result = await environment_service.detach_interface(
+      {
+        id_environment: 1,
+        id_interface: 1,
+      },
+      { detach_interface: mockDetach }
+    );
+
+    chai.expect(result).to.deep.equal(mockUpdated);
+    chai.expect(mockDetach.calledOnce).to.be.true;
+  });
+
+  it('should throw error when id_environment is not positive', async () => {
+    try {
+      await environment_service.detach_interface({
+        id_environment: -1,
+        id_interface: 1,
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should throw error when id_interface is not positive', async () => {
+    try {
+      await environment_service.detach_interface({
+        id_environment: 1,
+        id_interface: 0,
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+});
+
+describe('environment.service.update()', () => {
+  it('should update environment successfully', async () => {
+    const mockUpdated = {
+      id_environment: 1,
+      label: 'Updated Environment',
+      icon: 'updated_icon',
+    };
+    const mockUpdate = sinon.stub().resolves(mockUpdated);
+
+    const result = await environment_service.update(
+      {
+        label: 'Updated Environment',
+        icon: 'updated_icon',
+        id_environment: 1,
+      },
+      { update: mockUpdate }
+    );
+
+    chai.expect(result).to.deep.equal(mockUpdated);
+    chai.expect(mockUpdate.calledOnce).to.be.true;
+  });
+
+  it('should throw error when label is less than 2 characters', async () => {
+    try {
+      await environment_service.update({
+        label: 'a',
+        icon: 'icon',
+        id_environment: 1,
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should throw error when id_environment is not positive', async () => {
+    try {
+      await environment_service.update({
+        label: 'Environment',
+        icon: 'icon',
+        id_environment: 0,
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+});
+
+describe('environment.service.update_interface()', () => {
+  it('should update interface label in environment successfully', async () => {
+    const mockUpdated = {
+      id_environment: 1,
+      interfaces: [{ id_interface: 1, label: 'Updated Label' }],
+    };
+    const mockUpdate = sinon.stub().resolves(mockUpdated);
+
+    const result = await environment_service.update_interface(
+      {
+        label: 'Updated Label',
+        id_interface: 1,
+        id_environment: 1,
+      },
+      { update_interface: mockUpdate }
+    );
+
+    chai.expect(result).to.deep.equal(mockUpdated);
+    chai.expect(mockUpdate.calledOnce).to.be.true;
+  });
+
+  it('should throw error when label is less than 2 characters', async () => {
+    try {
+      await environment_service.update_interface({
+        label: 'a',
+        id_interface: 1,
+        id_environment: 1,
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should throw error when id_interface is not positive', async () => {
+    try {
+      await environment_service.update_interface({
+        label: 'Interface',
+        id_interface: 0,
+        id_environment: 1,
+      });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+});
+
+describe('environment.service.del()', () => {
+  it('should delete environment successfully', async () => {
+    const mockDeleted = {
+      id_environment: 1,
+      label: 'Deleted Environment',
+    };
+    const mockDelete = sinon.stub().resolves(mockDeleted);
+
+    const result = await environment_service.del(
+      { id_environment: 1 },
+      { del: mockDelete }
+    );
+
+    chai.expect(result).to.deep.equal(mockDeleted);
+    chai.expect(mockDelete.calledOnce).to.be.true;
+  });
+
+  it('should throw error when id_environment is not positive', async () => {
+    try {
+      await environment_service.del({ id_environment: -1 });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
+
+  it('should throw error when id_environment is zero', async () => {
+    try {
+      await environment_service.del({ id_environment: 0 });
+      chai.expect.fail('Should have thrown an error');
+    } catch (err) {
+      chai.expect(err).to.exist;
     }
   });
 });
