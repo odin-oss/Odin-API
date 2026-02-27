@@ -32,7 +32,8 @@ describe('configmap.create()', () => {
       { fetch: fetchStub, readFile: readFileStub }
     );
 
-    chai.expect(readFileStub.calledOnceWith('/tmp/file.txt', 'utf8')).to.be.true;
+    chai.expect(readFileStub.calledOnceWith('/tmp/file.txt', 'utf8')).to.be
+      .true;
     chai.expect(fetchStub.calledOnce).to.be.true;
     chai.expect(fetchStub.args[0][0]).to.deep.equal({
       url: '/api/v1/namespaces/nabcdef/configmaps',
@@ -99,7 +100,8 @@ describe('configmap.update()', () => {
       { fetch: fetchStub, readFile: readFileStub }
     );
 
-    chai.expect(readFileStub.calledOnceWith('/tmp/file.txt', 'utf8')).to.be.true;
+    chai.expect(readFileStub.calledOnceWith('/tmp/file.txt', 'utf8')).to.be
+      .true;
     chai.expect(fetchStub.calledOnce).to.be.true;
     chai.expect(fetchStub.args[0][0]).to.deep.equal({
       url: '/api/v1/namespaces/nabcdef/configmaps/cm-name',

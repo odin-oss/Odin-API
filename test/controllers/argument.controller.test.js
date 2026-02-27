@@ -106,9 +106,9 @@ describe('argument_controller.list()', () => {
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(500);
     const jsonCall = fakeRes.json.firstCall.args[0];
     chai.expect(jsonCall.success).to.equal(false);
-    chai.expect(jsonCall.message).to.equal(
-      'Connexion to the database refused.'
-    );
+    chai
+      .expect(jsonCall.message)
+      .to.equal('Connexion to the database refused.');
     chai.expect(jsonCall.error.type).to.equal('DBConnexionRefused');
   });
 

@@ -9,9 +9,7 @@ import {
   counter_post,
 } from '../middlewares/prometheus.js';
 import CONFIG from '../config/config.js';
-import {
-  MissingArgumentError
-} from '../utils/errors.util.js';
+import { MissingArgumentError } from '../utils/errors.util.js';
 import { ApiResponse } from '../utils/response.util.js';
 import Guard from '../utils/guard.util.js';
 import logs from '../middlewares/winston.js';
@@ -194,10 +192,11 @@ export const deletion = async (
   try {
     const schema = z.object({
       id_application: z.coerce.number().int().positive(),
-      backup_storage: z.preprocess((val) => String(val).toLocaleLowerCase(), z.string())
-          .transform((val) => val === 'true')
-          .default(true),
-    })
+      backup_storage: z
+        .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
+        .transform((val) => val === 'true')
+        .default(true),
+    });
     const data = Guard.validateProps(schema, req.query);
     await fns
       .application_delete(data)

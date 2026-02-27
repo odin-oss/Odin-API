@@ -30,8 +30,8 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const applicationRoute = calls.find((call) =>
-        call.args[0] === '/application'
+      const applicationRoute = calls.find(
+        (call) => call.args[0] === '/application'
       );
       expect(applicationRoute).to.exist;
     });
@@ -44,8 +44,8 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const storageRoute = calls.find((call) =>
-        call.args[0] === '/application/storage'
+      const storageRoute = calls.find(
+        (call) => call.args[0] === '/application/storage'
       );
       expect(storageRoute).to.exist;
     });
@@ -58,9 +58,7 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const argumentRoute = calls.find((call) =>
-        call.args[0] === '/argument'
-      );
+      const argumentRoute = calls.find((call) => call.args[0] === '/argument');
       expect(argumentRoute).to.exist;
     });
 
@@ -72,9 +70,7 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const authRoute = calls.find((call) =>
-        call.args[0] === '/auth'
-      );
+      const authRoute = calls.find((call) => call.args[0] === '/auth');
       expect(authRoute).to.exist;
     });
 
@@ -86,9 +82,7 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const categoryRoute = calls.find((call) =>
-        call.args[0] === '/category'
-      );
+      const categoryRoute = calls.find((call) => call.args[0] === '/category');
       expect(categoryRoute).to.exist;
     });
 
@@ -100,8 +94,8 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const datacenterRoute = calls.find((call) =>
-        call.args[0] === '/datacenter'
+      const datacenterRoute = calls.find(
+        (call) => call.args[0] === '/datacenter'
       );
       expect(datacenterRoute).to.exist;
     });
@@ -114,8 +108,8 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const environmentRoute = calls.find((call) =>
-        call.args[0] === '/environment'
+      const environmentRoute = calls.find(
+        (call) => call.args[0] === '/environment'
       );
       expect(environmentRoute).to.exist;
     });
@@ -128,8 +122,8 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const imageTypeRoute = calls.find((call) =>
-        call.args[0] === '/imageType'
+      const imageTypeRoute = calls.find(
+        (call) => call.args[0] === '/imageType'
       );
       expect(imageTypeRoute).to.exist;
     });
@@ -142,9 +136,7 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const imgRoute = calls.find((call) =>
-        call.args[0] === '/img'
-      );
+      const imgRoute = calls.find((call) => call.args[0] === '/img');
       expect(imgRoute).to.exist;
     });
 
@@ -156,8 +148,8 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const interfaceRoute = calls.find((call) =>
-        call.args[0] === '/interface'
+      const interfaceRoute = calls.find(
+        (call) => call.args[0] === '/interface'
       );
       expect(interfaceRoute).to.exist;
     });
@@ -170,8 +162,8 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const nodeSelectorRoute = calls.find((call) =>
-        call.args[0] === '/nodeSelector'
+      const nodeSelectorRoute = calls.find(
+        (call) => call.args[0] === '/nodeSelector'
       );
       expect(nodeSelectorRoute).to.exist;
     });
@@ -184,9 +176,7 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const portTypeRoute = calls.find((call) =>
-        call.args[0] === '/portType'
-      );
+      const portTypeRoute = calls.find((call) => call.args[0] === '/portType');
       expect(portTypeRoute).to.exist;
     });
 
@@ -198,9 +188,7 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const sessionRoute = calls.find((call) =>
-        call.args[0] === '/session'
-      );
+      const sessionRoute = calls.find((call) => call.args[0] === '/session');
       expect(sessionRoute).to.exist;
     });
 
@@ -212,9 +200,7 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const userRoute = calls.find((call) =>
-        call.args[0] === '/user'
-      );
+      const userRoute = calls.find((call) => call.args[0] === '/user');
       expect(userRoute).to.exist;
     });
 
@@ -226,8 +212,8 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const variableEnvironmentRoute = calls.find((call) =>
-        call.args[0] === '/variableEnvironment'
+      const variableEnvironmentRoute = calls.find(
+        (call) => call.args[0] === '/variableEnvironment'
       );
       expect(variableEnvironmentRoute).to.exist;
     });
@@ -240,9 +226,7 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const rootRoute = calls.find((call) =>
-        call.args[0] === '/'
-      );
+      const rootRoute = calls.find((call) => call.args[0] === '/');
       expect(rootRoute).to.exist;
     });
 
@@ -254,9 +238,7 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const wildcardRoute = calls.find((call) =>
-        call.args[0] === '/*'
-      );
+      const wildcardRoute = calls.find((call) => call.args[0] === '/*');
       expect(wildcardRoute).to.exist;
     });
 
@@ -322,9 +304,9 @@ describe('router.module', () => {
 
       routerModule(mockApp);
 
-      const wildcardCall = mockApp.use.getCalls().find((call) =>
-        call.args[0] === '/*'
-      );
+      const wildcardCall = mockApp.use
+        .getCalls()
+        .find((call) => call.args[0] === '/*');
 
       expect(wildcardCall).to.exist;
       expect(wildcardCall.args[1]).to.be.a('function');
@@ -348,11 +330,9 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const baseRouteIndex = calls.findIndex((call) =>
-        call.args[0] === '/'
-      );
-      const wildcardRouteIndex = calls.findIndex((call) =>
-        call.args[0] === '/*'
+      const baseRouteIndex = calls.findIndex((call) => call.args[0] === '/');
+      const wildcardRouteIndex = calls.findIndex(
+        (call) => call.args[0] === '/*'
       );
 
       expect(baseRouteIndex).to.be.lessThan(wildcardRouteIndex);
@@ -366,11 +346,11 @@ describe('router.module', () => {
       routerModule(mockApp);
 
       const calls = mockApp.use.getCalls();
-      const applicationIndex = calls.findIndex((call) =>
-        call.args[0] === '/application'
+      const applicationIndex = calls.findIndex(
+        (call) => call.args[0] === '/application'
       );
-      const storageIndex = calls.findIndex((call) =>
-        call.args[0] === '/application/storage'
+      const storageIndex = calls.findIndex(
+        (call) => call.args[0] === '/application/storage'
       );
 
       // In the implementation, /application is registered first,

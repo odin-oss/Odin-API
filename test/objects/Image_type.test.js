@@ -59,39 +59,47 @@ describe('ImageType object', () => {
     });
 
     it('should reject id_type as 0 (non-positive)', () => {
-      chai.expect(() => {
-        new ImageType({
-          id_type: 0,
-          label: 'docker',
-        });
-      }).to.throw();
+      chai
+        .expect(() => {
+          new ImageType({
+            id_type: 0,
+            label: 'docker',
+          });
+        })
+        .to.throw();
     });
 
     it('should reject negative id_type', () => {
-      chai.expect(() => {
-        new ImageType({
-          id_type: -1,
-          label: 'docker',
-        });
-      }).to.throw();
+      chai
+        .expect(() => {
+          new ImageType({
+            id_type: -1,
+            label: 'docker',
+          });
+        })
+        .to.throw();
     });
 
     it('should reject non-numeric id_type', () => {
-      chai.expect(() => {
-        new ImageType({
-          id_type: 'invalid',
-          label: 'docker',
-        });
-      }).to.throw();
+      chai
+        .expect(() => {
+          new ImageType({
+            id_type: 'invalid',
+            label: 'docker',
+          });
+        })
+        .to.throw();
     });
 
     it('should reject label shorter than 2 characters', () => {
-      chai.expect(() => {
-        new ImageType({
-          id_type: 1,
-          label: 'a',
-        });
-      }).to.throw();
+      chai
+        .expect(() => {
+          new ImageType({
+            id_type: 1,
+            label: 'a',
+          });
+        })
+        .to.throw();
     });
 
     it('should accept label with exactly 2 characters', () => {
@@ -105,12 +113,14 @@ describe('ImageType object', () => {
 
     it('should reject label longer than 255 characters', () => {
       const longLabel = 'a'.repeat(256);
-      chai.expect(() => {
-        new ImageType({
-          id_type: 1,
-          label: longLabel,
-        });
-      }).to.throw();
+      chai
+        .expect(() => {
+          new ImageType({
+            id_type: 1,
+            label: longLabel,
+          });
+        })
+        .to.throw();
     });
 
     it('should accept label with exactly 255 characters', () => {
@@ -124,11 +134,13 @@ describe('ImageType object', () => {
     });
 
     it('should reject missing id_type', () => {
-      chai.expect(() => {
-        new ImageType({
-          label: 'docker',
-        });
-      }).to.throw();
+      chai
+        .expect(() => {
+          new ImageType({
+            label: 'docker',
+          });
+        })
+        .to.throw();
     });
 
     it('should convert undefined label to string during preprocessing', () => {
@@ -142,12 +154,14 @@ describe('ImageType object', () => {
     });
 
     it('should reject null id_type', () => {
-      chai.expect(() => {
-        new ImageType({
-          id_type: null,
-          label: 'docker',
-        });
-      }).to.throw();
+      chai
+        .expect(() => {
+          new ImageType({
+            id_type: null,
+            label: 'docker',
+          });
+        })
+        .to.throw();
     });
 
     it('should convert null label to string during preprocessing', () => {
@@ -161,12 +175,14 @@ describe('ImageType object', () => {
     });
 
     it('should reject undefined id_type', () => {
-      chai.expect(() => {
-        new ImageType({
-          id_type: undefined,
-          label: 'docker',
-        });
-      }).to.throw();
+      chai
+        .expect(() => {
+          new ImageType({
+            id_type: undefined,
+            label: 'docker',
+          });
+        })
+        .to.throw();
     });
 
     it('should convert completely missing label to undefined string during preprocessing', () => {
@@ -180,12 +196,14 @@ describe('ImageType object', () => {
     });
 
     it('should reject label with only special characters', () => {
-      chai.expect(() => {
-        new ImageType({
-          id_type: 1,
-          label: '@#$%^&*()',
-        });
-      }).to.throw();
+      chai
+        .expect(() => {
+          new ImageType({
+            id_type: 1,
+            label: '@#$%^&*()',
+          });
+        })
+        .to.throw();
     });
 
     it('should handle label with mixed case and special characters', () => {

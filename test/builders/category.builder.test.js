@@ -127,7 +127,7 @@ describe('category.builder.list()', () => {
             icon: 'icon-prod',
           },
         },
-      }
+      },
     ]);
 
     const result = await category_builder.list({ all: false });
@@ -169,7 +169,7 @@ describe('category.builder.list()', () => {
             icon: 'icon-dev',
           },
         },
-      }
+      },
     ]);
 
     const result = await category_builder.list({ all: false });
@@ -228,7 +228,7 @@ describe('category.builder.list()', () => {
             icon: 'icon-staging',
           },
         },
-      }
+      },
     ]);
 
     const result = await category_builder.list({ all: false });
@@ -254,7 +254,6 @@ describe('category.builder.list()', () => {
             id_environment: 1,
             label: 'Prod',
             icon: 'icon-prod',
-            
           },
         },
       },
@@ -273,7 +272,7 @@ describe('category.builder.list()', () => {
             icon: 'icon-dev',
           },
         },
-      }
+      },
     ]);
 
     const result = await category_builder.list({ all: false });
@@ -598,8 +597,8 @@ describe('category.builder.attach_environment()', () => {
       { get: mockGetFn }
     );
 
-    chai.expect(mockGetFn.calledWith({ id_category: 1, id_environment: 1 }))
-      .to.be.true;
+    chai.expect(mockGetFn.calledWith({ id_category: 1, id_environment: 1 })).to
+      .be.true;
   });
 });
 
@@ -707,8 +706,8 @@ describe('category.builder.detach_environment()', () => {
       { get: mockGetFn }
     );
 
-    chai.expect(mockGetFn.calledWith({ id_category: 1, id_environment: 1 }))
-      .to.be.true;
+    chai.expect(mockGetFn.calledWith({ id_category: 1, id_environment: 1 })).to
+      .be.true;
   });
 });
 

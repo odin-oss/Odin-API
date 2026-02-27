@@ -37,9 +37,7 @@ describe('image_type.builder.list()', () => {
   });
 
   it('should correctly map database results to ImageType properties', async () => {
-    findAllStub.resolves([
-      { id_type: 1, label: 'docker' },
-    ]);
+    findAllStub.resolves([{ id_type: 1, label: 'docker' }]);
 
     const result = await image_type_builder.list();
 
@@ -97,9 +95,7 @@ describe('image_type.builder.list()', () => {
   });
 
   it('should call findAll exactly once', async () => {
-    findAllStub.resolves([
-      { id_type: 1, label: 'docker' },
-    ]);
+    findAllStub.resolves([{ id_type: 1, label: 'docker' }]);
 
     await image_type_builder.list();
 
@@ -107,9 +103,7 @@ describe('image_type.builder.list()', () => {
   });
 
   it('should preserve ImageType data integrity through mapping', async () => {
-    const mockData = [
-      { id_type: 5, label: 'containerruntime' },
-    ];
+    const mockData = [{ id_type: 5, label: 'containerruntime' }];
     findAllStub.resolves(mockData);
 
     const result = await image_type_builder.list();

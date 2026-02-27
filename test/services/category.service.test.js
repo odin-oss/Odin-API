@@ -26,7 +26,11 @@ describe('category.service.list()', () => {
     const mockCategories = [
       { id_category: 1, label: 'Category 1', google_material_icon: 'icon1' },
       { id_category: 2, label: 'Category 2', google_material_icon: 'icon2' },
-      { id_category: 3, label: 'Hidden Category', google_material_icon: 'icon3' },
+      {
+        id_category: 3,
+        label: 'Hidden Category',
+        google_material_icon: 'icon3',
+      },
     ];
     const mockCategoryList = sinon.stub().resolves(mockCategories);
 

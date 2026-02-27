@@ -54,9 +54,11 @@ describe('Error Classes - HTTP 4xx Status Codes', () => {
     });
 
     it('should be throwable', () => {
-      chai.expect(() => {
-        throw new URLNotFound('Resource not found');
-      }).to.throw(URLNotFound);
+      chai
+        .expect(() => {
+          throw new URLNotFound('Resource not found');
+        })
+        .to.throw(URLNotFound);
     });
   });
 
@@ -264,9 +266,7 @@ describe('Error Classes - HTTP 5xx Status Codes', () => {
 
   describe('KubernetesAPINotResponding', () => {
     it('should create an error with code 500', () => {
-      const error = new KubernetesAPINotResponding(
-        'Kubernetes API timeout'
-      );
+      const error = new KubernetesAPINotResponding('Kubernetes API timeout');
 
       chai.expect(error.code).to.equal(500);
       chai.expect(error.name).to.equal('KubernetesAPINotResponding');
@@ -304,9 +304,7 @@ describe('Error Classes - HTTP 5xx Status Codes', () => {
 
   describe('KubernetesAPIx509Certificate', () => {
     it('should create an error with code 500', () => {
-      const error = new KubernetesAPIx509Certificate(
-        'x509 certificate error'
-      );
+      const error = new KubernetesAPIx509Certificate('x509 certificate error');
 
       chai.expect(error.code).to.equal(500);
       chai.expect(error.name).to.equal('KubernetesAPIx509Certificate');
@@ -361,7 +359,9 @@ describe('Error Classes - HTTP 5xx Status Codes', () => {
 describe('Error Classes - Custom Status Codes', () => {
   describe('PasswordIsTooShort', () => {
     it('should create an error with code 401', () => {
-      const error = new PasswordIsTooShort('Password must be at least 8 characters');
+      const error = new PasswordIsTooShort(
+        'Password must be at least 8 characters'
+      );
 
       chai.expect(error.code).to.equal(401);
       chai.expect(error.name).to.equal('PasswordIsTooShort');
@@ -370,9 +370,7 @@ describe('Error Classes - Custom Status Codes', () => {
 
   describe('PasswordMissingNumber', () => {
     it('should create an error with code 401', () => {
-      const error = new PasswordMissingNumber(
-        'Password must contain a number'
-      );
+      const error = new PasswordMissingNumber('Password must contain a number');
 
       chai.expect(error.code).to.equal(401);
       chai.expect(error.name).to.equal('PasswordMissingNumber');

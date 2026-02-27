@@ -7,14 +7,18 @@ import * as application_builder from '../../src/builders/applications.builder.js
 import { Application } from '../../src/objects/Application.js';
 import { Environment } from '../../src/objects/Environment.js';
 import CONFIG from '../../src/config/config.js';
-import { DBObjectNotFound, MissingArgumentError, ParameterMisformed } from '../../src/utils/errors.util.js';
+import {
+  DBObjectNotFound,
+  MissingArgumentError,
+  ParameterMisformed,
+} from '../../src/utils/errors.util.js';
 chai.use(sinonChai);
 
 describe('applications.builder.get()', () => {
   let findOneStub;
 
   before(async () => {
-    await dbManager.initModels(); 
+    await dbManager.initModels();
   });
 
   beforeEach(() => {
@@ -275,9 +279,7 @@ describe('applications.builder.get()', () => {
       chai.expect(err).to.be.instanceOf(MissingArgumentError);
       chai
         .expect(err.message)
-        .to.equal(
-          'Either id_application, key, hash must be sent.'
-        );
+        .to.equal('Either id_application, key, hash must be sent.');
     }
   });
   it('called with misformed argument and should reject with an error.', async () => {
@@ -290,9 +292,7 @@ describe('applications.builder.get()', () => {
     } catch (err) {
       chai.expect(findOneStub).to.have.not.been.called;
       chai.expect(err).to.be.instanceOf(MissingArgumentError);
-      chai
-        .expect(err.message)
-        .to.equal('Missing arguments: id_application');
+      chai.expect(err.message).to.equal('Missing arguments: id_application');
     }
   });
   it('called with good hash and should return application data.', async () => {
@@ -587,7 +587,9 @@ describe('applications.builder.nameExists()', () => {
   it('called with existing name and should return true.', async () => {
     findOneStub.resolves({ generated_label: 'existing-app' });
 
-    const result = await application_builder.nameExists({ name: 'existing-app' });
+    const result = await application_builder.nameExists({
+      name: 'existing-app',
+    });
 
     chai.expect(findOneStub.calledOnce).to.be.true;
     chai.expect(result).to.be.true;
@@ -671,7 +673,9 @@ describe('applications.builder.renew_expiration()', () => {
 
     chai.expect(findOneStub.calledOnce).to.be.true;
     chai.expect(updateStub.calledOnce).to.be.true;
-    chai.expect(result).to.equal('The application expiration have been renewed.');
+    chai
+      .expect(result)
+      .to.equal('The application expiration have been renewed.');
   });
 
   it('called with non-existing application and should throw error.', async () => {
@@ -1096,7 +1100,6 @@ describe('applications.builder.update_application_export_state()', () => {
   });
 
   it('called with invalid state and should throw error.', async () => {
-
     try {
       await application_builder.update_application_export_state({
         id_export: 1,
@@ -1105,7 +1108,7 @@ describe('applications.builder.update_application_export_state()', () => {
       });
       chai.expect.fail('Should have thrown an error');
     } catch (err) {
-      console.log(err)
+      console.log(err);
       chai.expect(err).to.be.instanceOf(ParameterMisformed);
     }
   });

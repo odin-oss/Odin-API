@@ -6,7 +6,10 @@ import {
   parsingK8SObjects,
   attribute_state,
 } from '../../src/utils/parsing.util.js';
-import { MissingArgumentError, ParameterMisformed } from '../../src/utils/errors.util.js';
+import {
+  MissingArgumentError,
+  ParameterMisformed,
+} from '../../src/utils/errors.util.js';
 
 chai.use(sinonChai);
 
@@ -180,9 +183,7 @@ describe('parsing_generic_tags()', () => {
 
     const result = parsing_generic_tags(value, custom_values);
 
-    chai.expect(result).to.equal(
-      'User alice on server-01 with hash def456'
-    );
+    chai.expect(result).to.equal('User alice on server-01 with hash def456');
   });
 
   it('should throw MissingArgumentError when username is missing', () => {
@@ -550,7 +551,9 @@ describe('parsingK8SObjects()', () => {
       ],
     };
 
-    const result = JSON.parse(parsingK8SObjects(props, { get_state: mockGetState }));
+    const result = JSON.parse(
+      parsingK8SObjects(props, { get_state: mockGetState })
+    );
 
     chai.expect(result.state).to.equal('Error');
   });
@@ -571,7 +574,9 @@ describe('parsingK8SObjects()', () => {
       ],
     };
 
-    const result = JSON.parse(parsingK8SObjects(props, { get_state: mockGetState }));
+    const result = JSON.parse(
+      parsingK8SObjects(props, { get_state: mockGetState })
+    );
 
     chai.expect(result.state).to.equal('Deleted');
   });
@@ -592,7 +597,9 @@ describe('parsingK8SObjects()', () => {
       ],
     };
 
-    const result = JSON.parse(parsingK8SObjects(props, { get_state: mockGetState }));
+    const result = JSON.parse(
+      parsingK8SObjects(props, { get_state: mockGetState })
+    );
 
     chai.expect(result.state).to.equal('Off');
   });
@@ -600,7 +607,9 @@ describe('parsingK8SObjects()', () => {
   it('should return Getting ready when any item has Getting ready state', () => {
     const mockGetState = sinon.stub();
     mockGetState.withArgs(sinon.match({ kind: 'Service' })).returns('Ready');
-    mockGetState.withArgs(sinon.match({ kind: 'Pod' })).returns('Getting ready');
+    mockGetState
+      .withArgs(sinon.match({ kind: 'Pod' }))
+      .returns('Getting ready');
 
     const props = {
       hash: 'grd001',
@@ -620,7 +629,9 @@ describe('parsingK8SObjects()', () => {
       ],
     };
 
-    const result = JSON.parse(parsingK8SObjects(props, { get_state: mockGetState }));
+    const result = JSON.parse(
+      parsingK8SObjects(props, { get_state: mockGetState })
+    );
 
     chai.expect(result.state).to.equal('Getting ready');
   });
@@ -769,7 +780,9 @@ describe('parsingK8SObjects()', () => {
       ],
     };
 
-    const result = JSON.parse(parsingK8SObjects(props, { get_state: mockGetState }));
+    const result = JSON.parse(
+      parsingK8SObjects(props, { get_state: mockGetState })
+    );
 
     chai.expect(result.state).to.equal('Off');
   });
@@ -810,5 +823,4 @@ describe('parsingK8SObjects() Integration', () => {
     chai.expect(result.hash).to.equal('k8s001');
     chai.expect(result.state).to.equal('Ready');
   });
-
 });

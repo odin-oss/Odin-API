@@ -17,15 +17,19 @@ describe('Datacenter object', () => {
   });
 
   it('throws on non-positive id_datacenter', () => {
-    chai.expect(() => {
-      new Datacenter({ id_datacenter: -1 });
-    }).to.throw();
+    chai
+      .expect(() => {
+        new Datacenter({ id_datacenter: -1 });
+      })
+      .to.throw();
   });
 
   it('throws on empty label', () => {
-    chai.expect(() => {
-      new Datacenter({ id_datacenter: 1, label: '' });
-    }).to.throw();
+    chai
+      .expect(() => {
+        new Datacenter({ id_datacenter: 1, label: '' });
+      })
+      .to.throw();
   });
 
   it('serializes with toJSON', () => {

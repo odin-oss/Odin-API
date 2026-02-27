@@ -98,7 +98,9 @@ describe('applications_controller.list()', () => {
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(500);
     const jsonCall = fakeRes.json.firstCall.args[0];
     chai.expect(jsonCall.success).to.equal(false);
-    chai.expect(jsonCall.message).to.equal('Connexion to the database refused.');
+    chai
+      .expect(jsonCall.message)
+      .to.equal('Connexion to the database refused.');
     chai.expect(jsonCall.error.type).to.equal('DBConnexionRefused');
   });
 });
@@ -234,7 +236,9 @@ describe('applications_controller.get()', () => {
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(400);
     const jsonCall = fakeRes.json.firstCall.args[0];
     chai.expect(jsonCall.success).to.equal(false);
-    chai.expect(jsonCall.message).to.equal('The query parameter (id_application,key) is missing.');
+    chai
+      .expect(jsonCall.message)
+      .to.equal('The query parameter (id_application,key) is missing.');
     chai.expect(jsonCall.error.type).to.equal('MissingArgumentError');
   });
 
@@ -250,7 +254,9 @@ describe('applications_controller.get()', () => {
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(500);
     const jsonCall = fakeRes.json.firstCall.args[0];
     chai.expect(jsonCall.success).to.equal(false);
-    chai.expect(jsonCall.message).to.equal('Connexion to the database refused.');
+    chai
+      .expect(jsonCall.message)
+      .to.equal('Connexion to the database refused.');
     chai.expect(jsonCall.error.type).to.equal('DBConnexionRefused');
   });
 });
@@ -322,12 +328,10 @@ describe('applications_controller.start()', () => {
       application_start: fakeStart,
     });
 
-    chai
-      .expect(fakeStart)
-      .to.have.been.calledOnceWithExactly({
-        id_application: 8,
-        state_application: 'Ready',
-      });
+    chai.expect(fakeStart).to.have.been.calledOnceWithExactly({
+      id_application: 8,
+      state_application: 'Ready',
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
   });
@@ -344,7 +348,9 @@ describe('applications_controller.start()', () => {
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(500);
     const jsonCall = fakeRes.json.firstCall.args[0];
     chai.expect(jsonCall.success).to.equal(false);
-    chai.expect(jsonCall.message).to.equal('Connexion to the database refused.');
+    chai
+      .expect(jsonCall.message)
+      .to.equal('Connexion to the database refused.');
     chai.expect(jsonCall.error.type).to.equal('DBConnexionRefused');
   });
 });
@@ -416,12 +422,10 @@ describe('applications_controller.stop()', () => {
       application_stop: fakeStop,
     });
 
-    chai
-      .expect(fakeStop)
-      .to.have.been.calledOnceWithExactly({
-        id_application: 8,
-        state_application: 'Off',
-      });
+    chai.expect(fakeStop).to.have.been.calledOnceWithExactly({
+      id_application: 8,
+      state_application: 'Off',
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
   });
@@ -438,7 +442,9 @@ describe('applications_controller.stop()', () => {
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(500);
     const jsonCall = fakeRes.json.firstCall.args[0];
     chai.expect(jsonCall.success).to.equal(false);
-    chai.expect(jsonCall.message).to.equal('Connexion to the database refused.');
+    chai
+      .expect(jsonCall.message)
+      .to.equal('Connexion to the database refused.');
     chai.expect(jsonCall.error.type).to.equal('DBConnexionRefused');
   });
 });
@@ -511,12 +517,10 @@ describe('applications_controller.deletion()', () => {
       application_delete: fakeDelete,
     });
 
-    chai
-      .expect(fakeDelete)
-      .to.have.been.calledOnceWithExactly({
-        id_application: 8,
-        backup_storage: true,
-      });
+    chai.expect(fakeDelete).to.have.been.calledOnceWithExactly({
+      id_application: 8,
+      backup_storage: true,
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
   });
@@ -561,12 +565,10 @@ describe('applications_controller.deletion()', () => {
       application_delete: fakeDelete,
     });
 
-    chai
-      .expect(fakeDelete)
-      .to.have.been.calledOnceWithExactly({
-        id_application: 8,
-        backup_storage: false,
-      });
+    chai.expect(fakeDelete).to.have.been.calledOnceWithExactly({
+      id_application: 8,
+      backup_storage: false,
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
   });
@@ -611,12 +613,10 @@ describe('applications_controller.deletion()', () => {
       application_delete: fakeDelete,
     });
 
-    chai
-      .expect(fakeDelete)
-      .to.have.been.calledOnceWithExactly({
-        id_application: 8,
-        backup_storage: true,
-      });
+    chai.expect(fakeDelete).to.have.been.calledOnceWithExactly({
+      id_application: 8,
+      backup_storage: true,
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
   });
@@ -633,7 +633,9 @@ describe('applications_controller.deletion()', () => {
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(500);
     const jsonCall = fakeRes.json.firstCall.args[0];
     chai.expect(jsonCall.success).to.equal(false);
-    chai.expect(jsonCall.message).to.equal('Connexion to the database refused.');
+    chai
+      .expect(jsonCall.message)
+      .to.equal('Connexion to the database refused.');
     chai.expect(jsonCall.error.type).to.equal('DBConnexionRefused');
   });
 });
@@ -776,7 +778,9 @@ describe('applications_controller.create()', () => {
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(500);
     const jsonCall = fakeRes.json.firstCall.args[0];
     chai.expect(jsonCall.success).to.equal(false);
-    chai.expect(jsonCall.message).to.equal('Connexion to the database refused.');
+    chai
+      .expect(jsonCall.message)
+      .to.equal('Connexion to the database refused.');
     chai.expect(jsonCall.error.type).to.equal('DBConnexionRefused');
   });
 });

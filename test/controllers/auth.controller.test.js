@@ -40,12 +40,10 @@ describe('auth_controller.connect()', () => {
       auth_connect: fakeConnect,
     });
 
-    chai
-      .expect(fakeConnect)
-      .to.have.been.calledOnceWithExactly({
-        mail: 'user@example.com',
-        password: 'password123',
-      });
+    chai.expect(fakeConnect).to.have.been.calledOnceWithExactly({
+      mail: 'user@example.com',
+      password: 'password123',
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -97,9 +95,7 @@ describe('auth_controller.connect()', () => {
   });
 
   it('called but should reject with BadCredentials due to invalid credentials.', async () => {
-    fakeConnect.rejects(
-      new BadCredentials('Invalid mail or password.')
-    );
+    fakeConnect.rejects(new BadCredentials('Invalid mail or password.'));
 
     await auth_controller.connect(fakeReq, fakeRes, {
       auth_connect: fakeConnect,
@@ -128,6 +124,4 @@ describe('auth_controller.connect()', () => {
     chai.expect(jsonCall.success).to.equal(false);
     chai.expect(jsonCall.error.type).to.equal('DBConnexionRefused');
   });
-
-
 });

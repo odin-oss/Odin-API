@@ -50,11 +50,9 @@ describe('interface_controller.get()', () => {
       interface_get: fakeGet,
     });
 
-    chai
-      .expect(fakeGet)
-      .to.have.been.calledOnceWithExactly({
-        id_interface: 1,
-      });
+    chai.expect(fakeGet).to.have.been.calledOnceWithExactly({
+      id_interface: 1,
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -92,7 +90,7 @@ describe('interface_controller.get()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeGet.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await interface_controller.get(fakeReq, fakeRes, {
@@ -165,7 +163,7 @@ describe('interface_controller.list()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeList.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await interface_controller.list(fakeReq, fakeRes, {
@@ -322,7 +320,7 @@ describe('interface_controller.create()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeCreate.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await interface_controller.create(fakeReq, fakeRes, {
@@ -524,7 +522,7 @@ describe('interface_controller.update()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeUpdate.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await interface_controller.update(fakeReq, fakeRes, {

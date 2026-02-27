@@ -130,13 +130,13 @@ if (CONFIG.KAFKA_ACTIVATED) {
       logger.debug(error);
       process.exit(0);
     });
-  logger.info(
-    `[SYSTEM][CRON] / : Starting publication of states in kafka.`
-  );
+  logger.info(`[SYSTEM][CRON] / : Starting publication of states in kafka.`);
   cron.schedule('*/10 * * * * *', () => {
     logger.debug('[CRON][200] Checking applications scheduled to be started.');
     startKafkaPublication()
-      .then(() => logger.debug(`[SYSTEM][200] / : States published in kafka broker.`))
+      .then(() =>
+        logger.debug(`[SYSTEM][200] / : States published in kafka broker.`)
+      )
       .catch((error) => {
         logger.error(
           `[SYSTEM][500] / : 4/5. Kafka producer Error: The server encountered an error : ${error}`
@@ -192,7 +192,6 @@ cron.schedule('*/30 * * * * *', () => {
       logger.info('[CRON][200] ' + response + ' application deleted.')
   );
 });
-
 
 const optionsJSdoc = {
   definition: {

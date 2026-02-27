@@ -3,8 +3,6 @@ import * as interface_service from '../services/interface.service.js';
 import z from 'zod';
 import Guard from '../utils/guard.util.js';
 import { ApiResponse } from '../utils/response.util.js';
-import { schema } from '@hapi/joi/lib/compile.js';
-
 /**
  * Controller that checks request before getting informations about a specific interface.
  * @param {Request} req HTTP request.

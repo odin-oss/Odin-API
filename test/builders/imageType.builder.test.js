@@ -147,9 +147,7 @@ describe('imageType.builder.list()', () => {
   });
 
   it('should handle label with special characters that get sanitized', async () => {
-    findAllStub.resolves([
-      { id_type: 1, label: 'Docker@#$%Image2024' },
-    ]);
+    findAllStub.resolves([{ id_type: 1, label: 'Docker@#$%Image2024' }]);
 
     const result = await imageType_builder.list();
 
@@ -177,9 +175,7 @@ describe('imageType.builder.list()', () => {
   });
 
   it('should preserve image type properties in toJSON()', async () => {
-    findAllStub.resolves([
-      { id_type: 1, label: 'docker' },
-    ]);
+    findAllStub.resolves([{ id_type: 1, label: 'docker' }]);
 
     const result = await imageType_builder.list();
     const json = result[0].toJSON();
@@ -222,9 +218,7 @@ describe('imageType.builder.list()', () => {
   });
 
   it('should return frozen/immutable style objects through getter methods', async () => {
-    findAllStub.resolves([
-      { id_type: 1, label: 'docker' },
-    ]);
+    findAllStub.resolves([{ id_type: 1, label: 'docker' }]);
 
     const result = await imageType_builder.list();
 

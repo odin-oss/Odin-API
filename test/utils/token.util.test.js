@@ -26,9 +26,7 @@ describe('token.util.generateToken()', () => {
 
     chai.expect(result).to.equal('test_token');
     chai.expect(mockSign.calledOnce).to.be.true;
-    chai
-      .expect(mockSign.firstCall.args[0])
-      .to.deep.include({ id_user: 1 });
+    chai.expect(mockSign.firstCall.args[0]).to.deep.include({ id_user: 1 });
   });
 
   it('should throw MissingArgumentError when id_user is missing', () => {
@@ -74,9 +72,7 @@ describe('token.util.generateToken()', () => {
 
 describe('token.util.decodeToken()', () => {
   it('should decode a valid token with Bearer prefix', () => {
-    const mockDecode = sinon
-      .stub()
-      .returns({ id_user: 1, iat: 123456 });
+    const mockDecode = sinon.stub().returns({ id_user: 1, iat: 123456 });
     const result = token_util.decodeToken(
       { token: 'Bearer test_token' },
       { jwt_decode: mockDecode }
@@ -120,9 +116,7 @@ describe('token.util.decodeToken()', () => {
 
 describe('token.util.getUserId()', () => {
   it('should extract id_user from valid token', () => {
-    const mockDecodeToken = sinon
-      .stub()
-      .returns({ id_user: 42, iat: 123456 });
+    const mockDecodeToken = sinon.stub().returns({ id_user: 42, iat: 123456 });
     const result = token_util.getUserId(
       { token: 'Bearer valid_token' },
       { decode_token: mockDecodeToken }
@@ -192,9 +186,7 @@ describe('token.util.isTokenValid()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(403);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(403);
   });
 
   it('should throw BadContentTokenError when token does not start with Bearer', async () => {
@@ -208,9 +200,7 @@ describe('token.util.isTokenValid()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(403);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(403);
   });
 
   it('should throw BadContentTokenError when verified token has no id_user', async () => {
@@ -224,9 +214,7 @@ describe('token.util.isTokenValid()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(403);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(403);
   });
 
   it('should regenerate token on successful verification', async () => {
@@ -239,11 +227,8 @@ describe('token.util.isTokenValid()', () => {
       generate_token: mockGenerateToken,
     });
 
-    chai
-      .expect(mockGenerateToken.calledWith({ id_user: 5 }))
-      .to.be.true;
-    chai
-      .expect(mockRes.set.calledWith('authorization', 'Bearer new_token_123'))
+    chai.expect(mockGenerateToken.calledWith({ id_user: 5 })).to.be.true;
+    chai.expect(mockRes.set.calledWith('authorization', 'Bearer new_token_123'))
       .to.be.true;
   });
 });
@@ -298,9 +283,7 @@ describe('token.util.isProfOrAdmin()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(403);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(403);
   });
 
   it('should handle errors when getUserId throws', async () => {
@@ -315,9 +298,7 @@ describe('token.util.isProfOrAdmin()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(400);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(400);
   });
 });
 
@@ -359,9 +340,7 @@ describe('token.util.isAdmin()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(403);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(403);
   });
 
   it('should throw UserIsNotAdmin when user is ETUDIANT', async () => {
@@ -374,16 +353,12 @@ describe('token.util.isAdmin()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(403);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(403);
   });
 
   it('should handle errors when getRole throws', async () => {
     const mockGetUserId = sinon.stub().returns(1);
-    const mockGetRole = sinon
-      .stub()
-      .rejects(new Error('Database error'));
+    const mockGetRole = sinon.stub().rejects(new Error('Database error'));
 
     await token_util.isAdmin(mockReq, mockRes, mockNext, {
       getUserId: mockGetUserId,
@@ -391,9 +366,7 @@ describe('token.util.isAdmin()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(500);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(500);
   });
 });
 
@@ -435,9 +408,7 @@ describe('token.util.isProf()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(403);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(403);
   });
 
   it('should throw UserIsNotProfessor when user is ETUDIANT', async () => {
@@ -450,9 +421,7 @@ describe('token.util.isProf()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(403);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(403);
   });
 
   it('should handle errors when getUserId throws', async () => {
@@ -467,9 +436,7 @@ describe('token.util.isProf()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(400);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(400);
   });
 });
 
@@ -530,9 +497,7 @@ describe('token.util.isOwner()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(403);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(403);
   });
 
   it('should throw MissingArgumentError when neither key nor id_application provided', async () => {
@@ -548,17 +513,13 @@ describe('token.util.isOwner()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(400);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(400);
   });
 
   it('should handle errors when getRole throws', async () => {
     const mockGetUserId = sinon.stub().returns(1);
     const mockIsOwner = sinon.stub().resolves(true);
-    const mockGetRole = sinon
-      .stub()
-      .rejects(new Error('Database error'));
+    const mockGetRole = sinon.stub().rejects(new Error('Database error'));
 
     await token_util.isOwner(mockReq, mockRes, mockNext, {
       getUserId: mockGetUserId,
@@ -567,9 +528,7 @@ describe('token.util.isOwner()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(500);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(500);
   });
 });
 
@@ -659,9 +618,7 @@ describe('token.util.app_access_granted()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(400);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(400);
   });
 
   it('should throw BadContentTokenError when token is invalid', async () => {
@@ -678,9 +635,7 @@ describe('token.util.app_access_granted()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(403);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(403);
   });
 
   it('should throw ParameterMisformed when Bearer prefix is missing', async () => {
@@ -698,8 +653,6 @@ describe('token.util.app_access_granted()', () => {
     });
 
     chai.expect(mockRes.status.calledOnce).to.be.true;
-    chai
-      .expect(mockRes.status.firstCall.args[0])
-      .to.equal(400);
+    chai.expect(mockRes.status.firstCall.args[0]).to.equal(400);
   });
 });

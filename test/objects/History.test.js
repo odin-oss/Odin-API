@@ -17,9 +17,11 @@ describe('Record object', () => {
   });
 
   it('throws on invalid datetime', () => {
-    chai.expect(() => {
-      new Record({ datetime: 'not-a-date' });
-    }).to.throw();
+    chai
+      .expect(() => {
+        new Record({ datetime: 'not-a-date' });
+      })
+      .to.throw();
   });
 
   it('serializes with toJSON', () => {

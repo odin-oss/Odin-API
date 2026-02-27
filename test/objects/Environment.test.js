@@ -19,9 +19,11 @@ describe('Environment object', () => {
   });
 
   it('throws on non-positive id_environment', () => {
-    chai.expect(() => {
-      new Environment({ id_environment: 0 });
-    }).to.throw();
+    chai
+      .expect(() => {
+        new Environment({ id_environment: 0 });
+      })
+      .to.throw();
   });
 
   it('serializes with toJSON', () => {

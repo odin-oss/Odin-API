@@ -77,10 +77,11 @@ describe('cron.module', () => {
         update_state: updateStateStub,
       });
 
-      expect(updateStateStub.calledWith(sinon.match.has(
-        'state_application',
-        'Getting ready'
-      ))).to.be.true;
+      expect(
+        updateStateStub.calledWith(
+          sinon.match.has('state_application', 'Getting ready')
+        )
+      ).to.be.true;
     });
   });
 
@@ -119,10 +120,9 @@ describe('cron.module', () => {
         update_state: updateStateStub,
       });
 
-      expect(updateStateStub.calledWith(sinon.match.has(
-        'state_application',
-        'Off'
-      ))).to.be.true;
+      expect(
+        updateStateStub.calledWith(sinon.match.has('state_application', 'Off'))
+      ).to.be.true;
     });
 
     it('should handle empty applications list', async () => {
@@ -151,10 +151,14 @@ describe('cron.module', () => {
         update_state: updateStateStub,
       });
 
-      expect(execShutdownStub.calledWith(sinon.match({
-        hash: 'ABCDEF',
-        datacenter: 'AWS',
-      }))).to.be.true;
+      expect(
+        execShutdownStub.calledWith(
+          sinon.match({
+            hash: 'ABCDEF',
+            datacenter: 'AWS',
+          })
+        )
+      ).to.be.true;
     });
   });
 
@@ -191,10 +195,11 @@ describe('cron.module', () => {
         update_state: updateStateStub,
       });
 
-      expect(updateStateStub.calledWith(sinon.match.has(
-        'state_application',
-        'EndedSession'
-      ))).to.be.true;
+      expect(
+        updateStateStub.calledWith(
+          sinon.match.has('state_application', 'EndedSession')
+        )
+      ).to.be.true;
     });
 
     it('should handle empty sessions list', async () => {
@@ -263,10 +268,11 @@ describe('cron.module', () => {
         update_state: updateStateStub,
       });
 
-      expect(updateStateStub.calledWith(sinon.match.has(
-        'state_application',
-        'Deleted'
-      ))).to.be.true;
+      expect(
+        updateStateStub.calledWith(
+          sinon.match.has('state_application', 'Deleted')
+        )
+      ).to.be.true;
     });
 
     it('should execute deletion with correct hash and datacenter', async () => {
@@ -281,10 +287,14 @@ describe('cron.module', () => {
         update_state: updateStateStub,
       });
 
-      expect(execDeletionStub.calledWith(sinon.match({
-        hash: 'ABCDEF',
-        datacenter: 'AWS',
-      }))).to.be.true;
+      expect(
+        execDeletionStub.calledWith(
+          sinon.match({
+            hash: 'ABCDEF',
+            datacenter: 'AWS',
+          })
+        )
+      ).to.be.true;
     });
 
     it('should handle empty apps list', async () => {

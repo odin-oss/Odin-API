@@ -624,9 +624,9 @@ describe('interface.builder.update()', () => {
 
   beforeEach(() => {
     updateStub = sinon.stub(dbManager.models.INTERFACE, 'update');
-    sinon.stub(dbManager.models.INTERFACE, 'findByPk').resolves(
-      { id_interface: 1 }
-    );
+    sinon
+      .stub(dbManager.models.INTERFACE, 'findByPk')
+      .resolves({ id_interface: 1 });
     getStub = sinon.stub();
   });
 
@@ -756,13 +756,10 @@ describe('interface.builder.update_args()', () => {
       dbManager.models.INTERFACE_HAS_ARGUMENT,
       'destroy'
     );
-    createStub = sinon.stub(
-      dbManager.models.INTERFACE_HAS_ARGUMENT,
-      'create'
-    );
-    sinon.stub(dbManager.models.INTERFACE, 'findByPk').resolves(
-      { id_interface: 1 }
-    );
+    createStub = sinon.stub(dbManager.models.INTERFACE_HAS_ARGUMENT, 'create');
+    sinon
+      .stub(dbManager.models.INTERFACE, 'findByPk')
+      .resolves({ id_interface: 1 });
     sinon.stub(dbManager.models.INTERFACE, 'findOne').resolves({
       dataValues: {
         id_interface: 1,
@@ -906,9 +903,9 @@ describe('interface.builder.update_ports()', () => {
   beforeEach(() => {
     destroyStub = sinon.stub(dbManager.models.INTERFACE_HAS_PORT, 'destroy');
     createStub = sinon.stub(dbManager.models.INTERFACE_HAS_PORT, 'create');
-    sinon.stub(dbManager.models.INTERFACE, 'findByPk').resolves(
-      { id_interface: 1 }
-    );
+    sinon
+      .stub(dbManager.models.INTERFACE, 'findByPk')
+      .resolves({ id_interface: 1 });
     sinon.stub(dbManager.models.INTERFACE, 'findOne').resolves({
       dataValues: {
         id_interface: 1,
@@ -1051,9 +1048,9 @@ describe('interface.builder.update_envs()', () => {
       'destroy'
     );
     createStub = sinon.stub(dbManager.models.INTERFACE_HAS_VARIABLE, 'create');
-    sinon.stub(dbManager.models.INTERFACE, 'findByPk').resolves(
-      { id_interface: 1 }
-    );
+    sinon
+      .stub(dbManager.models.INTERFACE, 'findByPk')
+      .resolves({ id_interface: 1 });
     sinon.stub(dbManager.models.INTERFACE, 'findOne').resolves({
       dataValues: {
         id_interface: 1,
@@ -1088,7 +1085,9 @@ describe('interface.builder.update_envs()', () => {
       key: 'TEST_VAR',
       value: 'test-value',
     });
-    sinon.stub(dbManager.models.INTERFACE_HAS_VARIABLE, 'findOne').resolves(null);
+    sinon
+      .stub(dbManager.models.INTERFACE_HAS_VARIABLE, 'findOne')
+      .resolves(null);
     getStub = sinon.stub();
   });
 
@@ -1190,9 +1189,9 @@ describe('interface.builder.update_nodeselectors()', () => {
       dbManager.models.INTERFACE_HAS_NODE_SELECTOR,
       'create'
     );
-    sinon.stub(dbManager.models.INTERFACE, 'findByPk').resolves(
-      { id_interface: 1 }
-    );
+    sinon
+      .stub(dbManager.models.INTERFACE, 'findByPk')
+      .resolves({ id_interface: 1 });
     sinon.stub(dbManager.models.INTERFACE, 'findOne').resolves({
       dataValues: {
         id_interface: 1,
@@ -1222,7 +1221,9 @@ describe('interface.builder.update_nodeselectors()', () => {
       INTERFACE_HAS_PORTs: [],
       INTERFACE_HAS_VARIABLEs: [],
     });
-    sinon.stub(dbManager.models.INTERFACE_HAS_NODE_SELECTOR, 'findOne').resolves(null);
+    sinon
+      .stub(dbManager.models.INTERFACE_HAS_NODE_SELECTOR, 'findOne')
+      .resolves(null);
     getStub = sinon.stub();
   });
 
@@ -1319,9 +1320,9 @@ describe('interface.builder.attach_nodeselectors()', () => {
       dbManager.models.INTERFACE_HAS_NODE_SELECTOR,
       'create'
     );
-    sinon.stub(dbManager.models.INTERFACE, 'findByPk').resolves(
-      { id_interface: 1 }
-    );
+    sinon
+      .stub(dbManager.models.INTERFACE, 'findByPk')
+      .resolves({ id_interface: 1 });
     sinon.stub(dbManager.models.INTERFACE, 'findOne').resolves({
       dataValues: {
         id_interface: 1,
@@ -1351,7 +1352,9 @@ describe('interface.builder.attach_nodeselectors()', () => {
       INTERFACE_HAS_PORTs: [],
       INTERFACE_HAS_VARIABLEs: [],
     });
-    sinon.stub(dbManager.models.INTERFACE_HAS_NODE_SELECTOR, 'findOne').resolves(null);
+    sinon
+      .stub(dbManager.models.INTERFACE_HAS_NODE_SELECTOR, 'findOne')
+      .resolves(null);
     getStub = sinon.stub();
   });
 
@@ -1444,9 +1447,9 @@ describe('interface.builder.attach_ports()', () => {
 
   beforeEach(() => {
     createStub = sinon.stub(dbManager.models.INTERFACE_HAS_PORT, 'create');
-    sinon.stub(dbManager.models.INTERFACE, 'findByPk').resolves(
-      { id_interface: 1 }
-    );
+    sinon
+      .stub(dbManager.models.INTERFACE, 'findByPk')
+      .resolves({ id_interface: 1 });
     getStub = sinon.stub();
   });
 
@@ -1554,9 +1557,9 @@ describe('interface.builder.attach_envs()', () => {
 
   beforeEach(() => {
     createStub = sinon.stub(dbManager.models.INTERFACE_HAS_VARIABLE, 'create');
-    sinon.stub(dbManager.models.INTERFACE, 'findByPk').resolves(
-      { id_interface: 1 }
-    );
+    sinon
+      .stub(dbManager.models.INTERFACE, 'findByPk')
+      .resolves({ id_interface: 1 });
     sinon.stub(dbManager.models.INTERFACE, 'findOne').resolves({
       dataValues: {
         id_interface: 1,
@@ -1591,7 +1594,9 @@ describe('interface.builder.attach_envs()', () => {
       key: 'TEST_VAR',
       value: 'test-value',
     });
-    sinon.stub(dbManager.models.INTERFACE_HAS_VARIABLE, 'findOne').resolves(null);
+    sinon
+      .stub(dbManager.models.INTERFACE_HAS_VARIABLE, 'findOne')
+      .resolves(null);
     getStub = sinon.stub();
   });
 

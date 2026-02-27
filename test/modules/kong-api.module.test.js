@@ -108,7 +108,9 @@ describe('kong-api.module.fetch()', () => {
       json: async () => ({ success: true }),
     };
     const mockFetch = sinon.stub().resolves(mockResponse);
-    const customHeaders = { 'Content-Type': 'application/x-www-form-urlencoded' };
+    const customHeaders = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    };
 
     await kongApiModule.fetch(
       { url: '/services', method: 'GET', headers: customHeaders },
@@ -116,7 +118,9 @@ describe('kong-api.module.fetch()', () => {
     );
 
     const callArgs = mockFetch.getCall(0).args[1];
-    expect(callArgs.headers['Content-Type']).to.equal('application/x-www-form-urlencoded');
+    expect(callArgs.headers['Content-Type']).to.equal(
+      'application/x-www-form-urlencoded'
+    );
   });
 
   it('should use default Content-Type when custom headers not provided', async () => {
@@ -129,10 +133,7 @@ describe('kong-api.module.fetch()', () => {
     };
     const mockFetch = sinon.stub().resolves(mockResponse);
 
-    await kongApiModule.fetch(
-      { url: '/services', method: 'GET' },
-      mockFetch
-    );
+    await kongApiModule.fetch({ url: '/services', method: 'GET' }, mockFetch);
 
     const callArgs = mockFetch.getCall(0).args[1];
     expect(callArgs.headers['Content-Type']).to.equal('application/json');
@@ -144,7 +145,10 @@ describe('kong-api.module.fetch()', () => {
       headers: {
         get: () => 'application/json',
       },
-      json: async () => ({ name: 'unique constraint violation', message: 'Service already exists' }),
+      json: async () => ({
+        name: 'unique constraint violation',
+        message: 'Service already exists',
+      }),
     };
     const mockFetch = sinon.stub().resolves(mockResponse);
 
@@ -164,9 +168,9 @@ describe('kong-api.module.fetch()', () => {
       },
       json: async () => ({
         fields: {
-          name: "plugin 'odin-auth' not enabled; add it to the 'plugins' configuration property"
+          name: "plugin 'odin-auth' not enabled; add it to the 'plugins' configuration property",
         },
-        message: 'Plugin error'
+        message: 'Plugin error',
       }),
     };
     const mockFetch = sinon.stub().resolves(mockResponse);
@@ -186,10 +190,7 @@ describe('kong-api.module.fetch()', () => {
     const mockFetch = sinon.stub().rejects(mockError);
 
     try {
-      await kongApiModule.fetch(
-        { url: '/services', method: 'GET' },
-        mockFetch
-      );
+      await kongApiModule.fetch({ url: '/services', method: 'GET' }, mockFetch);
       expect.fail('Should have thrown an error');
     } catch (err) {
       expect(err.name).to.equal('AppsIngressErrorNotDefined');
@@ -198,15 +199,10 @@ describe('kong-api.module.fetch()', () => {
 
   it('should throw AppsIngressErrorNotDefined on timeout error', async () => {
     const timeoutError = new Error('Request timeout');
-    const mockFetch = sinon
-      .stub()
-      .rejects(timeoutError);
+    const mockFetch = sinon.stub().rejects(timeoutError);
 
     try {
-      await kongApiModule.fetch(
-        { url: '/services', method: 'GET' },
-        mockFetch
-      );
+      await kongApiModule.fetch({ url: '/services', method: 'GET' }, mockFetch);
       expect.fail('Should have thrown an error');
     } catch (err) {
       expect(err.name).to.equal('AppsIngressErrorNotDefined');
@@ -314,10 +310,7 @@ describe('kong-api.module.fetch()', () => {
     };
     const mockFetch = sinon.stub().resolves(mockResponse);
 
-    await kongApiModule.fetch(
-      { url: '/services', method: 'GET' },
-      mockFetch
-    );
+    await kongApiModule.fetch({ url: '/services', method: 'GET' }, mockFetch);
 
     const callArgs = mockFetch.getCall(0).args[0];
     expect(callArgs).to.include('http://');

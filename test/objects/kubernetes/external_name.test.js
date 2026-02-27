@@ -71,108 +71,106 @@ describe('external_name.create()', () => {
 });
 
 describe('external_name.deletion()', () => {
-	let getStub;
-	let deleteStub;
+  let getStub;
+  let deleteStub;
 
-	beforeEach(() => {
-		getStub = sinon.stub();
-		deleteStub = sinon.stub();
-	});
+  beforeEach(() => {
+    getStub = sinon.stub();
+    deleteStub = sinon.stub();
+  });
 
-	afterEach(() => {
-		sinon.restore();
-	});
+  afterEach(() => {
+    sinon.restore();
+  });
 
-	it('returns early when Kubernetes is not activated', async () => {
-		getStub.resolves({ result: 'Kubernetes is not activated.' });
+  it('returns early when Kubernetes is not activated', async () => {
+    getStub.resolves({ result: 'Kubernetes is not activated.' });
 
-		const result = await externalName.deletion(
-			{ hash: 'abcdef' },
-			{ get: getStub, delete: deleteStub }
-		);
+    const result = await externalName.deletion(
+      { hash: 'abcdef' },
+      { get: getStub, delete: deleteStub }
+    );
 
-		chai.expect(result).to.equal(undefined);
-		chai.expect(deleteStub.notCalled).to.be.true;
-	});
+    chai.expect(result).to.equal(undefined);
+    chai.expect(deleteStub.notCalled).to.be.true;
+  });
 
-	it('deletes each external name service', async () => {
-		getStub.resolves({ result: ['svc-a', 'svc-b'] });
-		deleteStub.resolves({ ok: true });
+  it('deletes each external name service', async () => {
+    getStub.resolves({ result: ['svc-a', 'svc-b'] });
+    deleteStub.resolves({ ok: true });
 
-		await externalName.deletion(
-			{ hash: 'abcdef' },
-			{ get: getStub, delete: deleteStub }
-		);
+    await externalName.deletion(
+      { hash: 'abcdef' },
+      { get: getStub, delete: deleteStub }
+    );
 
-		chai.expect(deleteStub.callCount).to.equal(2);
-		chai.expect(deleteStub.args[0][0]).to.deep.equal({ name: 'svc-a' });
-		chai.expect(deleteStub.args[1][0]).to.deep.equal({ name: 'svc-b' });
-	});
+    chai.expect(deleteStub.callCount).to.equal(2);
+    chai.expect(deleteStub.args[0][0]).to.deep.equal({ name: 'svc-a' });
+    chai.expect(deleteStub.args[1][0]).to.deep.equal({ name: 'svc-b' });
+  });
 
-	it('throws on invalid hash', async () => {
-		try {
-			await externalName.deletion(
-				{ hash: 'nope' },
-				{ get: getStub, delete: deleteStub }
-			);
-			chai.expect.fail('Expected deletion to throw for invalid hash');
-		} catch (err) {
-			chai.expect(err).to.exist;
-		}
-	});
+  it('throws on invalid hash', async () => {
+    try {
+      await externalName.deletion(
+        { hash: 'nope' },
+        { get: getStub, delete: deleteStub }
+      );
+      chai.expect.fail('Expected deletion to throw for invalid hash');
+    } catch (err) {
+      chai.expect(err).to.exist;
+    }
+  });
 });
 
 describe('external_name.test_exports', () => {
-	const { get, del } = externalName.test_exports;
+  const { get, del } = externalName.test_exports;
 
-	it('lists external names via get()', async function () {
-		if (!get) this.skip();
-		const fetchStub = sinon.stub().resolves({
-			items: [{ metadata: { name: 'svc-a' } }, { metadata: { name: 'svc-b' } }],
-		});
+  it('lists external names via get()', async function () {
+    if (!get) this.skip();
+    const fetchStub = sinon.stub().resolves({
+      items: [{ metadata: { name: 'svc-a' } }, { metadata: { name: 'svc-b' } }],
+    });
 
-		const result = await get({ hash: 'abcdef' }, fetchStub);
+    const result = await get({ hash: 'abcdef' }, fetchStub);
 
-		chai.expect(fetchStub.calledOnce).to.be.true;
-		chai.expect(fetchStub.args[0][0]).to.deep.equal({
-			url: '/api/v1/namespaces/odin/services?labelSelector=type=ExternalName,hash=abcdef',
-			method: 'GET',
-		});
-		chai.expect(result).to.deep.equal({
-			result: ['svc-a', 'svc-b'],
-			type: 'ExternalName',
-		});
-	});
+    chai.expect(fetchStub.calledOnce).to.be.true;
+    chai.expect(fetchStub.args[0][0]).to.deep.equal({
+      url: '/api/v1/namespaces/odin/services?labelSelector=type=ExternalName,hash=abcdef',
+      method: 'GET',
+    });
+    chai.expect(result).to.deep.equal({
+      result: ['svc-a', 'svc-b'],
+      type: 'ExternalName',
+    });
+  });
 
-	it('returns activation message when Kubernetes is disabled', async function () {
-		if (!get) this.skip();
-		const fetchStub = sinon
-			.stub()
-			.resolves('Kubernetes is not activated.');
+  it('returns activation message when Kubernetes is disabled', async function () {
+    if (!get) this.skip();
+    const fetchStub = sinon.stub().resolves('Kubernetes is not activated.');
 
-		const result = await get({ hash: 'abcdef' }, fetchStub);
+    const result = await get({ hash: 'abcdef' }, fetchStub);
 
-		chai.expect(result).to.deep.equal({
-			result: 'Kubernetes is not activated.',
-		});
-	});
+    chai.expect(result).to.deep.equal({
+      result: 'Kubernetes is not activated.',
+    });
+  });
 
-	it('deletes an external name via del()', async function () {
-		if (!del) this.skip();
-		const fetchResult = { ok: true };
-		const fetchStub = sinon.stub().resolves(fetchResult);
+  it('deletes an external name via del()', async function () {
+    if (!del) this.skip();
+    const fetchResult = { ok: true };
+    const fetchStub = sinon.stub().resolves(fetchResult);
 
-		const result = await del({ name: 'svc-a' }, fetchStub);
+    const result = await del({ name: 'svc-a' }, fetchStub);
 
-		chai.expect(fetchStub.calledOnce).to.be.true;
-		chai.expect(fetchStub.args[0][0]).to.deep.equal({
-			url: '/api/v1/namespaces/odin/services/svc-a',
-			method: 'DELETE',
-		});
-		chai.expect(result).to.deep.equal({
-			result: fetchResult,
-			type: 'ExternalName',
-			name: 'svc-a',
-		});
-	});
+    chai.expect(fetchStub.calledOnce).to.be.true;
+    chai.expect(fetchStub.args[0][0]).to.deep.equal({
+      url: '/api/v1/namespaces/odin/services/svc-a',
+      method: 'DELETE',
+    });
+    chai.expect(result).to.deep.equal({
+      result: fetchResult,
+      type: 'ExternalName',
+      name: 'svc-a',
+    });
+  });
 });

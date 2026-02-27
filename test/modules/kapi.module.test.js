@@ -168,7 +168,10 @@ describe('kapi.module.fetch()', () => {
       json: async () => ({ error: 'conflict' }),
     };
     const mockFetch = sinon.stub().resolves(mockResponse);
-    const body = { kind: 'Pod', metadata: { name: 'test', namespace: 'default' } };
+    const body = {
+      kind: 'Pod',
+      metadata: { name: 'test', namespace: 'default' },
+    };
 
     const result = await kapiModule.fetch(
       { url: '/api/test', method: 'POST', body },
@@ -251,9 +254,7 @@ describe('kapi.module.fetch()', () => {
   });
 
   it('should throw error after max retries exceeded', async () => {
-    const mockFetch = sinon
-      .stub()
-      .rejects(new Error('Network error'));
+    const mockFetch = sinon.stub().rejects(new Error('Network error'));
 
     try {
       await kapiModule.fetch(
@@ -310,7 +311,10 @@ describe('kapi.module.fetch()', () => {
       headers: {
         get: () => 'application/json',
       },
-      json: async () => ({ reason: 'AlreadyExists', message: 'Object already exists' }),
+      json: async () => ({
+        reason: 'AlreadyExists',
+        message: 'Object already exists',
+      }),
     };
     const mockFetch = sinon.stub().resolves(mockResponse);
 

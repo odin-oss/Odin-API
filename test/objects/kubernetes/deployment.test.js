@@ -128,9 +128,9 @@ describe('deployment.create()', () => {
       name: 'appabcdef',
       namespace: 'nabcdef',
     });
-    chai.expect(
-      fetchStub.args[0][0].body.spec.template.spec.containers[0].image
-    ).to.equal('registry/app:1.0.0');
+    chai
+      .expect(fetchStub.args[0][0].body.spec.template.spec.containers[0].image)
+      .to.equal('registry/app:1.0.0');
     chai.expect(result).to.deep.equal({
       result: fetchResult,
       type: 'Deployment',
@@ -165,148 +165,148 @@ describe('deployment.create()', () => {
 });
 
 describe('deployment.get_pods()', () => {
-	let fetchStub;
+  let fetchStub;
 
-	beforeEach(() => {
-		fetchStub = sinon.stub();
-	});
+  beforeEach(() => {
+    fetchStub = sinon.stub();
+  });
 
-	afterEach(() => {
-		sinon.restore();
-	});
+  afterEach(() => {
+    sinon.restore();
+  });
 
-	it('adds kind to each pod item', async () => {
-		fetchStub.resolves({ items: [{ metadata: {} }, { metadata: {} }] });
+  it('adds kind to each pod item', async () => {
+    fetchStub.resolves({ items: [{ metadata: {} }, { metadata: {} }] });
 
-		const result = await deployment.get_pods(
-			{ hash: 'abcdef' },
-			{ fetch: fetchStub }
-		);
+    const result = await deployment.get_pods(
+      { hash: 'abcdef' },
+      { fetch: fetchStub }
+    );
 
-		chai.expect(fetchStub.calledOnce).to.be.true;
-		chai.expect(result.items[0].kind).to.equal('Pod');
-		chai.expect(result.items[1].kind).to.equal('Pod');
-	});
+    chai.expect(fetchStub.calledOnce).to.be.true;
+    chai.expect(result.items[0].kind).to.equal('Pod');
+    chai.expect(result.items[1].kind).to.equal('Pod');
+  });
 });
 
 describe('deployment.get_deployments()', () => {
-	let fetchStub;
+  let fetchStub;
 
-	beforeEach(() => {
-		fetchStub = sinon.stub();
-	});
+  beforeEach(() => {
+    fetchStub = sinon.stub();
+  });
 
-	afterEach(() => {
-		sinon.restore();
-	});
+  afterEach(() => {
+    sinon.restore();
+  });
 
-	it('adds kind to each deployment item', async () => {
-		fetchStub.resolves({ items: [{ metadata: {} }, { metadata: {} }] });
+  it('adds kind to each deployment item', async () => {
+    fetchStub.resolves({ items: [{ metadata: {} }, { metadata: {} }] });
 
-		const result = await deployment.get_deployments(
-			{ hash: 'abcdef' },
-			{ fetch: fetchStub }
-		);
+    const result = await deployment.get_deployments(
+      { hash: 'abcdef' },
+      { fetch: fetchStub }
+    );
 
-		chai.expect(fetchStub.calledOnce).to.be.true;
-		chai.expect(result.items[0].kind).to.equal('Deployment');
-		chai.expect(result.items[1].kind).to.equal('Deployment');
-	});
+    chai.expect(fetchStub.calledOnce).to.be.true;
+    chai.expect(result.items[0].kind).to.equal('Deployment');
+    chai.expect(result.items[1].kind).to.equal('Deployment');
+  });
 });
 
 describe('deployment.get_replicasets()', () => {
-	let fetchStub;
+  let fetchStub;
 
-	beforeEach(() => {
-		fetchStub = sinon.stub();
-	});
+  beforeEach(() => {
+    fetchStub = sinon.stub();
+  });
 
-	afterEach(() => {
-		sinon.restore();
-	});
+  afterEach(() => {
+    sinon.restore();
+  });
 
-	it('adds kind to each replicaset item', async () => {
-		fetchStub.resolves({ items: [{ metadata: {} }, { metadata: {} }] });
+  it('adds kind to each replicaset item', async () => {
+    fetchStub.resolves({ items: [{ metadata: {} }, { metadata: {} }] });
 
-		const result = await deployment.get_replicasets(
-			{ hash: 'abcdef' },
-			{ fetch: fetchStub }
-		);
+    const result = await deployment.get_replicasets(
+      { hash: 'abcdef' },
+      { fetch: fetchStub }
+    );
 
-		chai.expect(fetchStub.calledOnce).to.be.true;
-		chai.expect(result.items[0].kind).to.equal('ReplicaSet');
-		chai.expect(result.items[1].kind).to.equal('ReplicaSet');
-	});
+    chai.expect(fetchStub.calledOnce).to.be.true;
+    chai.expect(result.items[0].kind).to.equal('ReplicaSet');
+    chai.expect(result.items[1].kind).to.equal('ReplicaSet');
+  });
 });
 
 describe('deployment.test_exports', () => {
-	const { get, del, put } = deployment.test_exports;
+  const { get, del, put } = deployment.test_exports;
 
   it('lists deployments via get()', async function () {
     if (!get) this.skip();
-		const fetchStub = sinon.stub().resolves({
-			items: [{ metadata: { name: 'deploy-a' } }],
-		});
+    const fetchStub = sinon.stub().resolves({
+      items: [{ metadata: { name: 'deploy-a' } }],
+    });
 
-		const result = await get({ hash: 'abcdef' }, fetchStub);
+    const result = await get({ hash: 'abcdef' }, fetchStub);
 
-		chai.expect(fetchStub.args[0][0]).to.deep.equal({
-			url: '/apis/apps/v1/namespaces/nabcdef/deployments?labelSelector=type=Deployment,hash=abcdef',
-			method: 'GET',
-		});
-		chai.expect(result).to.deep.equal({
-			result: ['deploy-a'],
-			type: 'Deployments',
-		});
-	});
+    chai.expect(fetchStub.args[0][0]).to.deep.equal({
+      url: '/apis/apps/v1/namespaces/nabcdef/deployments?labelSelector=type=Deployment,hash=abcdef',
+      method: 'GET',
+    });
+    chai.expect(result).to.deep.equal({
+      result: ['deploy-a'],
+      type: 'Deployments',
+    });
+  });
 
   it('deletes a deployment via del()', async function () {
     if (!del) this.skip();
-		const fetchResult = { ok: true };
-		const fetchStub = sinon.stub().resolves(fetchResult);
+    const fetchResult = { ok: true };
+    const fetchStub = sinon.stub().resolves(fetchResult);
 
-		const result = await del({ hash: 'abcdef', name: 'deploy-a' }, fetchStub);
+    const result = await del({ hash: 'abcdef', name: 'deploy-a' }, fetchStub);
 
-		chai.expect(fetchStub.args[0][0]).to.deep.equal({
-			url: '/apis/apps/v1/namespaces/nabcdef/deployments/deploy-a',
-			method: 'DELETE',
-		});
-		chai.expect(result).to.deep.equal({
-			result: fetchResult,
-			type: 'Deployment',
-			name: 'deploy-a',
-		});
-	});
+    chai.expect(fetchStub.args[0][0]).to.deep.equal({
+      url: '/apis/apps/v1/namespaces/nabcdef/deployments/deploy-a',
+      method: 'DELETE',
+    });
+    chai.expect(result).to.deep.equal({
+      result: fetchResult,
+      type: 'Deployment',
+      name: 'deploy-a',
+    });
+  });
 
   it('updates scale via put()', async function () {
     if (!put) this.skip();
-		const fetchResult = { ok: true };
-		const fetchStub = sinon.stub().resolves(fetchResult);
+    const fetchResult = { ok: true };
+    const fetchStub = sinon.stub().resolves(fetchResult);
 
-		const result = await put(
-			{ hash: 'abcdef', name: 'deploy-a', replicas: 2 },
-			fetchStub
-		);
+    const result = await put(
+      { hash: 'abcdef', name: 'deploy-a', replicas: 2 },
+      fetchStub
+    );
 
-		chai.expect(fetchStub.args[0][0]).to.deep.equal({
-			url: '/apis/apps/v1/namespaces/nabcdef/deployments/deploy-a/scale',
-			method: 'PUT',
-			body: {
-				kind: 'Scale',
-				apiVersion: 'autoscaling/v1',
-				metadata: {
-					name: 'deploy-a',
-					namespace: 'nabcdef',
-				},
-				spec: {
-					replicas: 2,
-				},
-			},
-		});
-		chai.expect(result).to.deep.equal({
-			result: fetchResult,
-			type: 'Deployment',
-			name: 'deploy-a',
-		});
-	});
+    chai.expect(fetchStub.args[0][0]).to.deep.equal({
+      url: '/apis/apps/v1/namespaces/nabcdef/deployments/deploy-a/scale',
+      method: 'PUT',
+      body: {
+        kind: 'Scale',
+        apiVersion: 'autoscaling/v1',
+        metadata: {
+          name: 'deploy-a',
+          namespace: 'nabcdef',
+        },
+        spec: {
+          replicas: 2,
+        },
+      },
+    });
+    chai.expect(result).to.deep.equal({
+      result: fetchResult,
+      type: 'Deployment',
+      name: 'deploy-a',
+    });
+  });
 });

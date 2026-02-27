@@ -18,23 +18,27 @@ describe('Category object', () => {
   });
 
   it('throws on non-positive id_category', () => {
-    chai.expect(() => {
-      new Category({
-        id_category: 0,
-        label: 'Test',
-        google_material_icon: 'icon',
-      });
-    }).to.throw();
+    chai
+      .expect(() => {
+        new Category({
+          id_category: 0,
+          label: 'Test',
+          google_material_icon: 'icon',
+        });
+      })
+      .to.throw();
   });
 
   it('throws on empty label', () => {
-    chai.expect(() => {
-      new Category({
-        id_category: 1,
-        label: '',
-        google_material_icon: 'icon',
-      });
-    }).to.throw();
+    chai
+      .expect(() => {
+        new Category({
+          id_category: 1,
+          label: '',
+          google_material_icon: 'icon',
+        });
+      })
+      .to.throw();
   });
 
   it('serializes with environments array', () => {

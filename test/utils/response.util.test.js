@@ -370,9 +370,7 @@ describe('ApiResponse.error()', () => {
     ApiResponse.error(mockReq, mockRes, error);
 
     const jsonArg = mockRes.json.firstCall.args[0];
-    chai.expect(jsonArg.error.message).to.equal(
-      'An unexpected error occurred'
-    );
+    chai.expect(jsonArg.error.message).to.equal('An unexpected error occurred');
   });
 
   it('should use error message in response message field', () => {
@@ -468,13 +466,9 @@ describe('ApiResponse Full Integration', () => {
     ApiResponse.success(mockReq, mockRes, data, 200, 'OK');
 
     const response = mockRes.json.firstCall.args[0];
-    chai.expect(response).to.have.all.keys(
-      'success',
-      'message',
-      'data',
-      'error',
-      'timestamp'
-    );
+    chai
+      .expect(response)
+      .to.have.all.keys('success', 'message', 'data', 'error', 'timestamp');
   });
 
   it('should return valid JSON structure for error', () => {
@@ -485,12 +479,8 @@ describe('ApiResponse Full Integration', () => {
     ApiResponse.error(mockReq, mockRes, error);
 
     const response = mockRes.json.firstCall.args[0];
-    chai.expect(response).to.have.all.keys(
-      'success',
-      'message',
-      'data',
-      'error',
-      'timestamp'
-    );
+    chai
+      .expect(response)
+      .to.have.all.keys('success', 'message', 'data', 'error', 'timestamp');
   });
 });

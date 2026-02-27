@@ -15,10 +15,7 @@ describe('variableEnvironment.builder.list()', () => {
   });
 
   beforeEach(() => {
-    findAllStub = sinon.stub(
-      dbManager.models.VARIABLE_ENVIRONMENT,
-      'findAll',
-    );
+    findAllStub = sinon.stub(dbManager.models.VARIABLE_ENVIRONMENT, 'findAll');
   });
 
   afterEach(() => {

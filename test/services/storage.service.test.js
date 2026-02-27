@@ -118,7 +118,8 @@ describe('storage.service.exportStorage()', () => {
     } catch (err) {
       // Service has a bug with selectedInterface being undefined
       // This is expected until the service is fixed
-      chai.expect(err.message).to.include('selectedInterface') || chai.expect(mockApplicationGet.calledOnce).to.be.true;
+      chai.expect(err.message).to.include('selectedInterface') ||
+        chai.expect(mockApplicationGet.calledOnce).to.be.true;
     }
   });
 

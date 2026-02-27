@@ -47,30 +47,25 @@ describe('portType.builder.list()', () => {
     chai.expect(result).to.have.lengthOf(0);
   });
 
-  it(
-    'should map database records to PortType instances with correct properties',
-    async () => {
-      findAllStub.resolves([
-        { dataValues: { id_port_type: 1, label: 'HTTP' } },
-        { dataValues: { id_port_type: 2, label: 'HTTPS' } },
-        { dataValues: { id_port_type: 3, label: 'SSH' } },
-      ]);
+  it('should map database records to PortType instances with correct properties', async () => {
+    findAllStub.resolves([
+      { dataValues: { id_port_type: 1, label: 'HTTP' } },
+      { dataValues: { id_port_type: 2, label: 'HTTPS' } },
+      { dataValues: { id_port_type: 3, label: 'SSH' } },
+    ]);
 
-      const result = await portType_builder.list();
+    const result = await portType_builder.list();
 
-      chai.expect(result[0].id_port_type).to.equal(1);
-      chai.expect(result[0].label).to.equal('HTTP');
-      chai.expect(result[1].id_port_type).to.equal(2);
-      chai.expect(result[1].label).to.equal('HTTPS');
-      chai.expect(result[2].id_port_type).to.equal(3);
-      chai.expect(result[2].label).to.equal('SSH');
-    }
-  );
+    chai.expect(result[0].id_port_type).to.equal(1);
+    chai.expect(result[0].label).to.equal('HTTP');
+    chai.expect(result[1].id_port_type).to.equal(2);
+    chai.expect(result[1].label).to.equal('HTTPS');
+    chai.expect(result[2].id_port_type).to.equal(3);
+    chai.expect(result[2].label).to.equal('SSH');
+  });
 
   it('should handle single port type record', async () => {
-    findAllStub.resolves([
-      { dataValues: { id_port_type: 5, label: 'RDP' } },
-    ]);
+    findAllStub.resolves([{ dataValues: { id_port_type: 5, label: 'RDP' } }]);
 
     const result = await portType_builder.list();
 
@@ -168,25 +163,22 @@ describe('portType.builder.list()', () => {
     chai.expect(findAllStub.calledWith()).to.be.true;
   });
 
-  it(
-    'should correctly extract dataValues from Sequelize model instances',
-    async () => {
-      findAllStub.resolves([
-        {
-          dataValues: { id_port_type: 1, label: 'HTTP' },
-          _previousDataValues: {},
-          _changed: new Set(),
-          _options: {},
-          _modelOptions: {},
-        },
-      ]);
+  it('should correctly extract dataValues from Sequelize model instances', async () => {
+    findAllStub.resolves([
+      {
+        dataValues: { id_port_type: 1, label: 'HTTP' },
+        _previousDataValues: {},
+        _changed: new Set(),
+        _options: {},
+        _modelOptions: {},
+      },
+    ]);
 
-      const result = await portType_builder.list();
+    const result = await portType_builder.list();
 
-      chai.expect(result[0].id_port_type).to.equal(1);
-      chai.expect(result[0].label).to.equal('HTTP');
-    }
-  );
+    chai.expect(result[0].id_port_type).to.equal(1);
+    chai.expect(result[0].label).to.equal('HTTP');
+  });
 
   it('should handle port types with consistent property access', async () => {
     findAllStub.resolves([
@@ -203,9 +195,7 @@ describe('portType.builder.list()', () => {
   });
 
   it('should handle port type with undefined label', async () => {
-    findAllStub.resolves([
-      { dataValues: { id_port_type: 1 } },
-    ]);
+    findAllStub.resolves([{ dataValues: { id_port_type: 1 } }]);
 
     const result = await portType_builder.list();
 
@@ -213,9 +203,7 @@ describe('portType.builder.list()', () => {
   });
 
   it('should handle port type with valid id and label', async () => {
-    findAllStub.resolves([
-      { dataValues: { id_port_type: 1, label: 'HTTP' } },
-    ]);
+    findAllStub.resolves([{ dataValues: { id_port_type: 1, label: 'HTTP' } }]);
 
     const result = await portType_builder.list();
 
@@ -223,22 +211,19 @@ describe('portType.builder.list()', () => {
     chai.expect(result[0].label).to.equal('HTTP');
   });
 
-  it(
-    'should maintain order of port types as returned from database',
-    async () => {
-      findAllStub.resolves([
-        { dataValues: { id_port_type: 5, label: 'FTP' } },
-        { dataValues: { id_port_type: 3, label: 'SSH' } },
-        { dataValues: { id_port_type: 1, label: 'HTTP' } },
-      ]);
+  it('should maintain order of port types as returned from database', async () => {
+    findAllStub.resolves([
+      { dataValues: { id_port_type: 5, label: 'FTP' } },
+      { dataValues: { id_port_type: 3, label: 'SSH' } },
+      { dataValues: { id_port_type: 1, label: 'HTTP' } },
+    ]);
 
-      const result = await portType_builder.list();
+    const result = await portType_builder.list();
 
-      chai.expect(result[0].id_port_type).to.equal(5);
-      chai.expect(result[1].id_port_type).to.equal(3);
-      chai.expect(result[2].id_port_type).to.equal(1);
-    }
-  );
+    chai.expect(result[0].id_port_type).to.equal(5);
+    chai.expect(result[1].id_port_type).to.equal(3);
+    chai.expect(result[2].id_port_type).to.equal(1);
+  });
 
   it('should handle large number of port types', async () => {
     const portTypes = [];
@@ -265,9 +250,7 @@ describe('portType.builder.list()', () => {
     const result = await portType_builder.list();
 
     chai.expect(result[0]).to.not.equal(result[1]);
-    chai.expect(result[0].id_port_type).to.not.equal(
-      result[1].id_port_type
-    );
+    chai.expect(result[0].id_port_type).to.not.equal(result[1].id_port_type);
   });
 
   it('should handle special characters in labels', async () => {

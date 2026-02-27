@@ -19,10 +19,7 @@ describe('session.builder.attribute_professor()', () => {
   });
 
   beforeEach(() => {
-    createStub = sinon.stub(
-      dbManager.models.SESSION_HAS_PROFESSOR,
-      'create'
-    );
+    createStub = sinon.stub(dbManager.models.SESSION_HAS_PROFESSOR, 'create');
   });
 
   afterEach(() => {
@@ -103,10 +100,10 @@ describe('session.builder.attribute_professor()', () => {
   });
 
   it('should handle database errors during attribution', async () => {
-    const user_get_stub = sinon.stub().resolves({ id_user: 1, role: 'PROFESSEUR' });
-    createStub.rejects(
-      new Error('Database connection failed')
-    );
+    const user_get_stub = sinon
+      .stub()
+      .resolves({ id_user: 1, role: 'PROFESSEUR' });
+    createStub.rejects(new Error('Database connection failed'));
 
     try {
       await session_builder.attribute_professor(
@@ -165,7 +162,7 @@ describe('session.builder.attribute_user_and_application()', () => {
 
     const user_get_stub = sinon.stub().resolves(mockUser);
     const application_get_stub = sinon.stub().resolves(mockApp);
-    
+
     createStub.resolves({
       id_user: 1,
       id_session: 1,
@@ -434,14 +431,8 @@ describe('session.builder.list()', () => {
   });
 
   beforeEach(() => {
-    findAllStub = sinon.stub(
-      dbManager.models.SESSION_HAS_PROFESSOR,
-      'findAll'
-    );
-    sessionFindAllStub = sinon.stub(
-      dbManager.models.SESSION,
-      'findAll'
-    );
+    findAllStub = sinon.stub(dbManager.models.SESSION_HAS_PROFESSOR, 'findAll');
+    sessionFindAllStub = sinon.stub(dbManager.models.SESSION, 'findAll');
   });
 
   afterEach(() => {
@@ -527,10 +518,7 @@ describe('session.builder.list()', () => {
     const user_get_stub = sinon.stub().resolves(mockUser);
 
     try {
-      await session_builder.list(
-        { id_user: 1 },
-        { user_get: user_get_stub }
-      );
+      await session_builder.list({ id_user: 1 }, { user_get: user_get_stub });
       expect.fail('Should have thrown an error');
     } catch (err) {
       expect(err).to.exist;
@@ -543,10 +531,7 @@ describe('session.builder.list()', () => {
     findAllStub.rejects(new Error('Database connection failed'));
 
     try {
-      await session_builder.list(
-        { id_user: 1 },
-        { user_get: user_get_stub }
-      );
+      await session_builder.list({ id_user: 1 }, { user_get: user_get_stub });
       expect.fail('Should have thrown an error');
     } catch (err) {
       expect(err).to.exist;
@@ -576,10 +561,7 @@ describe('session.builder.get_on_professeur()', () => {
   });
 
   beforeEach(() => {
-    findOneStub = sinon.stub(
-      dbManager.models.SESSION_HAS_PROFESSOR,
-      'findOne'
-    );
+    findOneStub = sinon.stub(dbManager.models.SESSION_HAS_PROFESSOR, 'findOne');
   });
 
   afterEach(() => {
@@ -596,7 +578,7 @@ describe('session.builder.get_on_professeur()', () => {
       id_user: 1,
       dataValues: { id_session: 1, id_user: 1 },
     });
-    
+
     findOneStub.onSecondCall().resolves({
       SESSION: {
         id_session: 1,
@@ -772,10 +754,7 @@ describe('session.builder.getSessionToShutdown()', () => {
       dbManager.models.ENUM_STATE_APPLICATION,
       'findOne'
     );
-    findAllStub = sinon.stub(
-      dbManager.models.SESSION_HAS_USER,
-      'findAll'
-    );
+    findAllStub = sinon.stub(dbManager.models.SESSION_HAS_USER, 'findAll');
   });
 
   afterEach(() => {

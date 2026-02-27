@@ -11,14 +11,16 @@ describe('kafka.module', () => {
     it('should set consumer connection state to true', () => {
       kafkaModule.changeConsumerIsConnected({ state: true });
       // We can't directly verify the variable, but function should not throw
-      expect(() => kafkaModule.changeConsumerIsConnected({ state: true })).to
-        .not.throw();
+      expect(() =>
+        kafkaModule.changeConsumerIsConnected({ state: true })
+      ).to.not.throw();
     });
 
     it('should set consumer connection state to false', () => {
       kafkaModule.changeConsumerIsConnected({ state: false });
-      expect(() => kafkaModule.changeConsumerIsConnected({ state: false })).to
-        .not.throw();
+      expect(() =>
+        kafkaModule.changeConsumerIsConnected({ state: false })
+      ).to.not.throw();
     });
 
     it('should default state to false if not provided', () => {
@@ -26,22 +28,25 @@ describe('kafka.module', () => {
     });
 
     it('should throw error on invalid state type', () => {
-      expect(() => kafkaModule.changeConsumerIsConnected({ state: 'invalid' }))
-        .to.throw();
+      expect(() =>
+        kafkaModule.changeConsumerIsConnected({ state: 'invalid' })
+      ).to.throw();
     });
   });
 
   describe('changeProducerIsConnected()', () => {
     it('should set producer connection state to true', () => {
       kafkaModule.changeProducerIsConnected({ state: true });
-      expect(() => kafkaModule.changeProducerIsConnected({ state: true })).to
-        .not.throw();
+      expect(() =>
+        kafkaModule.changeProducerIsConnected({ state: true })
+      ).to.not.throw();
     });
 
     it('should set producer connection state to false', () => {
       kafkaModule.changeProducerIsConnected({ state: false });
-      expect(() => kafkaModule.changeProducerIsConnected({ state: false })).to
-        .not.throw();
+      expect(() =>
+        kafkaModule.changeProducerIsConnected({ state: false })
+      ).to.not.throw();
     });
 
     it('should default state to false if not provided', () => {
@@ -49,8 +54,9 @@ describe('kafka.module', () => {
     });
 
     it('should throw error on invalid state type', () => {
-      expect(() => kafkaModule.changeProducerIsConnected({ state: 123 })).to
-        .throw();
+      expect(() =>
+        kafkaModule.changeProducerIsConnected({ state: 123 })
+      ).to.throw();
     });
   });
 
@@ -172,9 +178,7 @@ describe('kafka.module', () => {
     });
 
     it('should handle connection errors', async () => {
-      const connectStub = sinon
-        .stub()
-        .rejects(new Error('Connection failed'));
+      const connectStub = sinon.stub().rejects(new Error('Connection failed'));
       const subscribeStub = sinon.stub().resolves();
       const runStub = sinon.stub().resolves();
       const setIntervalStub = sinon.stub();
@@ -218,10 +222,9 @@ describe('kafka.module', () => {
     it('should fetch kubernetes objects', async () => {
       const connectStub = sinon.stub().resolves();
       const sendStub = sinon.stub().resolves();
-      const listStub = sinon.stub().resolves([
-        { hash: 'ABCDEF' },
-        { hash: 'GHIJKL' },
-      ]);
+      const listStub = sinon
+        .stub()
+        .resolves([{ hash: 'ABCDEF' }, { hash: 'GHIJKL' }]);
       const getK8sObjectStub = sinon.stub().resolves([]);
 
       await kafkaModule.startKafkaPublication({
@@ -257,9 +260,7 @@ describe('kafka.module', () => {
     it('should handle list errors', async () => {
       const connectStub = sinon.stub().resolves();
       const sendStub = sinon.stub().resolves();
-      const listStub = sinon
-        .stub()
-        .rejects(new Error('List failed'));
+      const listStub = sinon.stub().rejects(new Error('List failed'));
       const getK8sObjectStub = sinon.stub().resolves([]);
 
       try {
@@ -361,8 +362,8 @@ describe('kafka.module', () => {
         }
       );
 
-      expect(parsingK8sStub.calledWith(sinon.match.has('hash', 'ABCDEF'))).to
-        .be.true;
+      expect(parsingK8sStub.calledWith(sinon.match.has('hash', 'ABCDEF'))).to.be
+        .true;
     });
 
     it('should handle multiple hashes correctly', async () => {

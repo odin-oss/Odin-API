@@ -30,12 +30,19 @@ describe('auth.builder.update()', () => {
     findOneStub.resolves({ id_role: 2, label: 'admin' });
     updateStub.resolves([
       1,
-      [{ id_user: 1, id_role: 2, username: 'testuser', email: 'test@example.com' }],
+      [
+        {
+          id_user: 1,
+          id_role: 2,
+          username: 'testuser',
+          email: 'test@example.com',
+        },
+      ],
     ]);
 
     const result = await auth_builder.update({
       id_user: 1,
-      role: 'ADMINISTRATEUR'
+      role: 'ADMINISTRATEUR',
     });
 
     chai.expect(findOneStub.calledOnce).to.be.true;

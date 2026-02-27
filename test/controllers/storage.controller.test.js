@@ -127,7 +127,7 @@ describe('storage_controller.exportStorage()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeExport.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await storage_controller.exportStorage(fakeReq, fakeRes, {
@@ -244,7 +244,7 @@ describe('storage_controller.deleteStorage()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeDelete.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await storage_controller.deleteStorage(fakeReq, fakeRes, {
@@ -327,7 +327,7 @@ describe('storage_controller.getStorage()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeGet.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await storage_controller.getStorage(fakeReq, fakeRes, {

@@ -1076,7 +1076,10 @@ describe('environment.builder.del()', () => {
       .rejects(new DBObjectNotFound('Environment not found'));
 
     try {
-      await environment_builder.del({ id_environment: 999 }, { get: mockGetFn });
+      await environment_builder.del(
+        { id_environment: 999 },
+        { get: mockGetFn }
+      );
       chai.expect.fail('Should have thrown DBObjectNotFound error');
     } catch (err) {
       chai.expect(err).to.be.instanceOf(DBObjectNotFound);
@@ -1107,10 +1110,7 @@ describe('environment.builder.del()', () => {
     destroyStub.rejects(new Error('Database connection failed'));
 
     try {
-      await environment_builder.del(
-        { id_environment: 1 },
-        { get: mockGetFn }
-      );
+      await environment_builder.del({ id_environment: 1 }, { get: mockGetFn });
       chai.expect.fail('Should have thrown an error');
     } catch (err) {
       chai.expect(err).to.exist;

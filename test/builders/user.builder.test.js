@@ -82,9 +82,9 @@ describe('user.builder.get()', () => {
       chai.expect.fail('Should have thrown an error');
     } catch (err) {
       chai.expect(err).to.exist;
-      chai.expect(err.message).to.include(
-        'Either mail or id_user must be present'
-      );
+      chai
+        .expect(err.message)
+        .to.include('Either mail or id_user must be present');
     }
   });
 
@@ -503,10 +503,7 @@ describe('user.builder.create()', () => {
   });
 
   beforeEach(() => {
-    createPasswordStub = sinon.stub(
-      dbManager.models.PASSWORD,
-      'create'
-    );
+    createPasswordStub = sinon.stub(dbManager.models.PASSWORD, 'create');
     createUserStub = sinon.stub(dbManager.models.USERS, 'create');
   });
 

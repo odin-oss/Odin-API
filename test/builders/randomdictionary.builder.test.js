@@ -89,10 +89,7 @@ describe('randomdictionary.builder.list()', () => {
   });
 
   it('should correctly serialize RandomDictionary to JSON', async () => {
-    findAllStub.resolves([
-      { word: 'hello' },
-      { word: 'world' },
-    ]);
+    findAllStub.resolves([{ word: 'hello' }, { word: 'world' }]);
 
     const result = await randomdictionary_builder.list();
     const json = result.toJSON();
@@ -125,12 +122,9 @@ describe('randomdictionary.builder.list()', () => {
 
     const result = await randomdictionary_builder.list();
 
-    chai.expect(result.words).to.deep.equal([
-      'zebra',
-      'apple',
-      'mango',
-      'banana',
-    ]);
+    chai
+      .expect(result.words)
+      .to.deep.equal(['zebra', 'apple', 'mango', 'banana']);
   });
 
   it('should handle words with special characters', async () => {
@@ -149,10 +143,7 @@ describe('randomdictionary.builder.list()', () => {
   });
 
   it('should handle empty string words', async () => {
-    findAllStub.resolves([
-      { word: '' },
-      { word: 'valid' },
-    ]);
+    findAllStub.resolves([{ word: '' }, { word: 'valid' }]);
 
     const result = await randomdictionary_builder.list();
 

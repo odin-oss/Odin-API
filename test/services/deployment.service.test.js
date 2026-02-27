@@ -74,10 +74,7 @@ describe('deployment.service.exec_deletion()', () => {
     };
 
     try {
-      await deployment_service.exec_deletion(
-        { hash: 'abc123' },
-        mockStubs
-      );
+      await deployment_service.exec_deletion({ hash: 'abc123' }, mockStubs);
       chai.expect.fail('Should have thrown an error');
     } catch (err) {
       chai.expect(err.message).to.include('Deletion failed');

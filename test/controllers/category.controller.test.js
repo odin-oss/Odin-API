@@ -182,12 +182,10 @@ describe('category_controller.create()', () => {
       create: fakeCreate,
     });
 
-    chai
-      .expect(fakeCreate)
-      .to.have.been.calledOnceWithExactly({
-        label: 'Development',
-        google_material_icon: 'code',
-      });
+    chai.expect(fakeCreate).to.have.been.calledOnceWithExactly({
+      label: 'Development',
+      google_material_icon: 'code',
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -287,12 +285,10 @@ describe('category_controller.detach_environment()', () => {
       detach_environment: fakeDetach,
     });
 
-    chai
-      .expect(fakeDetach)
-      .to.have.been.calledOnceWithExactly({
-        id_category: 1,
-        id_environment: 2,
-      });
+    chai.expect(fakeDetach).to.have.been.calledOnceWithExactly({
+      id_category: 1,
+      id_environment: 2,
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -397,12 +393,10 @@ describe('category_controller.attach_environment()', () => {
       attach_environment: fakeAttach,
     });
 
-    chai
-      .expect(fakeAttach)
-      .to.have.been.calledOnceWithExactly({
-        id_category: 1,
-        id_environment: 2,
-      });
+    chai.expect(fakeAttach).to.have.been.calledOnceWithExactly({
+      id_category: 1,
+      id_environment: 2,
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -501,13 +495,11 @@ describe('category_controller.update()', () => {
       update: fakeUpdate,
     });
 
-    chai
-      .expect(fakeUpdate)
-      .to.have.been.calledOnceWithExactly({
-        id_category: 1,
-        label: 'Updated Category',
-        google_material_icon: 'updated_icon',
-      });
+    chai.expect(fakeUpdate).to.have.been.calledOnceWithExactly({
+      id_category: 1,
+      label: 'Updated Category',
+      google_material_icon: 'updated_icon',
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -617,9 +609,7 @@ describe('category_controller.del()', () => {
       del: fakeDel,
     });
 
-    chai
-      .expect(fakeDel)
-      .to.have.been.calledOnceWithExactly({ id_category: 1 });
+    chai.expect(fakeDel).to.have.been.calledOnceWithExactly({ id_category: 1 });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];

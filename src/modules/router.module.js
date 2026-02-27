@@ -34,7 +34,7 @@ export default (app) => {
   app.use('/user', USER);
   app.use('/variableEnvironment', VARIABLEENVIRONMENT);
   app.use('/', BASE);
-  app.use('/*', (req, res) =>
+  app.use('/:any', (req, res) =>
     ApiResponse.error(req, res, new URLNotFound('URL not found.'))
   );
 };

@@ -32,9 +32,11 @@ describe('Argument object', () => {
   });
 
   it('throws on non-positive id_argument', () => {
-    chai.expect(() => {
-      new Argument({ id_argument: -1 });
-    }).to.throw();
+    chai
+      .expect(() => {
+        new Argument({ id_argument: -1 });
+      })
+      .to.throw();
   });
 
   it('serializes with toJSON', () => {

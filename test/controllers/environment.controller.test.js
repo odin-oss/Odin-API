@@ -60,14 +60,12 @@ describe('environment_controller.list()', () => {
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
     chai.expect(jsonCall.success).to.equal(true);
-    chai
-      .expect(jsonCall.message)
-      .to.equal('List of environments transmitted.');
+    chai.expect(jsonCall.message).to.equal('List of environments transmitted.');
   });
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeList.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await environment_controller.list(fakeReq, fakeRes, {
@@ -125,12 +123,10 @@ describe('environment_controller.create()', () => {
       create: fakeCreate,
     });
 
-    chai
-      .expect(fakeCreate)
-      .to.have.been.calledOnceWithExactly({
-        label: 'NodeJS',
-        icon: 'nodejs-icon',
-      });
+    chai.expect(fakeCreate).to.have.been.calledOnceWithExactly({
+      label: 'NodeJS',
+      icon: 'nodejs-icon',
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -186,7 +182,7 @@ describe('environment_controller.create()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeCreate.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await environment_controller.create(fakeReq, fakeRes, {
@@ -255,13 +251,11 @@ describe('environment_controller.attach_interface()', () => {
       attach_interface: fakeAttach,
     });
 
-    chai
-      .expect(fakeAttach)
-      .to.have.been.calledOnceWithExactly({
-        id_environment: 1,
-        id_interface: 2,
-        label: 'custom-interface-label',
-      });
+    chai.expect(fakeAttach).to.have.been.calledOnceWithExactly({
+      id_environment: 1,
+      id_interface: 2,
+      label: 'custom-interface-label',
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -332,7 +326,7 @@ describe('environment_controller.attach_interface()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeAttach.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await environment_controller.attach_interface(fakeReq, fakeRes, {
@@ -392,12 +386,10 @@ describe('environment_controller.detach_interface()', () => {
       detach_interface: fakeDetach,
     });
 
-    chai
-      .expect(fakeDetach)
-      .to.have.been.calledOnceWithExactly({
-        id_environment: 1,
-        id_interface: 2,
-      });
+    chai.expect(fakeDetach).to.have.been.calledOnceWithExactly({
+      id_environment: 1,
+      id_interface: 2,
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -450,7 +442,7 @@ describe('environment_controller.detach_interface()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeDetach.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await environment_controller.detach_interface(fakeReq, fakeRes, {
@@ -511,13 +503,11 @@ describe('environment_controller.update()', () => {
       update: fakeUpdate,
     });
 
-    chai
-      .expect(fakeUpdate)
-      .to.have.been.calledOnceWithExactly({
-        id_environment: 1,
-        label: 'Updated NodeJS',
-        icon: 'updated-nodejs-icon',
-      });
+    chai.expect(fakeUpdate).to.have.been.calledOnceWithExactly({
+      id_environment: 1,
+      label: 'Updated NodeJS',
+      icon: 'updated-nodejs-icon',
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -587,7 +577,7 @@ describe('environment_controller.update()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeUpdate.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await environment_controller.update(fakeReq, fakeRes, {
@@ -655,13 +645,11 @@ describe('environment_controller.update_interface()', () => {
       update_interface: fakeUpdateInterface,
     });
 
-    chai
-      .expect(fakeUpdateInterface)
-      .to.have.been.calledOnceWithExactly({
-        id_environment: 1,
-        id_interface: 2,
-        label: 'updated-interface-label',
-      });
+    chai.expect(fakeUpdateInterface).to.have.been.calledOnceWithExactly({
+      id_environment: 1,
+      id_interface: 2,
+      label: 'updated-interface-label',
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -669,7 +657,7 @@ describe('environment_controller.update_interface()', () => {
     chai
       .expect(jsonCall.message)
       .to.equal(
-        'The label of the interface inside the environment has been updated.',
+        'The label of the interface inside the environment has been updated.'
       );
   });
 
@@ -734,7 +722,7 @@ describe('environment_controller.update_interface()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeUpdateInterface.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await environment_controller.update_interface(fakeReq, fakeRes, {
@@ -791,11 +779,9 @@ describe('environment_controller.del()', () => {
       del: fakeDel,
     });
 
-    chai
-      .expect(fakeDel)
-      .to.have.been.calledOnceWithExactly({
-        id_environment: 1,
-      });
+    chai.expect(fakeDel).to.have.been.calledOnceWithExactly({
+      id_environment: 1,
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -848,7 +834,7 @@ describe('environment_controller.del()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeDel.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await environment_controller.del(fakeReq, fakeRes, {

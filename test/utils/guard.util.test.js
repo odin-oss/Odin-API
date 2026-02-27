@@ -294,11 +294,7 @@ describe('Guard.check_body()', () => {
       mail: 'john@example.com',
     };
 
-    const result = Guard.check_body(mockReq, [
-      'firstname',
-      'lastname',
-      'mail',
-    ]);
+    const result = Guard.check_body(mockReq, ['firstname', 'lastname', 'mail']);
 
     chai.expect(result).to.be.true;
   });
@@ -372,11 +368,7 @@ describe('Guard.check_body()', () => {
       extra_field: 'ignored',
     };
 
-    const result = Guard.check_body(mockReq, [
-      'firstname',
-      'lastname',
-      'mail',
-    ]);
+    const result = Guard.check_body(mockReq, ['firstname', 'lastname', 'mail']);
 
     chai.expect(result).to.be.true;
   });

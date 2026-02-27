@@ -172,7 +172,7 @@ describe('sessions_controller.create()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeCreate.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await sessions_controller.create(fakeReq, fakeRes, {
@@ -271,7 +271,7 @@ describe('sessions_controller.list()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeList.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await sessions_controller.list(fakeReq, fakeRes, {
@@ -388,7 +388,7 @@ describe('sessions_controller.get()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeGet.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await sessions_controller.get(fakeReq, fakeRes, {

@@ -18,27 +18,31 @@ describe('Application_export object', () => {
     chai.expect(appExport.id_export).to.equal(1);
     chai.expect(appExport.id_application).to.equal(5);
     chai.expect(appExport.status).to.equal('completed');
-    chai.expect(appExport.download_link).to.equal(
-      'https://example.com/export.zip'
-    );
+    chai
+      .expect(appExport.download_link)
+      .to.equal('https://example.com/export.zip');
     chai.expect(appExport.previous_export_deleted).to.be.true;
   });
 
   it('throws on invalid init_date format', () => {
-    chai.expect(() => {
-      new Application_export({
-        init_date: 'not-a-date',
-      });
-    }).to.throw();
+    chai
+      .expect(() => {
+        new Application_export({
+          init_date: 'not-a-date',
+        });
+      })
+      .to.throw();
   });
 
   it('throws on invalid expiration_date format', () => {
-    chai.expect(() => {
-      new Application_export({
-        init_date: '2026-02-27T10:00:00Z',
-        expiration_date: 'invalid-date',
-      });
-    }).to.throw();
+    chai
+      .expect(() => {
+        new Application_export({
+          init_date: '2026-02-27T10:00:00Z',
+          expiration_date: 'invalid-date',
+        });
+      })
+      .to.throw();
   });
 
   it('handles nullable id_provider', () => {

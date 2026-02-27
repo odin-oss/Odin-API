@@ -37,7 +37,7 @@ const router = express.Router();
  *         description: true if access is authorized.
  *
  */
-router.get('/:hash/*', function (req, res) {
+router.get('/:hash/:slug', function (req, res) {
   counter.inc();
   counter_get.inc();
   app_access_granted(req, res);

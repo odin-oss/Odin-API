@@ -64,7 +64,7 @@ describe('datacenter_controller.list()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeList.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await datacenter_controller.list(fakeReq, fakeRes, {
@@ -123,13 +123,11 @@ describe('datacenter_controller.create()', () => {
       create: fakeCreate,
     });
 
-    chai
-      .expect(fakeCreate)
-      .to.have.been.calledOnceWithExactly({
-        label: 'DC-East',
-        city: 'New York',
-        provider: 'AWS',
-      });
+    chai.expect(fakeCreate).to.have.been.calledOnceWithExactly({
+      label: 'DC-East',
+      city: 'New York',
+      provider: 'AWS',
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -204,7 +202,7 @@ describe('datacenter_controller.create()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeCreate.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await datacenter_controller.create(fakeReq, fakeRes, {
@@ -266,14 +264,12 @@ describe('datacenter_controller.update()', () => {
       update: fakeUpdate,
     });
 
-    chai
-      .expect(fakeUpdate)
-      .to.have.been.calledOnceWithExactly({
-        id_datacenter: 1,
-        label: 'DC-East-Updated',
-        city: 'Boston',
-        provider: 'Azure',
-      });
+    chai.expect(fakeUpdate).to.have.been.calledOnceWithExactly({
+      id_datacenter: 1,
+      label: 'DC-East-Updated',
+      city: 'Boston',
+      provider: 'Azure',
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -359,7 +355,7 @@ describe('datacenter_controller.update()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeUpdate.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await datacenter_controller.update(fakeReq, fakeRes, {
@@ -416,11 +412,9 @@ describe('datacenter_controller.del()', () => {
       del: fakeDel,
     });
 
-    chai
-      .expect(fakeDel)
-      .to.have.been.calledOnceWithExactly({
-        id_datacenter: 1,
-      });
+    chai.expect(fakeDel).to.have.been.calledOnceWithExactly({
+      id_datacenter: 1,
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -458,7 +452,7 @@ describe('datacenter_controller.del()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeDel.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await datacenter_controller.del(fakeReq, fakeRes, {
@@ -515,11 +509,9 @@ describe('datacenter_controller.get()', () => {
       get: fakeGet,
     });
 
-    chai
-      .expect(fakeGet)
-      .to.have.been.calledOnceWithExactly({
-        id_datacenter: 1,
-      });
+    chai.expect(fakeGet).to.have.been.calledOnceWithExactly({
+      id_datacenter: 1,
+    });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
     const jsonCall = fakeRes.json.firstCall.args[0];
@@ -572,7 +564,7 @@ describe('datacenter_controller.get()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeGet.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await datacenter_controller.get(fakeReq, fakeRes, {

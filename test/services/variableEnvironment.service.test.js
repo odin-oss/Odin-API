@@ -68,12 +68,14 @@ describe('variableEnvironment.service.list()', () => {
     });
 
     chai.expect(result).to.deep.equal(mockVariables);
-    chai.expect(result[0]).to.include.all.keys(
-      'id_var_env',
-      'key',
-      'value',
-      'description',
-      'secret'
-    );
+    chai
+      .expect(result[0])
+      .to.include.all.keys(
+        'id_var_env',
+        'key',
+        'value',
+        'description',
+        'secret'
+      );
   });
 });

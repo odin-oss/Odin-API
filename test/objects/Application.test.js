@@ -40,11 +40,13 @@ describe('Application object', () => {
   });
 
   it('throws on invalid date format', () => {
-    chai.expect(() => {
-      new Application({
-        creation_date: 'not-a-date',
-      });
-    }).to.throw();
+    chai
+      .expect(() => {
+        new Application({
+          creation_date: 'not-a-date',
+        });
+      })
+      .to.throw();
   });
 
   it('creates with nested objects', () => {

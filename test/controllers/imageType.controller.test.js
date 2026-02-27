@@ -60,7 +60,7 @@ describe('imageType_controller.list()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeList.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await imageType_controller.list(fakeReq, fakeRes, {

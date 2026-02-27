@@ -66,7 +66,7 @@ describe('portType_controller.list()', () => {
 
   it('called but should reject with DBConnexionRefused error.', async () => {
     fakeList.rejects(
-      new DBConnexionRefused('Connexion to the database refused.'),
+      new DBConnexionRefused('Connexion to the database refused.')
     );
 
     await portType_controller.list(fakeReq, fakeRes, {
