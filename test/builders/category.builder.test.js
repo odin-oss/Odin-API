@@ -135,6 +135,151 @@ describe('category.builder.list()', () => {
     chai.expect(result).to.have.lengthOf(1);
     chai.expect(result[0].environments).to.have.lengthOf(1);
   });
+
+  it('should push environment to existing category with empty interfaces array', async () => {
+    findOneStub.resolves([
+      {
+        CATEGORY: {
+          dataValues: {
+            id_category: 1,
+            label: 'Category 1',
+            google_material_icon: 'icon1',
+          },
+        },
+        ENVIRONMENT: {
+          dataValues: {
+            id_environment: 1,
+            label: 'Prod',
+            icon: 'icon-prod',
+          },
+        },
+      },
+      {
+        CATEGORY: {
+          dataValues: {
+            id_category: 1,
+            label: 'Category 1',
+            google_material_icon: 'icon1',
+          },
+        },
+        ENVIRONMENT: {
+          dataValues: {
+            id_environment: 2,
+            label: 'Dev',
+            icon: 'icon-dev',
+          },
+        },
+      }
+    ]);
+
+    const result = await category_builder.list({ all: false });
+
+    chai.expect(result).to.have.lengthOf(2);
+    chai.expect(result[0].id_category).to.equal(1);
+    chai.expect(result[0].environments).to.have.lengthOf(1);
+  });
+
+  it('should handle multiple categories with multiple environments', async () => {
+    findOneStub.resolves([
+      {
+        CATEGORY: {
+          dataValues: {
+            id_category: 1,
+            label: 'Category 1',
+            google_material_icon: 'icon1',
+          },
+        },
+        ENVIRONMENT: {
+          dataValues: {
+            id_environment: 1,
+            label: 'Prod',
+            icon: 'icon-prod',
+          },
+        },
+      },
+      {
+        CATEGORY: {
+          dataValues: {
+            id_category: 2,
+            label: 'Category 2',
+            google_material_icon: 'icon2',
+          },
+        },
+        ENVIRONMENT: {
+          dataValues: {
+            id_environment: 2,
+            label: 'Dev',
+            icon: 'icon-dev',
+          },
+        },
+      },
+      {
+        CATEGORY: {
+          dataValues: {
+            id_category: 1,
+            label: 'Category 1',
+            google_material_icon: 'icon1',
+          },
+        },
+        ENVIRONMENT: {
+          dataValues: {
+            id_environment: 3,
+            label: 'Staging',
+            icon: 'icon-staging',
+          },
+        },
+      }
+    ]);
+
+    const result = await category_builder.list({ all: false });
+
+    chai.expect(result).to.have.lengthOf(3);
+    chai.expect(result[0].environments).to.have.lengthOf(1);
+    chai.expect(result[1].environments).to.have.lengthOf(1);
+    chai.expect(result[0].environments[0].label).to.equal('Prod');
+  });
+
+  it('should ensure pushed environment has empty interfaces array', async () => {
+    findOneStub.resolves([
+      {
+        CATEGORY: {
+          dataValues: {
+            id_category: 1,
+            label: 'Category 1',
+            google_material_icon: 'icon1',
+          },
+        },
+        ENVIRONMENT: {
+          dataValues: {
+            id_environment: 1,
+            label: 'Prod',
+            icon: 'icon-prod',
+            
+          },
+        },
+      },
+      {
+        CATEGORY: {
+          dataValues: {
+            id_category: 1,
+            label: 'Category 1',
+            google_material_icon: 'icon1',
+          },
+        },
+        ENVIRONMENT: {
+          dataValues: {
+            id_environment: 2,
+            label: 'Dev',
+            icon: 'icon-dev',
+          },
+        },
+      }
+    ]);
+
+    const result = await category_builder.list({ all: false });
+
+    chai.expect(result[0].environments).to.have.lengthOf(1);
+  });
 });
 
 describe('category.builder.create()', () => {

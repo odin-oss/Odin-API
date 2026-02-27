@@ -34,7 +34,8 @@
       "**/src/modules/router.module.js",
       "**/src/config/db.config.js",
       "**/src/middlewares/winston.js",
-      "**/src/server.js"
+      "**/src/server.js",
+      "**/src/app.js"
     ],
     "report-dir": "./coverage",
     "extension": [

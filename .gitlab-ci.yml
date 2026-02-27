@@ -1,7 +1,0 @@
-include:
-  - project: 'caelus-team/pipelines-template'
-    ref: main
-    file: '/.gitlab-ci.yml'
-
-variables:
-  EMOJI_PROJET: '☁️'
