@@ -10,7 +10,7 @@
     "prettier:check": "prettier --check 'src/**/*.js'",
     "lint": "eslint 'src/**/*.js' --fix",
     "dev": "nodemon -r dotenv/config ./src/server.js dotenv_config_path=./.env.local --ignore ./src/models",
-    "test": "cross-env ENV=test mocha test/**/*.test.js test/**/**/*.test.js",
+    "test": "cross-env ENV=test APP_ENVIRONMENT=test mocha test/**/*.test.js test/**/**/*.test.js",
     "test:coverage": "c8 --allowExternal npm run test",
     "prod": "node -r dotenv/config index.js dotenv_config_path=./.env.prod"
   },

@@ -27,7 +27,7 @@ export const list = async function (
       )
     )
     .catch((error) => {
-      logs.debug(err);
+      logs.debug(error);
       ApiResponse.error(req, res, error);
     });
 };

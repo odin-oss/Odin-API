@@ -338,7 +338,7 @@ describe('auth.builder.role_by_label()', () => {
 
       findOneStub.resolves({
         dataValues: {
-          id_role: Math.floor(Math.random() * 100),
+          id_role: Math.floor(Math.random() * 100) + 1,
           label: label,
           description: `${label} role`,
         },
