@@ -90,7 +90,7 @@ describe('auth.service.role()', () => {
     const mockUser = {
       id_user: 1,
       mail: 'test@example.com',
-      role: 'ADMINISTRATEUR',
+      role: 'ADMINISTRATOR',
     };
     const mockUserGet = sinon.stub().resolves(mockUser);
 

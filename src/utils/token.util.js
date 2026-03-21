@@ -173,7 +173,7 @@ export const app_access_granted = async (
     );
 
     // save record in history
-    if (role === 'ADMINISTRATEUR' || app.id_user === verifiedToken.id_user) {
+    if (role === 'ADMINISTRATOR' || app.id_user === verifiedToken.id_user) {
       logs.info(
         `[${req.method}][200] ${
           regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
@@ -189,7 +189,7 @@ export const app_access_granted = async (
     }
 
     // send response
-    if (role === 'ADMINISTRATEUR' || app.id_user === verifiedToken.id_user)
+    if (role === 'ADMINISTRATOR' || app.id_user === verifiedToken.id_user)
       return res.status(200).json({ result: true });
     else return res.status(403).json({ result: false });
   } catch (error) {
@@ -224,9 +224,9 @@ export const isProfOrAdmin = async function (
       token: req.headers['authorization'],
     });
     return await fns.getRole({ id_user }).then((role) => {
-      if (!['ADMINISTRATEUR', 'PROFESSEUR'].includes(role))
+      if (!['ADMINISTRATOR', 'TEACHER'].includes(role))
         throw new UserIsNeitherProfOrAdmin(
-          'The user is neither PROFESSEUR or ADMINISTRATEUR.'
+          'The user is neither TEACHER or ADMINISTRATOR.'
         );
       else next();
     });
@@ -257,7 +257,7 @@ export const isAdmin = async function (
       token: req.headers['authorization'],
     });
     return await fns.getRole({ id_user }).then((role) => {
-      if (role !== 'ADMINISTRATEUR')
+      if (role !== 'ADMINISTRATOR')
         throw new UserIsNotAdmin('The user is not admin.');
       else next();
     });
@@ -288,7 +288,7 @@ export const isProf = async function (
       token: req.headers['authorization'],
     });
     return await Promise.resolve(fns.getRole({ id_user })).then((role) => {
-      if (role !== 'PROFESSEUR')
+      if (role !== 'TEACHER')
         throw new UserIsNotProfessor('The user is not professor.');
       else next();
     });
@@ -336,7 +336,7 @@ export const isOwner = async (
       fns.getRole({ id_user }),
     ];
     return await Promise.all(promises).then((response) => {
-      if (response[1] === 'ADMINISTRATEUR' || response[0]) next();
+      if (response[1] === 'ADMINISTRATOR' || response[0]) next();
       else
         throw new UserIsNotOwner(
           'The user is not the owner of this application.'

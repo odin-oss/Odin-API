@@ -126,9 +126,9 @@ export const list = async function (
 
   // we check the role of the user
   const user_role = await fns.user_get({ ...data });
-  if (!['PROFESSEUR', 'ADMINISTRATEUR'].includes(user_role.role))
+  if (!['TEACHER', 'ADMINISTRATOR'].includes(user_role.role))
     throw new UserIsNeitherProfOrAdmin(
-      'The user is neither PROFESSEUR or ADMINISTRATEUR.'
+      'The user is neither TEACHER or ADMINISTRATOR.'
     );
 
   const sessions = await fns.session_list({ ...data });
@@ -162,7 +162,7 @@ export const list = async function (
 };
 
 /**
- * Service that checks role of the user - and attribution for professeur- and then give informations about the session.
+ * Service that checks role of the user - and attribution for TEACHER- and then give informations about the session.
  * @param {Number} id_application id of the application to get
  * @param {Number} id_session id of the session in which to get the application.
  * @param {Function} fns functions to overwrite for unit testing.
@@ -172,8 +172,8 @@ export const get = async function (
   props,
   fns = {
     user_get: user_service.get,
-    session_get_on_professeur: session_builder.get_on_professeur,
-    session_get_on_administrateur: session_builder.get_on_administrateur,
+    session_get_on_teacher: session_builder.get_on_teacher,
+    session_get_on_administrator: session_builder.get_on_administrator,
     user_list: user_builder.get_list,
     application_get: application_service.get,
   }
@@ -184,16 +184,16 @@ export const get = async function (
   });
   const data = Guard.validateProps(schema, props);
   const user_role = await fns.user_get({ ...data });
-  if (!['PROFESSEUR', 'ADMINISTRATEUR'].includes(user_role.role))
+  if (!['TEACHER', 'ADMINISTRATOR'].includes(user_role.role))
     throw new UserIsNeitherProfOrAdmin(
-      'The user is neither PROFESSEUR or ADMINISTRATEUR.'
+      'The user is neither TEACHER or ADMINISTRATOR.'
     );
 
   let promise;
-  if (user_role.role === 'PROFESSEUR') {
-    promise = fns.session_get_on_professeur({ ...data });
+  if (user_role.role === 'TEACHER') {
+    promise = fns.session_get_on_teacher({ ...data });
   } else {
-    promise = fns.session_get_on_administrateur({ ...data });
+    promise = fns.session_get_on_administrator({ ...data });
   }
 
   const session = await promise;

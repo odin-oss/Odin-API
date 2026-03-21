@@ -40,7 +40,7 @@ describe('user_controller.me()', () => {
       lastname: 'Doe',
       firstname: 'John',
       mail: 'john.doe@example.com',
-      role: 'ETUDIANT',
+      role: 'STUDENT',
     });
 
     fakeGet.resolves(Promise.resolve(mockUser));
@@ -182,10 +182,10 @@ describe('user_controller.list()', () => {
         authorization: 'Bearer ' + token,
       },
       query: {
-        user_role: 'ETUDIANT',
+        user_role: 'STUDENT',
       },
       method: 'GET',
-      originalUrl: '/user/list?user_role=ETUDIANT',
+      originalUrl: '/user/list?user_role=STUDENT',
     };
     fakeRes = {
       status: sinon.stub().returnsThis(),
@@ -204,14 +204,14 @@ describe('user_controller.list()', () => {
         lastname: 'Doe',
         firstname: 'John',
         mail: 'john.doe@example.com',
-        role: 'ETUDIANT',
+        role: 'STUDENT',
       }),
       new User({
         id_user: 2,
         lastname: 'Smith',
         firstname: 'Jane',
         mail: 'jane.smith@example.com',
-        role: 'ETUDIANT',
+        role: 'STUDENT',
       }),
     ];
 
@@ -222,7 +222,7 @@ describe('user_controller.list()', () => {
     });
 
     chai.expect(fakeList).to.have.been.calledOnceWithExactly({
-      user_role: 'ETUDIANT',
+      user_role: 'STUDENT',
     });
     chai.expect(fakeRes.status).to.have.been.calledOnceWithExactly(200);
     chai.expect(fakeRes.json).to.have.been.calledOnce;
@@ -293,7 +293,7 @@ describe('user_controller.create()', () => {
         mail: 'john.doe@example.com',
         lastname: 'Doe',
         firstname: 'John',
-        role: 'ETUDIANT',
+        role: 'STUDENT',
       },
       method: 'POST',
       originalUrl: '/user',
@@ -314,7 +314,7 @@ describe('user_controller.create()', () => {
       lastname: 'Doe',
       firstname: 'John',
       mail: 'john.doe@example.com',
-      role: 'ETUDIANT',
+      role: 'STUDENT',
     });
 
     fakeCreate.resolves(Promise.resolve(mockUser));
@@ -326,7 +326,7 @@ describe('user_controller.create()', () => {
     chai.expect(fakeCreate).to.have.been.calledOnceWithExactly({
       mail: 'john.doe@example.com',
       pwd: 'new_password_123',
-      role: 'ETUDIANT',
+      role: 'STUDENT',
       lastname: 'Doe',
       firstname: 'John',
     });
@@ -342,7 +342,7 @@ describe('user_controller.create()', () => {
       password: 'new_password_123',
       lastname: 'Doe',
       firstname: 'John',
-      role: 'ETUDIANT',
+      role: 'STUDENT',
     };
 
     await user_controller.create(fakeReq, fakeRes, {
@@ -356,7 +356,7 @@ describe('user_controller.create()', () => {
   });
 
   it('called with invalid role and should reject with ParameterMisformed.', async () => {
-    fakeReq.body.role = 'ADMINISTRATEUR';
+    fakeReq.body.role = 'ADMINISTRATOR';
 
     await user_controller.create(fakeReq, fakeRes, {
       create: fakeCreate,

@@ -136,12 +136,12 @@ export const list = async function (
     });
     const data = Guard.validateProps(schema, props);
     const user_role = await fns.user_get({ ...data });
-    if (!['PROFESSEUR', 'ADMINISTRATEUR'].includes(user_role.role))
+    if (!['TEACHER', 'ADMINISTRATOR'].includes(user_role.role))
       throw new UserIsNeitherProfOrAdmin(
-        'The user is neither PROFESSEUR or ADMINISTRATEUR.'
+        'The user is neither TEACHER or ADMINISTRATOR.'
       );
     let promise;
-    if (user_role.role === 'PROFESSEUR') {
+    if (user_role.role === 'TEACHER') {
       promise = dbManager.models.SESSION_HAS_PROFESSOR.findAll({
         where: {
           id_user: data.id_user,
@@ -213,7 +213,7 @@ export const list = async function (
       const tmp = [];
       for (const item of r) {
         let result;
-        const source = user_role.role === 'PROFESSEUR' ? item.SESSION : item;
+        const source = user_role.role === 'TEACHER' ? item.SESSION : item;
         result = {
           ...source.dataValues,
           environment: new Environment(source.ENVIRONMENT),
@@ -243,12 +243,12 @@ export const list = async function (
 };
 
 /**
- * Get session if user is PROFESSEUR.
+ * Get session if user is TEACHER.
  * @param {Number} id_user id of the user
  * @param {Number} id_session id of the session
  * @return {Session} sessions of the user.
  */
-export const get_on_professeur = async function (props) {
+export const get_on_teacher = async function (props) {
   try {
     const schema = z.object({
       id_user: z.number().positive(),
@@ -329,10 +329,10 @@ export const get_on_professeur = async function (props) {
 };
 
 /**
- * Get session if user is ADMINISTRATEUR.
+ * Get session if user is ADMINISTRATOR.
  * @param {Number} id_session id of the session to get
  */
-export const get_on_administrateur = async function (props) {
+export const get_on_administrator = async function (props) {
   const schema = z.object({
     id_session: z.number().positive(),
   });

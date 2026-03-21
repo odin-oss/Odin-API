@@ -8,7 +8,7 @@ chai.use(sinonChai);
 
 describe('user.service.get()', () => {
   it('should get user by id successfully', async () => {
-    const mockUser = { id_user: 1, mail: 'test@example.com', role: 'ETUDIANT' };
+    const mockUser = { id_user: 1, mail: 'test@example.com', role: 'STUDENT' };
     const mockUserGet = sinon.stub().resolves(mockUser);
 
     const result = await user_service.get(
@@ -49,15 +49,15 @@ describe('user.service.get()', () => {
 });
 
 describe('user.service.list_by_role()', () => {
-  it('should list users by role ETUDIANT', async () => {
+  it('should list users by role STUDENT', async () => {
     const mockUsers = [
-      { id_user: 1, mail: 'student1@example.com', role: 'ETUDIANT' },
-      { id_user: 2, mail: 'student2@example.com', role: 'ETUDIANT' },
+      { id_user: 1, mail: 'student1@example.com', role: 'STUDENT' },
+      { id_user: 2, mail: 'student2@example.com', role: 'STUDENT' },
     ];
     const mockUserList = sinon.stub().resolves(mockUsers);
 
     const result = await user_service.list_by_role(
-      { user_role: 'ETUDIANT' },
+      { user_role: 'STUDENT' },
       { user_list: mockUserList }
     );
 
@@ -65,14 +65,14 @@ describe('user.service.list_by_role()', () => {
     chai.expect(mockUserList.calledOnce).to.be.true;
   });
 
-  it('should list users by role PROFESSEUR', async () => {
+  it('should list users by role TEACHER', async () => {
     const mockUsers = [
-      { id_user: 3, mail: 'prof@example.com', role: 'PROFESSEUR' },
+      { id_user: 3, mail: 'prof@example.com', role: 'TEACHER' },
     ];
     const mockUserList = sinon.stub().resolves(mockUsers);
 
     const result = await user_service.list_by_role(
-      { user_role: 'PROFESSEUR' },
+      { user_role: 'TEACHER' },
       { user_list: mockUserList }
     );
 
@@ -80,14 +80,14 @@ describe('user.service.list_by_role()', () => {
     chai.expect(mockUserList.calledOnce).to.be.true;
   });
 
-  it('should list users by role ADMINISTRATEUR', async () => {
+  it('should list users by role ADMINISTRATOR', async () => {
     const mockUsers = [
-      { id_user: 4, mail: 'admin@example.com', role: 'ADMINISTRATEUR' },
+      { id_user: 4, mail: 'admin@example.com', role: 'ADMINISTRATOR' },
     ];
     const mockUserList = sinon.stub().resolves(mockUsers);
 
     const result = await user_service.list_by_role(
-      { user_role: 'ADMINISTRATEUR' },
+      { user_role: 'ADMINISTRATOR' },
       { user_list: mockUserList }
     );
 
@@ -108,7 +108,7 @@ describe('user.service.list_by_role()', () => {
     const mockUserList = sinon.stub().resolves([]);
 
     const result = await user_service.list_by_role(
-      { user_role: 'ETUDIANT' },
+      { user_role: 'STUDENT' },
       { user_list: mockUserList }
     );
 
@@ -233,13 +233,13 @@ describe('user.service.update_password()', () => {
 
 describe('user.service.create()', () => {
   it('should create user successfully with valid data', async () => {
-    const mockRole = { id_role: 1, label: 'ETUDIANT' };
+    const mockRole = { id_role: 1, label: 'STUDENT' };
     const mockNewUser = {
       id_user: 1,
       mail: 'newuser@example.com',
       firstname: 'John',
       lastname: 'Doe',
-      role: 'ETUDIANT',
+      role: 'STUDENT',
     };
     const mockRoleByLabel = sinon.stub().resolves(mockRole);
     const mockCreate = sinon.stub().resolves({ ...mockNewUser, id_role: 1 });
@@ -251,7 +251,7 @@ describe('user.service.create()', () => {
       {
         pwd: 'SecurePassword123!',
         mail: 'newuser@example.com',
-        role: 'ETUDIANT',
+        role: 'STUDENT',
         lastname: 'Doe',
         firstname: 'John',
       },
@@ -272,7 +272,7 @@ describe('user.service.create()', () => {
       await user_service.create({
         pwd: 'short1!',
         mail: 'user@example.com',
-        role: 'ETUDIANT',
+        role: 'STUDENT',
         lastname: 'Doe',
         firstname: 'John',
       });
@@ -287,7 +287,7 @@ describe('user.service.create()', () => {
       await user_service.create({
         pwd: 'SecurePassword123!',
         mail: 'invalid-email',
-        role: 'ETUDIANT',
+        role: 'STUDENT',
         lastname: 'Doe',
         firstname: 'John',
       });
@@ -317,7 +317,7 @@ describe('user.service.create()', () => {
       await user_service.create({
         pwd: 'SecurePassword123!',
         mail: 'user@example.com',
-        role: 'ETUDIANT',
+        role: 'STUDENT',
         lastname: '',
         firstname: 'John',
       });

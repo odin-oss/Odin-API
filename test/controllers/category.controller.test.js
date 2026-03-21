@@ -67,7 +67,7 @@ describe('category_controller.list()', () => {
 
   it('called with all=true as admin and should return all categories.', async () => {
     fakeReq.query = { all: 'true' };
-    fakeRole.resolves('ADMINISTRATEUR');
+    fakeRole.resolves('ADMINISTRATOR');
 
     const mockCategories = [
       new Category({

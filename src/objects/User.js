@@ -25,7 +25,7 @@ export class User {
     lastname: z.string().min(1).optional(),
     firstname: z.string().min(1).optional(),
     mail: z.email('Invalid email address').optional(),
-    role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']).optional(),
+    role: z.enum(['STUDENT', 'TEACHER', 'ADMINISTRATOR']).optional(),
     pwd: z.string().min(8).optional().optional(),
   });
 

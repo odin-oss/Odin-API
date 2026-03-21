@@ -35,7 +35,7 @@ export const list = async function (
     const data = Guard.validateProps(schema, req.query);
 
     let all = false;
-    if (data.all) all = (await fns.user_role({ id_user })) === 'ADMINISTRATEUR';
+    if (data.all) all = (await fns.user_role({ id_user })) === 'ADMINISTRATOR';
 
     //Request
     await fns.category_list({ all }).then((categories) =>

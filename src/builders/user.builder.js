@@ -56,7 +56,7 @@ export const get = async function (props) {
 export const list = async function (props) {
   try {
     const schema = z.object({
-      user_role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
+      user_role: z.enum(['STUDENT', 'TEACHER', 'ADMINISTRATOR']),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
