@@ -45,10 +45,12 @@ export const create = async (
       id_environment: z.coerce.number().positive(),
       id_datacenter: z.coerce.number().positive(),
       professors: z.preprocess((val) => {
-        return JSON.parse(val);
+        if (typeof val === 'string') return JSON.parse(val);
+        return val;
       }, z.array(z.coerce.number().int().positive()).default([])),
       users: z.preprocess((val) => {
-        return JSON.parse(val);
+        if (typeof val === 'string') return JSON.parse(val);
+        return val;
       }, z.array(z.coerce.number().int().positive()).default([])),
       begin_date: z
         .refine((val) => moment(val).isValid(), {
