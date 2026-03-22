@@ -217,7 +217,7 @@ export const get = async function (
       if (corresponding_user) session.professors[idx] = corresponding_user;
     }
   });
-
+  
   // Fetching the applications
   const unique_ids_applications = [
     ...new Set([...session.applications.map((app) => app.id_application)]),
