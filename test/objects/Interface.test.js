@@ -71,7 +71,7 @@ describe('Interface object', () => {
       type: new ImageType({
         id_type: 1,
         label: 'docker',
-      })
+      }),
     });
 
     const format = iface.public_format();

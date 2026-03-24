@@ -469,7 +469,7 @@ describe('interface.builder.create()', () => {
         type: new ImageType({
           id_type: 1,
           label: 'Ubuntu',
-        })
+        }),
       })
     );
 
@@ -665,7 +665,7 @@ describe('interface.builder.update()', () => {
         type: new ImageType({
           id_type: 1,
           label: 'Ubuntu',
-        })
+        }),
       })
     );
 

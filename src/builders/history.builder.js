@@ -27,7 +27,7 @@ export const create = async function (props) {
         new History({
           records: [
             new Record({
-              ...r,
+              ...r.dataValues,
               datetime: moment(r.datetime).tz(CONFIG.APP_TZ),
             }),
           ],
@@ -63,7 +63,7 @@ export const get_last_record = async function (props) {
       return new History({
         records: [
           new Record({
-            ...r,
+            ...r.dataValues,
             datetime: moment(r.datetime).tz(CONFIG.APP_TZ),
           }),
         ],
