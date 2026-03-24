@@ -46,13 +46,13 @@ describe('session.service.create()', () => {
     const mockUser = new User({
       id_user: 1,
       mail: 'user@example.com',
-      role: 'ETUDIANT',
+      role: 'STUDENT',
     });
 
     const mockProfessor = new User({
       id_user: 2,
       mail: 'prof@example.com',
-      role: 'PROFESSEUR',
+      role: 'TEACHER',
     });
 
     // Mock session must have all required Session properties as instances
@@ -176,7 +176,7 @@ describe('session.service.create()', () => {
 
 describe('session.service.list()', () => {
   it('should list sessions for an admin user successfully', async () => {
-    const mockUser = { id_user: 1, role: 'ADMINISTRATEUR' };
+    const mockUser = { id_user: 1, role: 'ADMINISTRATOR' };
     const mockSessions = [
       {
         id_session: 1,
@@ -186,8 +186,8 @@ describe('session.service.list()', () => {
       },
     ];
     const mockUsers = [
-      { id_user: 2, mail: 'user@example.com', role: 'ETUDIANT' },
-      { id_user: 3, mail: 'prof@example.com', role: 'PROFESSEUR' },
+      { id_user: 2, mail: 'user@example.com', role: 'STUDENT' },
+      { id_user: 3, mail: 'prof@example.com', role: 'TEACHER' },
     ];
 
     const mockUserGet = sinon.stub().resolves(mockUser);
@@ -208,7 +208,7 @@ describe('session.service.list()', () => {
   });
 
   it('should list sessions for a professor user successfully', async () => {
-    const mockUser = { id_user: 1, role: 'PROFESSEUR' };
+    const mockUser = { id_user: 1, role: 'TEACHER' };
     const mockSessions = [
       {
         id_session: 1,
@@ -234,8 +234,8 @@ describe('session.service.list()', () => {
     chai.expect(mockUserGet.calledOnce).to.be.true;
   });
 
-  it('should throw UserIsNeitherProfOrAdmin when user is ETUDIANT', async () => {
-    const mockUser = { id_user: 1, role: 'ETUDIANT' };
+  it('should throw UserIsNeitherProfOrAdmin when user is STUDENT', async () => {
+    const mockUser = { id_user: 1, role: 'STUDENT' };
     const mockUserGet = sinon.stub().resolves(mockUser);
 
     try {
@@ -272,7 +272,7 @@ describe('session.service.list()', () => {
   });
 
   it('should return empty array when admin has no sessions', async () => {
-    const mockUser = { id_user: 1, role: 'ADMINISTRATEUR' };
+    const mockUser = { id_user: 1, role: 'ADMINISTRATOR' };
     const mockUserGet = sinon.stub().resolves(mockUser);
     const mockSessionList = sinon.stub().resolves([]);
 
@@ -291,7 +291,7 @@ describe('session.service.list()', () => {
 
 describe('session.service.get()', () => {
   it('should get session for admin user successfully', async () => {
-    const mockUser = { id_user: 1, role: 'ADMINISTRATEUR' };
+    const mockUser = { id_user: 1, role: 'ADMINISTRATOR' };
     const mockSession = {
       id_session: 1,
       label: 'Session 1',
@@ -318,8 +318,8 @@ describe('session.service.get()', () => {
       { id_user: 1, id_session: 1 },
       {
         user_get: mockUserGet,
-        session_get_on_administrateur: mockSessionGetAdmin,
-        session_get_on_professeur: sinon.stub(),
+        session_get_on_administrator: mockSessionGetAdmin,
+        session_get_on_teacher: sinon.stub(),
         user_list: mockUserList,
         application_get: mockApplicationGet,
       }
@@ -329,8 +329,8 @@ describe('session.service.get()', () => {
     chai.expect(mockSessionGetAdmin.calledOnce).to.be.true;
   });
 
-  it('should throw UserIsNeitherProfOrAdmin when user is ETUDIANT', async () => {
-    const mockUser = { id_user: 1, role: 'ETUDIANT' };
+  it('should throw UserIsNeitherProfOrAdmin when user is STUDENT', async () => {
+    const mockUser = { id_user: 1, role: 'STUDENT' };
     const mockUserGet = sinon.stub().resolves(mockUser);
 
     try {
@@ -338,8 +338,8 @@ describe('session.service.get()', () => {
         { id_user: 1, id_session: 1 },
         {
           user_get: mockUserGet,
-          session_get_on_administrateur: sinon.stub(),
-          session_get_on_professeur: sinon.stub(),
+          session_get_on_administrator: sinon.stub(),
+          session_get_on_teacher: sinon.stub(),
           user_list: sinon.stub(),
           application_get: sinon.stub(),
         }

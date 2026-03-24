@@ -33,7 +33,7 @@ describe('user.builder.get()', () => {
         id_password: 5,
       },
       USER_ROLE: {
-        label: 'ETUDIANT',
+        label: 'STUDENT',
       },
       PASSWORD: {
         pwd: 'hashed_password_123',
@@ -48,7 +48,7 @@ describe('user.builder.get()', () => {
     chai.expect(result.firstname).to.equal('John');
     chai.expect(result.lastname).to.equal('Doe');
     chai.expect(result.mail).to.equal('john@example.com');
-    chai.expect(result.role).to.equal('ETUDIANT');
+    chai.expect(result.role).to.equal('STUDENT');
   });
 
   it('should retrieve a user by mail', async () => {
@@ -61,7 +61,7 @@ describe('user.builder.get()', () => {
         id_password: 6,
       },
       USER_ROLE: {
-        label: 'PROFESSEUR',
+        label: 'TEACHER',
       },
       PASSWORD: {
         pwd: 'hashed_password_456',
@@ -73,7 +73,7 @@ describe('user.builder.get()', () => {
     chai.expect(findOneStub.calledOnce).to.be.true;
     chai.expect(result).to.be.instanceOf(User);
     chai.expect(result.mail).to.equal('jane@example.com');
-    chai.expect(result.role).to.equal('PROFESSEUR');
+    chai.expect(result.role).to.equal('TEACHER');
   });
 
   it('should throw when neither id_user nor mail is provided', async () => {
@@ -154,7 +154,7 @@ describe('user.builder.list()', () => {
     sinon.restore();
   });
 
-  it('should retrieve all ETUDIANT users', async () => {
+  it('should retrieve all STUDENT users', async () => {
     findAllStub.resolves([
       {
         dataValues: {
@@ -164,7 +164,7 @@ describe('user.builder.list()', () => {
           mail: 'john@example.com',
         },
         USER_ROLE: {
-          label: 'ETUDIANT',
+          label: 'STUDENT',
         },
       },
       {
@@ -175,22 +175,22 @@ describe('user.builder.list()', () => {
           mail: 'jane@example.com',
         },
         USER_ROLE: {
-          label: 'ETUDIANT',
+          label: 'STUDENT',
         },
       },
     ]);
 
-    const result = await user_builder.list({ user_role: 'ETUDIANT' });
+    const result = await user_builder.list({ user_role: 'STUDENT' });
 
     chai.expect(findAllStub.calledOnce).to.be.true;
     chai.expect(result).to.be.an('array');
     chai.expect(result).to.have.lengthOf(2);
     chai.expect(result[0]).to.be.instanceOf(User);
     chai.expect(result[1]).to.be.instanceOf(User);
-    chai.expect(result[0].role).to.equal('ETUDIANT');
+    chai.expect(result[0].role).to.equal('STUDENT');
   });
 
-  it('should retrieve all PROFESSEUR users', async () => {
+  it('should retrieve all TEACHER users', async () => {
     findAllStub.resolves([
       {
         dataValues: {
@@ -200,18 +200,18 @@ describe('user.builder.list()', () => {
           mail: 'alice@example.com',
         },
         USER_ROLE: {
-          label: 'PROFESSEUR',
+          label: 'TEACHER',
         },
       },
     ]);
 
-    const result = await user_builder.list({ user_role: 'PROFESSEUR' });
+    const result = await user_builder.list({ user_role: 'TEACHER' });
 
     chai.expect(result).to.have.lengthOf(1);
-    chai.expect(result[0].role).to.equal('PROFESSEUR');
+    chai.expect(result[0].role).to.equal('TEACHER');
   });
 
-  it('should retrieve all ADMINISTRATEUR users', async () => {
+  it('should retrieve all ADMINISTRATOR users', async () => {
     findAllStub.resolves([
       {
         dataValues: {
@@ -221,21 +221,21 @@ describe('user.builder.list()', () => {
           mail: 'admin@example.com',
         },
         USER_ROLE: {
-          label: 'ADMINISTRATEUR',
+          label: 'ADMINISTRATOR',
         },
       },
     ]);
 
-    const result = await user_builder.list({ user_role: 'ADMINISTRATEUR' });
+    const result = await user_builder.list({ user_role: 'ADMINISTRATOR' });
 
     chai.expect(result).to.have.lengthOf(1);
-    chai.expect(result[0].role).to.equal('ADMINISTRATEUR');
+    chai.expect(result[0].role).to.equal('ADMINISTRATOR');
   });
 
   it('should return empty array if no users found', async () => {
     findAllStub.resolves([]);
 
-    const result = await user_builder.list({ user_role: 'ETUDIANT' });
+    const result = await user_builder.list({ user_role: 'STUDENT' });
 
     chai.expect(result).to.be.an('array');
     chai.expect(result).to.have.lengthOf(0);
@@ -274,7 +274,7 @@ describe('user.builder.get_list()', () => {
         lastname: 'Doe',
         mail: 'john@example.com',
         USER_ROLE: {
-          label: 'ETUDIANT',
+          label: 'STUDENT',
         },
       },
       {
@@ -283,7 +283,7 @@ describe('user.builder.get_list()', () => {
         lastname: 'Johnson',
         mail: 'alice@example.com',
         USER_ROLE: {
-          label: 'PROFESSEUR',
+          label: 'TEACHER',
         },
       },
     ]);
@@ -305,7 +305,7 @@ describe('user.builder.get_list()', () => {
         lastname: 'Smith',
         mail: 'jane@example.com',
         USER_ROLE: {
-          label: 'ETUDIANT',
+          label: 'STUDENT',
         },
       },
     ]);
@@ -313,6 +313,7 @@ describe('user.builder.get_list()', () => {
     const result = await user_builder.get_list({ ids: [2] });
 
     chai.expect(result).to.have.lengthOf(1);
+    console.log(result[0]);
     chai.expect(result[0].id_user).to.equal(2);
   });
 

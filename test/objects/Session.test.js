@@ -25,7 +25,7 @@ describe('Session object', () => {
         lastname: 'Doe',
         firstname: 'Jane',
         mail: 'jane.doe@example.com',
-        role: 'ETUDIANT',
+        role: 'STUDENT',
       }),
     ];
 

@@ -24,13 +24,13 @@ DECLARE
     pwd5 INTEGER;
     pwd6 INTEGER;
 BEGIN
-    INSERT INTO User_role(label) VALUES ('ADMINISTRATEUR') ON CONFLICT (label) DO NOTHING;
-    INSERT INTO User_role(label) VALUES ('PROFESSEUR') ON CONFLICT (label) DO NOTHING;
-    INSERT INTO User_role(label) VALUES ('ETUDIANT') ON CONFLICT (label) DO NOTHING;
+    INSERT INTO User_role(label) VALUES ('ADMINISTRATOR') ON CONFLICT (label) DO NOTHING;
+    INSERT INTO User_role(label) VALUES ('TEACHER') ON CONFLICT (label) DO NOTHING;
+    INSERT INTO User_role(label) VALUES ('STUDENT') ON CONFLICT (label) DO NOTHING;
 
-    SELECT id_role INTO roleStudent FROM User_role WHERE label = 'ETUDIANT';
-    SELECT id_role INTO roleTeacher FROM User_role WHERE label = 'PROFESSEUR';
-    SELECT id_role INTO roleAdmin FROM User_role WHERE label = 'ADMINISTRATEUR';
+    SELECT id_role INTO roleStudent FROM User_role WHERE label = 'STUDENT';
+    SELECT id_role INTO roleTeacher FROM User_role WHERE label = 'TEACHER';
+    SELECT id_role INTO roleAdmin FROM User_role WHERE label = 'ADMINISTRATOR';
 
     IF NOT EXISTS (SELECT 1 FROM Password WHERE pwd = '$2b$11$Pyql88jT8/WgMqiDusg3CeAbbRRT4ajxPmY4.ABIqmDZvoQVMw2Qi') THEN
         INSERT INTO Password(pwd) VALUES ('$2b$11$Pyql88jT8/WgMqiDusg3CeAbbRRT4ajxPmY4.ABIqmDZvoQVMw2Qi');
@@ -191,16 +191,16 @@ BEGIN
 
     INSERT INTO Category (label, google_material_icon)
     VALUES
-    ('Bases de données', 'database'),
+    ('Databases', 'database'),
     ('Linux', 'desktop_cloud'),
     ('Web', 'web_asset'),
-    ('Réseaux', 'lan'),
-    ('Environnement de développement', 'code'),
+    ('Networks', 'lan'),
+    ('Development Environment', 'code'),
     ('DevOps', 'host'),
     ('Ops', 'host'),
-    ('Informatique', 'computer'),
+    ('Computer', 'computer'),
     ('Windows', 'desktop_cloud'),
-    ('Graphisme', 'deployed_code')
+    ('Graphism', 'deployed_code')
     ON CONFLICT (label) DO NOTHING;
 
     INSERT INTO Argument (value)

@@ -99,7 +99,7 @@ export const list = async function (
   try {
     Guard.check_query(req, ['user_role']);
     const schema = z.object({
-      user_role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
+      user_role: z.enum(['STUDENT', 'TEACHER', 'ADMINISTRATOR']),
     });
     const data = Guard.validateProps(schema, req.query);
     await fns
@@ -146,7 +146,7 @@ export const create = async function (
       'firstname',
       'role',
     ]);
-    if (!['PROFESSEUR', 'ETUDIANT'].includes(req.body.role))
+    if (!['TEACHER', 'STUDENT'].includes(req.body.role))
       throw new ParameterMisformed('The req.body.role parameter is misformed.');
     await fns
       .create({

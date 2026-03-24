@@ -9,6 +9,8 @@ import NodeSelector from '../../src/objects/NodeSelector.js';
 import Port from '../../src/objects/Port.js';
 import PortType from '../../src/objects/Port_type.js';
 import VariableEnvironment from '../../src/objects/Variable_environment.js';
+import { ImageType } from '../../src/objects/Image_type.js';
+import { id } from 'zod/locales';
 
 chai.use(sinonChai);
 
@@ -464,8 +466,10 @@ describe('interface.builder.create()', () => {
         ram_limit: '8Gi',
         egress_bandwidth: '100M',
         ingress_bandwidth: '100M',
-        id_type: 1,
-        label_type_image: 'Ubuntu',
+        type: new ImageType({
+          id_type: 1,
+          label: 'Ubuntu',
+        }),
       })
     );
 
@@ -658,8 +662,10 @@ describe('interface.builder.update()', () => {
         ram_limit: '8Gi',
         egress_bandwidth: '100M',
         ingress_bandwidth: '100M',
-        id_type: 1,
-        label_type_image: 'Ubuntu',
+        type: new ImageType({
+          id_type: 1,
+          label: 'Ubuntu',
+        }),
       })
     );
 
@@ -826,8 +832,10 @@ describe('interface.builder.update_args()', () => {
         ram_limit: '8Gi',
         egress_bandwidth: '100M',
         ingress_bandwidth: '100M',
-        id_type: 1,
-        label_type_image: 'Ubuntu',
+        type: new ImageType({
+          id_type: 1,
+          label: 'Ubuntu',
+        }),
         args: [new Argument({ id_argument: 1, label: 'arg1' })],
       })
     );
@@ -967,8 +975,10 @@ describe('interface.builder.update_ports()', () => {
         ram_limit: '8Gi',
         egress_bandwidth: '100M',
         ingress_bandwidth: '100M',
-        id_type: 1,
-        label_type_image: 'Ubuntu',
+        type: new ImageType({
+          id_type: 1,
+          label: 'Ubuntu',
+        }),
         ports: [
           new Port({
             id_port: 1,
@@ -1120,8 +1130,10 @@ describe('interface.builder.update_envs()', () => {
         ram_limit: '8Gi',
         egress_bandwidth: '100M',
         ingress_bandwidth: '100M',
-        id_type: 1,
-        label_type_image: 'Ubuntu',
+        type: new ImageType({
+          id_type: 1,
+          label: 'Ubuntu',
+        }),
         envs: [new VariableEnvironment({ id_variable_environment: 1 })],
       })
     );
@@ -1256,8 +1268,10 @@ describe('interface.builder.update_nodeselectors()', () => {
         ram_limit: '8Gi',
         egress_bandwidth: '100M',
         ingress_bandwidth: '100M',
-        id_type: 1,
-        label_type_image: 'Ubuntu',
+        type: new ImageType({
+          id_type: 1,
+          label: 'Ubuntu',
+        }),
         node_selectors: [new NodeSelector({ id_node_selector: 1 })],
       })
     );
@@ -1386,8 +1400,10 @@ describe('interface.builder.attach_nodeselectors()', () => {
         ram_limit: '8Gi',
         egress_bandwidth: '100M',
         ingress_bandwidth: '100M',
-        id_type: 1,
-        label_type_image: 'Ubuntu',
+        type: new ImageType({
+          id_type: 1,
+          label: 'Ubuntu',
+        }),
         node_selectors: [new NodeSelector({ id_node_selector: 1 })],
       })
     );
@@ -1481,8 +1497,10 @@ describe('interface.builder.attach_ports()', () => {
         ram_limit: '8Gi',
         egress_bandwidth: '100M',
         ingress_bandwidth: '100M',
-        id_type: 1,
-        label_type_image: 'Ubuntu',
+        type: new ImageType({
+          id_type: 1,
+          label: 'Ubuntu',
+        }),
         ports: [
           new Port({
             id_port: 1,
@@ -1628,8 +1646,10 @@ describe('interface.builder.attach_envs()', () => {
         ram_limit: '8Gi',
         egress_bandwidth: '100M',
         ingress_bandwidth: '100M',
-        id_type: 1,
-        label_type_image: 'Ubuntu',
+        type: new ImageType({
+          id_type: 1,
+          label: 'Ubuntu',
+        }),
         envs: [new VariableEnvironment({ id_variable_environment: 1 })],
       })
     );
@@ -1655,8 +1675,10 @@ describe('interface.builder.attach_envs()', () => {
         ram_limit: '8Gi',
         egress_bandwidth: '100M',
         ingress_bandwidth: '100M',
-        id_type: 1,
-        label_type_image: 'Ubuntu',
+        type: new ImageType({
+          id_type: 1,
+          label: 'Ubuntu',
+        }),
         envs: [new VariableEnvironment({ id_variable_environment: 1 })],
       })
     );

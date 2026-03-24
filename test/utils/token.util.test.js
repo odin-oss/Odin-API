@@ -249,9 +249,9 @@ describe('token.util.isProfOrAdmin()', () => {
     mockNext = sinon.stub();
   });
 
-  it('should call next() when user is ADMINISTRATEUR', async () => {
+  it('should call next() when user is ADMINISTRATOR', async () => {
     const mockGetUserId = sinon.stub().returns(1);
-    const mockGetRole = sinon.stub().resolves('ADMINISTRATEUR');
+    const mockGetRole = sinon.stub().resolves('ADMINISTRATOR');
 
     await token_util.isProfOrAdmin(mockReq, mockRes, mockNext, {
       getUserId: mockGetUserId,
@@ -261,9 +261,9 @@ describe('token.util.isProfOrAdmin()', () => {
     chai.expect(mockNext.calledOnce).to.be.true;
   });
 
-  it('should call next() when user is PROFESSEUR', async () => {
+  it('should call next() when user is TEACHER', async () => {
     const mockGetUserId = sinon.stub().returns(2);
-    const mockGetRole = sinon.stub().resolves('PROFESSEUR');
+    const mockGetRole = sinon.stub().resolves('TEACHER');
 
     await token_util.isProfOrAdmin(mockReq, mockRes, mockNext, {
       getUserId: mockGetUserId,
@@ -273,9 +273,9 @@ describe('token.util.isProfOrAdmin()', () => {
     chai.expect(mockNext.calledOnce).to.be.true;
   });
 
-  it('should throw UserIsNeitherProfOrAdmin when user is ETUDIANT', async () => {
+  it('should throw UserIsNeitherProfOrAdmin when user is STUDENT', async () => {
     const mockGetUserId = sinon.stub().returns(3);
-    const mockGetRole = sinon.stub().resolves('ETUDIANT');
+    const mockGetRole = sinon.stub().resolves('STUDENT');
 
     await token_util.isProfOrAdmin(mockReq, mockRes, mockNext, {
       getUserId: mockGetUserId,
@@ -318,9 +318,9 @@ describe('token.util.isAdmin()', () => {
     mockNext = sinon.stub();
   });
 
-  it('should call next() when user is ADMINISTRATEUR', async () => {
+  it('should call next() when user is ADMINISTRATOR', async () => {
     const mockGetUserId = sinon.stub().returns(1);
-    const mockGetRole = sinon.stub().resolves('ADMINISTRATEUR');
+    const mockGetRole = sinon.stub().resolves('ADMINISTRATOR');
 
     await token_util.isAdmin(mockReq, mockRes, mockNext, {
       getUserId: mockGetUserId,
@@ -330,9 +330,9 @@ describe('token.util.isAdmin()', () => {
     chai.expect(mockNext.calledOnce).to.be.true;
   });
 
-  it('should throw UserIsNotAdmin when user is PROFESSEUR', async () => {
+  it('should throw UserIsNotAdmin when user is TEACHER', async () => {
     const mockGetUserId = sinon.stub().returns(2);
-    const mockGetRole = sinon.stub().resolves('PROFESSEUR');
+    const mockGetRole = sinon.stub().resolves('TEACHER');
 
     await token_util.isAdmin(mockReq, mockRes, mockNext, {
       getUserId: mockGetUserId,
@@ -343,9 +343,9 @@ describe('token.util.isAdmin()', () => {
     chai.expect(mockRes.status.firstCall.args[0]).to.equal(403);
   });
 
-  it('should throw UserIsNotAdmin when user is ETUDIANT', async () => {
+  it('should throw UserIsNotAdmin when user is STUDENT', async () => {
     const mockGetUserId = sinon.stub().returns(3);
-    const mockGetRole = sinon.stub().resolves('ETUDIANT');
+    const mockGetRole = sinon.stub().resolves('STUDENT');
 
     await token_util.isAdmin(mockReq, mockRes, mockNext, {
       getUserId: mockGetUserId,
@@ -386,9 +386,9 @@ describe('token.util.isProf()', () => {
     mockNext = sinon.stub();
   });
 
-  it('should call next() when user is PROFESSEUR', async () => {
+  it('should call next() when user is TEACHER', async () => {
     const mockGetUserId = sinon.stub().returns(2);
-    const mockGetRole = sinon.stub().resolves('PROFESSEUR');
+    const mockGetRole = sinon.stub().resolves('TEACHER');
 
     await token_util.isProf(mockReq, mockRes, mockNext, {
       getUserId: mockGetUserId,
@@ -398,9 +398,9 @@ describe('token.util.isProf()', () => {
     chai.expect(mockNext.calledOnce).to.be.true;
   });
 
-  it('should throw UserIsNotProfessor when user is ADMINISTRATEUR', async () => {
+  it('should throw UserIsNotProfessor when user is ADMINISTRATOR', async () => {
     const mockGetUserId = sinon.stub().returns(1);
-    const mockGetRole = sinon.stub().resolves('ADMINISTRATEUR');
+    const mockGetRole = sinon.stub().resolves('ADMINISTRATOR');
 
     await token_util.isProf(mockReq, mockRes, mockNext, {
       getUserId: mockGetUserId,
@@ -411,9 +411,9 @@ describe('token.util.isProf()', () => {
     chai.expect(mockRes.status.firstCall.args[0]).to.equal(403);
   });
 
-  it('should throw UserIsNotProfessor when user is ETUDIANT', async () => {
+  it('should throw UserIsNotProfessor when user is STUDENT', async () => {
     const mockGetUserId = sinon.stub().returns(3);
-    const mockGetRole = sinon.stub().resolves('ETUDIANT');
+    const mockGetRole = sinon.stub().resolves('STUDENT');
 
     await token_util.isProf(mockReq, mockRes, mockNext, {
       getUserId: mockGetUserId,
@@ -460,7 +460,7 @@ describe('token.util.isOwner()', () => {
   it('should call next() when user is owner of application', async () => {
     const mockGetUserId = sinon.stub().returns(1);
     const mockIsOwner = sinon.stub().resolves(true);
-    const mockGetRole = sinon.stub().resolves('ETUDIANT');
+    const mockGetRole = sinon.stub().resolves('STUDENT');
 
     await token_util.isOwner(mockReq, mockRes, mockNext, {
       getUserId: mockGetUserId,
@@ -471,10 +471,10 @@ describe('token.util.isOwner()', () => {
     chai.expect(mockNext.calledOnce).to.be.true;
   });
 
-  it('should call next() when user is ADMINISTRATEUR', async () => {
+  it('should call next() when user is ADMINISTRATOR', async () => {
     const mockGetUserId = sinon.stub().returns(2);
     const mockIsOwner = sinon.stub().resolves(false);
-    const mockGetRole = sinon.stub().resolves('ADMINISTRATEUR');
+    const mockGetRole = sinon.stub().resolves('ADMINISTRATOR');
 
     await token_util.isOwner(mockReq, mockRes, mockNext, {
       getUserId: mockGetUserId,
@@ -488,7 +488,7 @@ describe('token.util.isOwner()', () => {
   it('should throw UserIsNotOwner when user is neither owner nor admin', async () => {
     const mockGetUserId = sinon.stub().returns(3);
     const mockIsOwner = sinon.stub().resolves(false);
-    const mockGetRole = sinon.stub().resolves('ETUDIANT');
+    const mockGetRole = sinon.stub().resolves('STUDENT');
 
     await token_util.isOwner(mockReq, mockRes, mockNext, {
       getUserId: mockGetUserId,
@@ -552,7 +552,7 @@ describe('token.util.app_access_granted()', () => {
   it('should return result: true when user is admin', async () => {
     const mockVerify = sinon.stub().returns({ id_user: 1 });
     const mockAppGet = sinon.stub().resolves({ id_application: 1, id_user: 2 });
-    const mockAuthRole = sinon.stub().resolves('ADMINISTRATEUR');
+    const mockAuthRole = sinon.stub().resolves('ADMINISTRATOR');
     const mockHistoryCreate = sinon.stub().resolves();
 
     await token_util.app_access_granted(mockReq, mockRes, {
@@ -570,7 +570,7 @@ describe('token.util.app_access_granted()', () => {
   it('should return result: true when user is application owner', async () => {
     const mockVerify = sinon.stub().returns({ id_user: 1 });
     const mockAppGet = sinon.stub().resolves({ id_application: 1, id_user: 1 });
-    const mockAuthRole = sinon.stub().resolves('ETUDIANT');
+    const mockAuthRole = sinon.stub().resolves('STUDENT');
     const mockHistoryCreate = sinon.stub().resolves();
 
     await token_util.app_access_granted(mockReq, mockRes, {
@@ -588,7 +588,7 @@ describe('token.util.app_access_granted()', () => {
   it('should return result: false when user is neither admin nor owner', async () => {
     const mockVerify = sinon.stub().returns({ id_user: 1 });
     const mockAppGet = sinon.stub().resolves({ id_application: 1, id_user: 2 });
-    const mockAuthRole = sinon.stub().resolves('ETUDIANT');
+    const mockAuthRole = sinon.stub().resolves('STUDENT');
     const mockHistoryCreate = sinon.stub().resolves();
 
     await token_util.app_access_granted(mockReq, mockRes, {

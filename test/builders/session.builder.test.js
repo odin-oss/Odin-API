@@ -30,7 +30,7 @@ describe('session.builder.attribute_professor()', () => {
     const mockUser = {
       id_user: 1,
       email: 'prof@example.com',
-      role: 'PROFESSEUR',
+      role: 'TEACHER',
     };
 
     const user_get_stub = sinon.stub().resolves(mockUser);
@@ -102,7 +102,7 @@ describe('session.builder.attribute_professor()', () => {
   it('should handle database errors during attribution', async () => {
     const user_get_stub = sinon
       .stub()
-      .resolves({ id_user: 1, role: 'PROFESSEUR' });
+      .resolves({ id_user: 1, role: 'TEACHER' });
     createStub.rejects(new Error('Database connection failed'));
 
     try {
@@ -117,7 +117,7 @@ describe('session.builder.attribute_professor()', () => {
   });
 
   it('should coerce string id_user to number', async () => {
-    const mockUser = { id_user: 1, role: 'PROFESSEUR' };
+    const mockUser = { id_user: 1, role: 'TEACHER' };
     const user_get_stub = sinon.stub().resolves(mockUser);
     createStub.resolves({
       id_session: 1,
@@ -153,7 +153,7 @@ describe('session.builder.attribute_user_and_application()', () => {
     const mockUser = {
       id_user: 1,
       email: 'user@example.com',
-      role: 'ETUDIANT',
+      role: 'STUDENT',
     };
     const mockApp = {
       id_application: 1,
@@ -439,8 +439,8 @@ describe('session.builder.list()', () => {
     sinon.restore();
   });
 
-  it('should list sessions for PROFESSEUR', async () => {
-    const mockUser = { id_user: 1, role: 'PROFESSEUR' };
+  it('should list sessions for TEACHER', async () => {
+    const mockUser = { id_user: 1, role: 'TEACHER' };
     const user_get_stub = sinon.stub().resolves(mockUser);
 
     const mockSession = {
@@ -474,8 +474,8 @@ describe('session.builder.list()', () => {
     expect(result[0]).to.be.instanceOf(Session);
   });
 
-  it('should list sessions for ADMINISTRATEUR', async () => {
-    const mockUser = { id_user: 1, role: 'ADMINISTRATEUR' };
+  it('should list sessions for ADMINISTRATOR', async () => {
+    const mockUser = { id_user: 1, role: 'ADMINISTRATOR' };
     const user_get_stub = sinon.stub().resolves(mockUser);
 
     const mockSession = {
@@ -513,8 +513,8 @@ describe('session.builder.list()', () => {
     }
   });
 
-  it('should reject user that is neither PROFESSEUR nor ADMINISTRATEUR', async () => {
-    const mockUser = { id_user: 1, role: 'ETUDIANT' };
+  it('should reject user that is neither TEACHER nor ADMINISTRATOR', async () => {
+    const mockUser = { id_user: 1, role: 'STUDENT' };
     const user_get_stub = sinon.stub().resolves(mockUser);
 
     try {
@@ -526,7 +526,7 @@ describe('session.builder.list()', () => {
   });
 
   it('should handle database errors during list retrieval', async () => {
-    const mockUser = { id_user: 1, role: 'PROFESSEUR' };
+    const mockUser = { id_user: 1, role: 'TEACHER' };
     const user_get_stub = sinon.stub().resolves(mockUser);
     findAllStub.rejects(new Error('Database connection failed'));
 
@@ -539,7 +539,7 @@ describe('session.builder.list()', () => {
   });
 
   it('should return empty array when no sessions exist', async () => {
-    const mockUser = { id_user: 1, role: 'PROFESSEUR' };
+    const mockUser = { id_user: 1, role: 'TEACHER' };
     const user_get_stub = sinon.stub().resolves(mockUser);
     findAllStub.resolves([]);
 
@@ -553,7 +553,7 @@ describe('session.builder.list()', () => {
   });
 });
 
-describe('session.builder.get_on_professeur()', () => {
+describe('session.builder.get_on_teacher()', () => {
   let findOneStub;
 
   before(async () => {
@@ -601,7 +601,7 @@ describe('session.builder.get_on_professeur()', () => {
       },
     });
 
-    const result = await session_builder.get_on_professeur({
+    const result = await session_builder.get_on_teacher({
       id_user: 1,
       id_session: 1,
     });
@@ -614,7 +614,7 @@ describe('session.builder.get_on_professeur()', () => {
     findOneStub.resolves(null);
 
     try {
-      await session_builder.get_on_professeur({
+      await session_builder.get_on_teacher({
         id_user: 1,
         id_session: 1,
       });
@@ -626,7 +626,7 @@ describe('session.builder.get_on_professeur()', () => {
 
   it('should reject invalid id_user (non-positive)', async () => {
     try {
-      await session_builder.get_on_professeur({
+      await session_builder.get_on_teacher({
         id_user: 0,
         id_session: 1,
       });
@@ -638,7 +638,7 @@ describe('session.builder.get_on_professeur()', () => {
 
   it('should reject invalid id_session (non-positive)', async () => {
     try {
-      await session_builder.get_on_professeur({
+      await session_builder.get_on_teacher({
         id_user: 1,
         id_session: 0,
       });
@@ -652,7 +652,7 @@ describe('session.builder.get_on_professeur()', () => {
     findOneStub.rejects(new Error('Database connection failed'));
 
     try {
-      await session_builder.get_on_professeur({
+      await session_builder.get_on_teacher({
         id_user: 1,
         id_session: 1,
       });
@@ -663,7 +663,7 @@ describe('session.builder.get_on_professeur()', () => {
   });
 });
 
-describe('session.builder.get_on_administrateur()', () => {
+describe('session.builder.get_on_administrator()', () => {
   let findOneStub;
 
   before(async () => {
@@ -678,7 +678,7 @@ describe('session.builder.get_on_administrateur()', () => {
     sinon.restore();
   });
 
-  it('should get session when user is ADMINISTRATEUR', async () => {
+  it('should get session when user is ADMINISTRATOR', async () => {
     findOneStub.resolves({
       dataValues: {
         id_session: 1,
@@ -695,7 +695,7 @@ describe('session.builder.get_on_administrateur()', () => {
       SESSION_HAS_USERs: [],
     });
 
-    const result = await session_builder.get_on_administrateur({
+    const result = await session_builder.get_on_administrator({
       id_session: 1,
     });
 
@@ -705,7 +705,7 @@ describe('session.builder.get_on_administrateur()', () => {
 
   it('should reject invalid id_session (non-positive)', async () => {
     try {
-      await session_builder.get_on_administrateur({
+      await session_builder.get_on_administrator({
         id_session: 0,
       });
       expect.fail('Should have thrown an error');
@@ -718,7 +718,7 @@ describe('session.builder.get_on_administrateur()', () => {
     findOneStub.rejects(new Error('Database connection failed'));
 
     try {
-      await session_builder.get_on_administrateur({
+      await session_builder.get_on_administrator({
         id_session: 1,
       });
       expect.fail('Should have thrown an error');
@@ -731,7 +731,7 @@ describe('session.builder.get_on_administrateur()', () => {
     findOneStub.resolves(null);
 
     try {
-      await session_builder.get_on_administrateur({
+      await session_builder.get_on_administrator({
         id_session: 1,
       });
       expect.fail('Should have thrown an error');

@@ -56,7 +56,7 @@ export const get = async function (props) {
 export const list = async function (props) {
   try {
     const schema = z.object({
-      user_role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
+      user_role: z.enum(['STUDENT', 'TEACHER', 'ADMINISTRATOR']),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
@@ -99,7 +99,9 @@ export const get_list = async function (props) {
       },
     };
     return await dbManager.models.USERS.findAll(options).then((r) =>
-      r.map((user) => new User({ ...user, role: user.USER_ROLE.label }))
+      r.map(
+        (user) => new User({ ...user.dataValues, role: user.USER_ROLE.label })
+      )
     );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);

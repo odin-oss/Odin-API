@@ -106,20 +106,24 @@ export const list = async function (
 
   return await Promise.all(promises).then((result) => {
     for (let application of applications) {
-      application.environment = result.filter(
+      application.environment = result.find(
         (env) => env.id_environment === application.id_environment
-      )[0];
-      application.datacenter = datacenters.filter(
+      );
+      application.datacenter = datacenters.find(
         (dc) => dc.id_datacenter === application.datacenter.id_datacenter
-      )[0];
+      );
     }
     const histories = result.filter((r) => r instanceof History);
-    for (let history of histories)
-      if (history.records.length > 0)
-        applications.filter(
+    for (let history of histories) {
+      if (history.records.length > 0) {
+        console.log(history.records[0].toJSON());
+        
+        applications.find(
           (app) => app.id_application === history.records[0].id_application
-        )[0].history = history;
-
+        ).history = history;
+      }
+        
+      }
     return applications;
   });
 };

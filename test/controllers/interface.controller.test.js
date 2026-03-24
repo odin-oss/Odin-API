@@ -5,6 +5,7 @@ import sinonChai from 'sinon-chai';
 import * as token_service from '../../src/utils/token.util.js';
 import { DBConnexionRefused } from '../../src/utils/errors.util.js';
 import { Interface } from '../../src/objects/Interface.js';
+import { ImageType } from '../../src/objects/Image_type.js';
 
 chai.use(sinonChai);
 
@@ -230,7 +231,10 @@ describe('interface_controller.create()', () => {
       registry_link: 'registry.example.com/test',
       exec_command: '/bin/bash',
       service_command: 'start',
-      id_type: 1,
+      type: new ImageType({
+        id_type: 1,
+        label: 'Ubuntu',
+      }),
       ram_request: '2Gi',
       ram_limit: '4Gi',
       cpu_request: '500m',

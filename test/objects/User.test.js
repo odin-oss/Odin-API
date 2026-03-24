@@ -8,7 +8,7 @@ describe('User object', () => {
       lastname: 'Doe',
       firstname: 'Jane',
       mail: 'jane.doe@example.com',
-      role: 'ETUDIANT',
+      role: 'STUDENT',
       pwd: 'password123',
     });
 
@@ -16,7 +16,7 @@ describe('User object', () => {
     chai.expect(user.lastname).to.equal('Doe');
     chai.expect(user.firstname).to.equal('Jane');
     chai.expect(user.mail).to.equal('jane.doe@example.com');
-    chai.expect(user.role).to.equal('ETUDIANT');
+    chai.expect(user.role).to.equal('STUDENT');
   });
 
   it('throws on invalid email', () => {
@@ -41,7 +41,7 @@ describe('User object', () => {
       lastname: 'Doe',
       firstname: 'John',
       mail: 'john.doe@example.com',
-      role: 'PROFESSEUR',
+      role: 'TEACHER',
     });
 
     chai.expect(user.public_format()).to.deep.equal({
@@ -49,7 +49,7 @@ describe('User object', () => {
       lastname: 'Doe',
       firstname: 'John',
       mail: 'john.doe@example.com',
-      role: 'PROFESSEUR',
+      role: 'TEACHER',
     });
   });
 
@@ -59,7 +59,7 @@ describe('User object', () => {
       lastname: 'Smith',
       firstname: 'Alice',
       mail: 'alice.smith@example.com',
-      role: 'ADMINISTRATEUR',
+      role: 'ADMINISTRATOR',
       pwd: 'secret123',
     });
 
@@ -68,6 +68,6 @@ describe('User object', () => {
     chai.expect(json.lastname).to.equal('Smith');
     chai.expect(json.firstname).to.equal('Alice');
     chai.expect(json.mail).to.equal('alice.smith@example.com');
-    chai.expect(json.role).to.equal('ADMINISTRATEUR');
+    chai.expect(json.role).to.equal('ADMINISTRATOR');
   });
 });

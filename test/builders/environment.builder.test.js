@@ -49,6 +49,7 @@ describe('environment.builder.list()', () => {
             command: 'node app.js',
           },
           IMAGE_TYPE: {
+            id_type: 1,
             label: 'Node.js',
           },
         },
@@ -91,6 +92,7 @@ describe('environment.builder.list()', () => {
             command: 'node app.js',
           },
           IMAGE_TYPE: {
+            id_type: 1,
             label: 'Node.js',
           },
         },
@@ -112,6 +114,7 @@ describe('environment.builder.list()', () => {
             command: 'npm start',
           },
           IMAGE_TYPE: {
+            id_type: 1,
             label: 'Node.js',
           },
         },
@@ -154,6 +157,7 @@ describe('environment.builder.list()', () => {
           command: `cmd-${i + 1}`,
         },
         IMAGE_TYPE: {
+          id_type: 1,
           label: 'Node.js',
         },
       },

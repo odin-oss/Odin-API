@@ -38,7 +38,7 @@ export const list_by_role = async function (
   }
 ) {
   const schema = z.object({
-    user_role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
+    user_role: z.enum(['STUDENT', 'TEACHER', 'ADMINISTRATOR']),
   });
   const data = Guard.validateProps(schema, props);
   return await fns.user_list(data);
@@ -111,7 +111,7 @@ export const create = async function (
         message: 'The password must contains at least 1 special char.',
       }),
     mail: z.email(),
-    role: z.enum(['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR']),
+    role: z.enum(['STUDENT', 'TEACHER', 'ADMINISTRATOR']),
     lastname: z.string().min(1),
     firstname: z.string().min(1),
   });

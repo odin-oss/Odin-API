@@ -42,7 +42,7 @@ describe('auth.builder.update()', () => {
 
     const result = await auth_builder.update({
       id_user: 1,
-      role: 'ADMINISTRATEUR',
+      role: 'ADMINISTRATOR',
     });
 
     chai.expect(findOneStub.calledOnce).to.be.true;
@@ -116,7 +116,7 @@ describe('auth.builder.update()', () => {
   });
 
   it('called with different roles should update correctly.', async () => {
-    const roles = ['ETUDIANT', 'PROFESSEUR', 'ADMINISTRATEUR'];
+    const roles = ['STUDENT', 'TEACHER', 'ADMINISTRATOR'];
 
     for (const role of roles) {
       findOneStub.resetHistory();
