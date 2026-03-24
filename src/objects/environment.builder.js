@@ -14,7 +14,6 @@ import PortType from '../objects/Port_type.js';
 import VariableEnvironment from '../objects/Variable_environment.js';
 import { Op } from 'sequelize';
 import { ImageType } from '../objects/Image_type.js';
-import { id } from 'zod/locales';
 
 /**
  * Builder that list all the environments in database.
@@ -62,13 +61,13 @@ export const list = async function () {
           result.push(
             new Environment({
               ...env.ENVIRONMENT.dataValues,
-              interfaces: [new Interface(options)],
+              interfaces: [student(options)],
             })
           );
         } else {
           result
             .filter((r) => r.id_environment === env.id_environment)[0]
-            .interfaces.push(new Interface(options));
+            .interfaces.push(student(options));
         }
       }
       return result;
@@ -155,35 +154,32 @@ export const get = async function (props) {
         throw new DBObjectNotFound('The environment does not exist.');
       return new Environment({
         ...environment.dataValues,
-        interfaces: interfaces.map(
-          (inter) =>
-            new Interface({
-              ...inter.dataValues,
-              label: environment.ENVIRONMENT_HAS_INTERFACEs.find(
-                (ehi) => ehi.id_interface === inter.id_interface
-              ).label,
-              type: new ImageType({
-                id_type: inter.IMAGE_TYPE.id_type,
-                label: inter.IMAGE_TYPE.label,
-              }),
-              args: inter.INTERFACE_HAS_ARGUMENTs.sort(
-                (a, b) => a.id_argument - b.id_argument
-              ).map((arg) => new Argument(arg.ARGUMENT.dataValues)),
-              node_selectors: inter.INTERFACE_HAS_NODE_SELECTORs.map(
-                (ins) => new NodeSelector(ins.NODE_SELECTOR.dataValues)
-              ),
-              ports: inter.INTERFACE_HAS_PORTs.map(
-                (ihp) =>
-                  new Port({
-                    ...ihp.dataValues,
-                    port_type: new PortType(ihp.PORT_TYPE.dataValues),
-                  })
-              ),
-              envs: inter.INTERFACE_HAS_VARIABLEs.map(
-                (ihv) =>
-                  new VariableEnvironment(ihv.VARIABLE_ENVIRONMENT.dataValues)
-              ),
-            })
+        interfaces: interfaces.map((inter) =>
+          student({
+            ...inter.dataValues,
+            label: environment.ENVIRONMENT_HAS_INTERFACEs.find(
+              (ehi) => ehi.id_interface === inter.id_interface
+            ).label,
+            id_type: inter.IMAGE_TYPE.id_type,
+            label_type_image: inter.IMAGE_TYPE.label,
+            args: inter.INTERFACE_HAS_ARGUMENTs.sort(
+              (a, b) => a.id_argument - b.id_argument
+            ).map((arg) => new Argument(arg.ARGUMENT.dataValues)),
+            node_selectors: inter.INTERFACE_HAS_NODE_SELECTORs.map(
+              (ins) => new NodeSelector(ins.NODE_SELECTOR.dataValues)
+            ),
+            ports: inter.INTERFACE_HAS_PORTs.map(
+              (ihp) =>
+                new Port({
+                  ...ihp.dataValues,
+                  port_type: new PortType(ihp.PORT_TYPE.dataValues),
+                })
+            ),
+            envs: inter.INTERFACE_HAS_VARIABLEs.map(
+              (ihv) =>
+                new VariableEnvironment(ihv.VARIABLE_ENVIRONMENT.dataValues)
+            ),
+          })
         ),
       });
     });
@@ -221,7 +217,7 @@ export const create = async function (props) {
 };
 
 /**
- * Attaching a new Interface to Environment in database.
+ * Attaching a student to Environment in database.
  * @param {String} label label of the new Environment to be created.
  * @param {String} id_environment id of the environment to attach the interface to.
  * @param {String} id_interface id of the interface to attach.

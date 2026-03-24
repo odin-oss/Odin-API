@@ -5,13 +5,13 @@ import NodeSelector from '../../src/objects/NodeSelector.js';
 import Port from '../../src/objects/Port.js';
 import PortType from '../../src/objects/Port_type.js';
 import VariableEnvironment from '../../src/objects/Variable_environment.js';
+import { ImageType } from '../../src/objects/Image_type.js';
 
 describe('Interface object', () => {
   it('creates with valid properties and sanitizes label', () => {
     const portType = new PortType({ id_port_type: 1, label: 'http' });
     const iface = new Interface({
       id_interface: 1,
-      id_type: 2,
       label: 'My_Label!!',
       default_label: 'Default',
       registry_link: 'registry/app:1.0.0',
@@ -22,7 +22,10 @@ describe('Interface object', () => {
       liveness_probe_initial_delay: 5,
       readiness_probe_period: 10,
       liveness_probe_period: 10,
-      label_type_image: 'docker',
+      type: new ImageType({
+        id_type: 2,
+        label: 'docker',
+      }),
       need_compute_gpu: 'false',
       need_graphical_rendering_gpu: 'true',
       ram_request: '512Mi',
@@ -65,12 +68,15 @@ describe('Interface object', () => {
     const iface = new Interface({
       id_interface: 2,
       label: 'PublicInterface',
-      label_type_image: 'docker',
+      type: new ImageType({
+        id_type: 1,
+        label: 'docker',
+      })
     });
 
     const format = iface.public_format();
     chai.expect(format.id_interface).to.equal(2);
     chai.expect(format.label).to.equal('publicinterface');
-    chai.expect(format.label_type_image).to.equal('docker');
+    chai.expect(format.type.label).to.equal('docker');
   });
 });

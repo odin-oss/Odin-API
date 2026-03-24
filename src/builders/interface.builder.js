@@ -12,6 +12,7 @@ import Port from '../objects/Port.js';
 import PortType from '../objects/Port_type.js';
 import NodeSelector from '../objects/NodeSelector.js';
 import Argument from '../objects/Argument.js';
+import { ImageType } from '../objects/Image_type.js';
 
 /**
  * Builder that fetchs the DB to get the interface.
@@ -71,8 +72,10 @@ export const get = async function (props) {
         throw new DBObjectNotFound('The interface could not be found.');
       return new Interface({
         ...r.dataValues,
-        id_type: r.IMAGE_TYPE.id_type,
-        label_type_image: r.IMAGE_TYPE.label,
+        type: new ImageType({
+          id_type: r.IMAGE_TYPE.id_type,
+          label: r.IMAGE_TYPE.label,
+        }),
         args: r.INTERFACE_HAS_ARGUMENTs.sort(
           (a, b) => a.id_argument - b.id_argument
         ).map((arg) => new Argument({ ...arg.ARGUMENT.dataValues })),
@@ -152,8 +155,10 @@ export const list = async function () {
       (inter) =>
         new Interface({
           ...inter.dataValues,
-          id_type: inter.IMAGE_TYPE.id_type,
-          label_type_image: inter.IMAGE_TYPE.label,
+          type: new ImageType({
+            id_type: inter.IMAGE_TYPE.id_type,
+            label: inter.IMAGE_TYPE.label,
+          }),
           argument: inter.INTERFACE_HAS_ARGUMENTs.sort(
             (a, b) => a.id_argument - b.id_argument
           ).map((arg) => new Argument({ ...arg.ARGUMENT.dataValues })),

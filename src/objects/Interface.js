@@ -4,6 +4,7 @@ import Argument from './Argument.js';
 import NodeSelector from './NodeSelector.js';
 import Port from './Port.js';
 import VariableEnvironment from './Variable_environment.js';
+import { ImageType } from './Image_type.js';
 
 export class Interface {
   #id_interface;
@@ -17,8 +18,7 @@ export class Interface {
   #liveness_probe_initial_delay;
   #readiness_probe_period;
   #liveness_probe_period;
-  #id_type;
-  #label_type_image;
+  #type;
   #need_compute_gpu;
   #need_graphical_rendering_gpu;
   #ram_request;
@@ -45,8 +45,7 @@ export class Interface {
     this.#liveness_probe_initial_delay = data.liveness_probe_initial_delay;
     this.#readiness_probe_period = data.readiness_probe_period;
     this.#liveness_probe_period = data.liveness_probe_period;
-    this.#id_type = data.id_type;
-    this.#label_type_image = data.label_type_image;
+    this.#type = data.type;
     this.#need_compute_gpu = data.need_compute_gpu;
     this.#need_graphical_rendering_gpu = data.need_graphical_rendering_gpu;
     this.#ram_request = data.ram_request;
@@ -64,7 +63,7 @@ export class Interface {
   // Zod Schema for object validation
   static schema = z.object({
     id_interface: z.coerce.number().int().optional(),
-    id_type: z.coerce.number().int().optional(),
+    type: z.instanceof(ImageType).optional(),
     label: z
       .preprocess(
         (val) =>
@@ -78,7 +77,6 @@ export class Interface {
     registry_link: z.string().default(''),
     exec_command: z.string().default(''),
     service_command: z.string().default(''),
-    label_type_image: z.string().default(''),
     ram_request: z
       .string({ invalid_type_error: 'The RAM value must be a string.' })
       .regex(/^\d+(Gi|Mi)$/, {
@@ -183,11 +181,8 @@ export class Interface {
   get liveness_probe_period() {
     return this.#liveness_probe_period;
   }
-  get id_type() {
-    return this.#id_type;
-  }
-  get label_type_image() {
-    return this.#label_type_image;
+  get type() {
+    return this.#type;
   }
   get args() {
     return this.#args;
@@ -254,11 +249,8 @@ export class Interface {
   set liveness_probe_period(value) {
     this.#liveness_probe_period = value;
   }
-  set id_type(value) {
-    this.#id_type = value;
-  }
-  set label_type_image(value) {
-    this.#label_type_image = value;
+  set type(value) {
+    this.#type = value;
   }
   set ports(value) {
     this.#ports = value;
@@ -296,7 +288,7 @@ export class Interface {
     return {
       id_interface: this.#id_interface,
       label: this.#label,
-      label_type_image: this.#label_type_image,
+      type: this.#type,
     };
   }
   toJSON() {
@@ -312,8 +304,7 @@ export class Interface {
       liveness_probe_initial_delay: this.#liveness_probe_initial_delay,
       readiness_probe_period: this.#readiness_probe_period,
       liveness_probe_period: this.#liveness_probe_period,
-      id_type: this.#id_type,
-      label_type_image: this.#label_type_image,
+      type: this.#type,
       need_compute_gpu: this.#need_compute_gpu,
       need_graphical_rendering_gpu: this.#need_graphical_rendering_gpu,
       ram_request: this.#ram_request,

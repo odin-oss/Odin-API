@@ -313,6 +313,7 @@ describe('user.builder.get_list()', () => {
     const result = await user_builder.get_list({ ids: [2] });
 
     chai.expect(result).to.have.lengthOf(1);
+    console.log(result[0]);
     chai.expect(result[0].id_user).to.equal(2);
   });
 
