@@ -452,6 +452,8 @@ export const get_all_kubernetes_object = async (
     ];
   }
   return await Promise.all(promises).then((r) => {
+    if (r.includes('Kubernetes is not activated.'))
+      return 'Kubernetes is not activated.';
     const result = [];
     for (let i = 0; i < data.hashes.length; i++) {
       const items = [

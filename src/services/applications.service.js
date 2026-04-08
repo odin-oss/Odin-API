@@ -117,13 +117,12 @@ export const list = async function (
     for (let history of histories) {
       if (history.records.length > 0) {
         console.log(history.records[0].toJSON());
-        
+
         applications.find(
           (app) => app.id_application === history.records[0].id_application
         ).history = history;
       }
-        
-      }
+    }
     return applications;
   });
 };

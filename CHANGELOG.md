@@ -1,5 +1,17 @@
 # OSS era
 
+# 2.0.1
+
+- Added `School` and `Class` so we can identify users easily.
+- Added `Agent` and `Enum_agent_type` so the Datacenter will be the provider of resource for environments.
+- Added new route for adding a new Agent.
+- Added new route for adding an available agent into an existing Datacenter.
+
+
+# 2.0.0
+
+- No more seperated database, only one common base.
+
 # MVP era
 
 # 1.1.3 (December 2025)

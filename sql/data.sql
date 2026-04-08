@@ -55,6 +55,9 @@ BEGIN
     INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('VETU', 'Paul-Emile', 'paulemile.vetu@getcaelus.cloud', roleAdmin, pwd3) ON CONFLICT (mail) DO NOTHING;
     INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('URBANSKI', 'Daphné', 'daphne.urbanski@getcaelus.cloud', roleAdmin, pwd4) ON CONFLICT (mail) DO NOTHING;
 
+    INSERT INTO Enum_agent_type(label) VALUES ('Available') ON CONFLICT (label) DO NOTHING;
+    INSERT INTO Enum_agent_type(label) VALUES ('Attributed') ON CONFLICT (label) DO NOTHING;
+
     INSERT INTO Random_dictionary(word)
     VALUES ('swamp'),('lord'),('farquaad'),('castle'),('city'),('dragon'),
     ('garden'),('dwarf'), ('village'),('shrek'),('ogre'),('toilets'),('cabin'),('odin'),('cirrus'),

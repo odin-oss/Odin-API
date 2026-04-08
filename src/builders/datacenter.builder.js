@@ -3,14 +3,36 @@ import dbManager from '../config/db.config.js';
 import { Datacenter } from '../objects/Datacenter.js';
 import { DBObjectNotFound } from '../utils/errors.util.js';
 import Guard from '../utils/guard.util.js';
+import { id } from 'zod/locales';
+import Agent, { Agent_type } from '../objects/Agent.js';
 
 /**
  * Builder that fetchs all the dcs in the database.
  * @returns {Array<Datacenter>}
  */
 export const list = async function () {
-  return await dbManager.models.DATACENTER.findAll()
-    .then((dcs) => dcs.map((dc) => new Datacenter({ ...dc.dataValues })))
+  return await dbManager.models.DATACENTER.findAll({
+    include: [
+      {
+        model: dbManager.models.AGENT,
+        include: [
+          {
+            model: dbManager.models.ENUM_AGENT_TYPE,
+          },
+        ],
+      },
+    ],
+  })
+    .then((dcs) => dcs.map((dc) => new Datacenter({ ...dc.dataValues, 
+      agent: dc.AGENT
+          ? new Agent({
+              ...dc.AGENT.dataValues,
+              status: new Agent_type({
+                id_enum_agent_type: dc.AGENT.ENUM_AGENT_TYPE.id_enum_agent_type,
+                label: dc.AGENT.ENUM_AGENT_TYPE.label,
+              }),
+            })
+          : undefined, })))
     .catch(dbManager.sequelizeErrorManagement);
 };
 
@@ -24,11 +46,34 @@ export const get = async function (props) {
     id_datacenter: z.number().positive(),
   });
   const data = Guard.validateProps(schema, props);
-  return await dbManager.models.DATACENTER.findOne({ where: { ...data } })
+  return await dbManager.models.DATACENTER.findOne({
+    where: { ...data },
+    include: [
+      {
+        model: dbManager.models.AGENT,
+        include: [
+          {
+            model: dbManager.models.ENUM_AGENT_TYPE,
+          },
+        ],
+      },
+    ],
+  })
     .then((r) => {
       if (r == null)
         throw new DBObjectNotFound('The datacenter could not be found.');
-      return new Datacenter({ ...r.dataValues });
+      return new Datacenter({
+        ...r.dataValues,
+        agent: r.AGENT
+          ? new Agent({
+              ...r.AGENT.dataValues,
+              status: new Agent_type({
+                id_enum_agent_type: r.AGENT.ENUM_AGENT_TYPE.id_enum_agent_type,
+                label: r.AGENT.ENUM_AGENT_TYPE.label,
+              }),
+            })
+          : undefined,
+      });
     })
     .catch(dbManager.sequelizeErrorManagement);
 };
@@ -135,6 +180,64 @@ export const del = async function (
     return await dbManager.models.DATACENTER.destroy({
       where: { id_datacenter: data.id_datacenter },
     }).then(() => new Datacenter(dc.dataValues));
+  } catch (err) {
+    throw dbManager.sequelizeErrorManagement(err);
+  }
+};
+
+/**
+ * Builder that creates the new datacenter in database.
+ * @param {Number} id_datacenter id of the datacenter to update.
+ * @param {String} id_agent id of the agent to add to the datacenter.
+ * @param {Function} fns functions to overwriting for tests purpose.
+ * @returns {Datacenter}
+ */
+export const addAgent = async function (props, fns = { get }) {
+  try {
+    const schema = z.object({
+      id_datacenter: z.coerce.number().int().positive(),
+      id_agent: z.string().min(2),
+    });
+
+    const data = Guard.validateProps(schema, props);
+    const agent = await dbManager.models.AGENT.findOne({
+      where: { id_agent: data.id_agent },
+      include: [
+        {
+          model: dbManager.models.ENUM_AGENT_TYPE,
+          required: true,
+        },
+      ],
+    });
+    if (!agent)
+      throw new DBObjectNotFound('The agent is not existing in database.');
+    if (agent.ENUM_AGENT_TYPE.label !== 'Available')
+      throw new Error(
+        'The agent is not available to be added to a datacenter.'
+      );
+
+    const status_attributed = await dbManager.models.ENUM_AGENT_TYPE.findOne({
+      where: { label: 'Attributed' },
+    });
+    if (!status_attributed)
+      throw new DBObjectNotFound(
+        'The status attributed could not be found in database.'
+      );
+
+    await dbManager.models.DATACENTER.update(
+      {
+        id_agent: data.id_agent,
+      },
+      { where: { id_datacenter: data.id_datacenter } }
+    );
+
+    await dbManager.models.AGENT.update(
+      {
+        id_enum_agent_type: status_attributed.id_enum_agent_type,
+      },
+      { where: { id_agent: data.id_agent } }
+    );
+    return await fns.get(data);
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }

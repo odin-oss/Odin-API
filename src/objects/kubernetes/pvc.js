@@ -98,6 +98,7 @@ export const get_pvc = async (
       url: `/api/v1/namespaces/n${data.hash}/persistentvolumeclaims`,
     })
     .then((r) => {
+      if (r === 'Kubernetes is not activated.') return r;
       for (let item of r.items) {
         item.kind = 'PersistentVolumeClaim';
       }

@@ -100,3 +100,24 @@ export const get = async function (
   const data = Guard.validateProps(schema, props);
   return await fns.dc_get(data);
 };
+
+/**
+ * Service that launchs the execution of adding an agent to a datacenter.
+ * @param {Number} id_datacenter id of the datacenter to which the agent will be added.
+ * @param {String} id_agent id of the agent to be added.
+ * @param {Function} fns functions to overwriting for tests purpose.
+ * @returns {Datacenter}
+ */
+export const addAgent = async function (
+  props,
+  fns = {
+    addAgent: datacenter_builder.addAgent,
+  }
+) {
+  const schema = z.object({
+    id_datacenter: z.coerce.number(),
+    id_agent: z.string().min(2),
+  });
+  const data = Guard.validateProps(schema, props);
+  return await fns.addAgent(data);
+};

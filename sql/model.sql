@@ -21,6 +21,32 @@ BEGIN
         FOREIGN KEY (id_password) REFERENCES Password(id_password)
     );
 
+    CREATE TABLE IF NOT EXISTS School (
+        id_school SERIAL PRIMARY KEY,
+        label VARCHAR (100) NOT NULL UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS Class (
+        id_class SERIAL PRIMARY KEY,
+        label VARCHAR (100) NOT NULL UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS School_has_class (
+        id_school INTEGER NOT NULL,
+        id_class INTEGER NOT NULL,
+        PRIMARY KEY (id_school, id_class),
+        FOREIGN KEY (id_school) REFERENCES School(id_school) ON DELETE CASCADE,
+        FOREIGN KEY (id_class) REFERENCES Class(id_class) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS Class_has_user (
+        id_class INTEGER NOT NULL,
+        id_user INTEGER NOT NULL,
+        PRIMARY KEY (id_class, id_user),
+        FOREIGN KEY (id_class) REFERENCES Class(id_class) ON DELETE CASCADE,
+        FOREIGN KEY (id_user) REFERENCES Users(id_user) ON DELETE CASCADE
+    );
+
     CREATE TABLE IF NOT EXISTS Random_dictionary (
         id_dictionary SERIAL PRIMARY KEY,
         word VARCHAR (100) NOT NULL UNIQUE
@@ -91,12 +117,28 @@ BEGIN
         label VARCHAR (50) NOT NULL UNIQUE
     );
 
+    CREATE TABLE IF NOT EXISTS Enum_agent_type (
+        id_enum_agent_type SERIAL PRIMARY KEY,
+        label VARCHAR(100) NOT NULL UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS Agent (
+        id_agent UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        id_enum_agent_type INTEGER NOT NULL,
+        label VARCHAR(255) NOT NULL UNIQUE,
+        type VARCHAR(100) NOT NULL UNIQUE,
+
+        FOREIGN KEY (id_enum_agent_type) REFERENCES Enum_agent_type(id_enum_agent_type)
+    );
+
     CREATE TABLE IF NOT EXISTS Datacenter (
         id_datacenter SERIAL PRIMARY KEY,
         label VARCHAR(25) NOT NULL DEFAULT 'N/A',
         city VARCHAR(50) NOT NULL DEFAULT 'N/A',
         provider VARCHAR(50) NOT NULL DEFAULT 'N/A',
-        CONSTRAINT unique_datacenter UNIQUE (label, city, provider)
+        id_agent UUID,
+
+        FOREIGN KEY (id_agent) REFERENCES Agent(id_agent)
     );
 
     CREATE TABLE IF NOT EXISTS Application (

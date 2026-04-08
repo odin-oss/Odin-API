@@ -1,3 +1,4 @@
+import AGENT from '../routes/agents.route.js';
 import APPLICATION from '../routes/applications.route.js';
 import APPLICATION_STORAGE from '../routes/storage.route.js';
 import ARGUMENT from '../routes/argument.route.js';
@@ -18,6 +19,7 @@ import { ApiResponse } from '../utils/response.util.js';
 import { URLNotFound } from '../utils/errors.util.js';
 
 export default (app) => {
+  app.use('/agent', AGENT);
   app.use('/application', APPLICATION);
   app.use('/application/storage', APPLICATION_STORAGE);
   app.use('/argument', ARGUMENT);

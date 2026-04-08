@@ -30,7 +30,6 @@ router.get('/list', isTokenValid, (req, res) =>
 );
 /**
  * @swagger
-
  * /datacenter/:
  *  post:
  *    description: Create a new datacenter.
@@ -125,6 +124,7 @@ router.put('/:id_datacenter', isTokenValid, isAdmin, (req, res) => {
 router.delete('/:id_datacenter', isTokenValid, isAdmin, (req, res) => {
   datacenter_controller.del(req, res);
 });
+
 /**
  * @swagger
 
@@ -157,6 +157,43 @@ router.delete('/:id_datacenter', isTokenValid, isAdmin, (req, res) => {
 router.get('/:id_datacenter', isTokenValid, isAdmin, (req, res) => {
   datacenter_controller.get(req, res);
 });
+
+/**
+ * @swagger
+ * /datacenter/:id_datacenter/agent/:id_agent:
+ *  post:
+ *    description: Add an agent to a datacenter.
+ *    security:
+ *     - Bearer: []
+ *    tags:
+ *     - Datacenter
+ *    produces:
+ *     - application/json
+ *    responses :
+ *       200:
+ *         description: agent added to datacenter
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/datacenter'
+ *       401:
+ *         description: UnauthorizedError
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/UnauthorizedError'
+ *       500:
+ *         description: DBConnexionRefused
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/DBConnexionRefused'
+ */
+router.post(
+  '/:id_datacenter/agent/:id_agent',
+  isTokenValid,
+  isAdmin,
+  (req, res) => {
+    datacenter_controller.addAgent(req, res);
+  }
+);
 
 export default router;
 /**

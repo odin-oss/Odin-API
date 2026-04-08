@@ -1,4 +1,0 @@
-# Complete route description
-
-## Authentication
-

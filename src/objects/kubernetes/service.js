@@ -150,6 +150,7 @@ export const get_services = async (
       url: `/api/v1/namespaces/n${data.hash}/services`,
     })
     .then((r) => {
+      if (r === 'Kubernetes is not activated.') return r;
       for (let item of r.items) {
         item.kind = 'Service';
       }

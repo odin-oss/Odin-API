@@ -636,6 +636,7 @@ export const get_pods = async (
       url: `/api/v1/namespaces/n${data.hash}/pods`,
     })
     .then((r) => {
+      if (r === 'Kubernetes is not activated.') return r;
       for (let item of r.items) {
         item.kind = 'Pod';
       }
@@ -665,6 +666,7 @@ export const get_deployments = async (
       url: `/apis/apps/v1/namespaces/n${data.hash}/deployments`,
     })
     .then((r) => {
+      if (r === 'Kubernetes is not activated.') return r;
       for (let item of r.items) {
         item.kind = 'Deployment';
       }
@@ -694,6 +696,7 @@ export const get_replicasets = async (
       url: `/apis/apps/v1/namespaces/n${data.hash}/replicasets`,
     })
     .then((r) => {
+      if (r === 'Kubernetes is not activated.') return r;
       for (let item of r.items) {
         item.kind = 'ReplicaSet';
       }

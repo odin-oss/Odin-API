@@ -1,5 +1,9 @@
 import * as datacenter_service from '../services/datacenter.service.js';
-import { counter_get, counter } from '../middlewares/prometheus.js';
+import {
+  counter_get,
+  counter,
+  counter_post,
+} from '../middlewares/prometheus.js';
 import { ApiResponse } from '../utils/response.util.js';
 import logs from '../middlewares/winston.js';
 import z from 'zod';
@@ -170,5 +174,43 @@ export const get = async function (
   } catch (error) {
     logs.debug(error);
     ApiResponse.error(req, res, error);
+  }
+};
+
+/**
+ * Controller that checks the request before adding an agent to a datacenter.
+ * @param {Request} req HTTP request.
+ * @param {Response} res HTTP response.
+ * @param {Function} fns overwriting functions for tests.
+ */
+export const addAgent = async function (
+  req,
+  res,
+  fns = {
+    addAgent: datacenter_service.addAgent,
+  }
+) {
+  try {
+    counter_post.inc();
+    counter.inc();
+    const schema = z.object({
+      id_datacenter: z.coerce.number(),
+      id_agent: z.string().min(2),
+    });
+    const data = Guard.validateProps(schema, req.params);
+    return await fns
+      .addAgent(data)
+      .then((env) =>
+        ApiResponse.success(
+          req,
+          res,
+          env.toJSON(),
+          200,
+          'The agent has been added to the datacenter.'
+        )
+      );
+  } catch (err) {
+    logs.debug(err);
+    ApiResponse.error(req, res, err);
   }
 };
