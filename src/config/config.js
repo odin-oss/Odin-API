@@ -13,7 +13,7 @@ dotenv.config({
 
 const envSchema = z.object({
   // GENERAL APP CONFIGURATION
-  APP_ADRESS: z.string().default('localhost'),
+  APP_ADDRESS: z.string().default('localhost'),
   APP_PORT: z.string().transform(Number).default(3000),
   APP_ENVIRONMENT: z.string().default('local'),
   APP_MODE: z.string().default('debug'),

@@ -2,21 +2,28 @@
 
 MS-API is the global, external and public Restful API for using Odin. The Odin's front-end application is connecting to this API.
 
-# Security and Quality Gate
-[![Quality Gate Status](https://sq.bb.peheux.fr/api/project_badges/measure?project=MS-API-ODIN&metric=alert_status&token=sqb_07a93cde0e2115b24b0b505f369d482d43574922)](https://sq.bb.peheux.fr/dashboard?id=MS-API-ODIN)
-[![Coverage](https://sq.bb.peheux.fr/api/project_badges/measure?project=MS-API-ODIN&metric=coverage&token=sqb_07a93cde0e2115b24b0b505f369d482d43574922)](https://sq.bb.peheux.fr/dashboard?id=MS-API-ODIN)
-[![Duplicated Lines (%)](https://sq.bb.peheux.fr/api/project_badges/measure?project=MS-API-ODIN&metric=duplicated_lines_density&token=sqb_07a93cde0e2115b24b0b505f369d482d43574922)](https://sq.bb.peheux.fr/dashboard?id=MS-API-ODIN)
-[![Lines of Code](https://sq.bb.peheux.fr/api/project_badges/measure?project=MS-API-ODIN&metric=ncloc&token=sqb_07a93cde0e2115b24b0b505f369d482d43574922)](https://sq.bb.peheux.fr/dashboard?id=MS-API-ODIN)
-[![Security Hotspots](https://sq.bb.peheux.fr/api/project_badges/measure?project=MS-API-ODIN&metric=security_hotspots&token=sqb_07a93cde0e2115b24b0b505f369d482d43574922)](https://sq.bb.peheux.fr/dashboard?id=MS-API-ODIN)
-[![Reliability Issues](https://sq.bb.peheux.fr/api/project_badges/measure?project=MS-API-ODIN&metric=software_quality_reliability_issues&token=sqb_07a93cde0e2115b24b0b505f369d482d43574922)](https://sq.bb.peheux.fr/dashboard?id=MS-API-ODIN)
-[![Maintainability Issues](https://sq.bb.peheux.fr/api/project_badges/measure?project=MS-API-ODIN&metric=software_quality_maintainability_issues&token=sqb_07a93cde0e2115b24b0b505f369d482d43574922)](https://sq.bb.peheux.fr/dashboard?id=MS-API-ODIN)
-[![Security Issues](https://sq.bb.peheux.fr/api/project_badges/measure?project=MS-API-ODIN&metric=software_quality_security_issues&token=sqb_07a93cde0e2115b24b0b505f369d482d43574922)](https://sq.bb.peheux.fr/dashboard?id=MS-API-ODIN)
-[![Maintainability Rating](https://sq.bb.peheux.fr/api/project_badges/measure?project=MS-API-ODIN&metric=software_quality_maintainability_rating&token=sqb_07a93cde0e2115b24b0b505f369d482d43574922)](https://sq.bb.peheux.fr/dashboard?id=MS-API-ODIN)
-[![Reliability Rating](https://sq.bb.peheux.fr/api/project_badges/measure?project=MS-API-ODIN&metric=software_quality_reliability_rating&token=sqb_07a93cde0e2115b24b0b505f369d482d43574922)](https://sq.bb.peheux.fr/dashboard?id=MS-API-ODIN)
-[![Security Rating](https://sq.bb.peheux.fr/api/project_badges/measure?project=MS-API-ODIN&metric=software_quality_security_rating&token=sqb_07a93cde0e2115b24b0b505f369d482d43574922)](https://sq.bb.peheux.fr/dashboard?id=MS-API-ODIN)
-[![Technical Debt](https://sq.bb.peheux.fr/api/project_badges/measure?project=MS-API-ODIN&metric=software_quality_maintainability_remediation_effort&token=sqb_07a93cde0e2115b24b0b505f369d482d43574922)](https://sq.bb.peheux.fr/dashboard?id=MS-API-ODIN)
+[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-highlight.svg)](https://sonarcloud.io/summary/new_code?id=odin-oss_Odin-API)
 
-## How to run quality tests
+## 1. Prodding a new release
+
+Here are the mandatory steps you need to validate before doing a PR to main branch :
+- **Quality and Security** : You need your unit test coverage to raise at least 98% and running successfuly. You need also to resolve all the hotspots and issues identified by SonarQube. 
+- **Update the Changelog** : It is very important for us to keep a track of all the new stuff coming with the new release.
+- **Update Swagger routes** : The swagger interface is the entrypoint of any customer that is working with our API. So it really needs to be completed and fully updated.
+
+When you have all of it, you can create a new pull request from your branch to the main branch.
+From there, you will need an approval from the maintainers of the project [ask Benoit](mailto://benlef99@gmail.com).
+
+
+
+## 2. Security and Quality Gate
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=odin-oss_Odin-API&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=odin-oss_Odin-API)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=odin-oss_Odin-API&metric=bugs)](https://sonarcloud.io/summary/new_code?id=odin-oss_Odin-API)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=odin-oss_Odin-API&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=odin-oss_Odin-API)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=odin-oss_Odin-API&metric=coverage)](https://sonarcloud.io/summary/new_code?id=odin-oss_Odin-API)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=odin-oss_Odin-API&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=odin-oss_Odin-API)
+
+### a. How to run quality tests
 
 Only for launching tests :
 ```js
@@ -26,78 +33,94 @@ npm run test
 If you want to get **coverage** and send it to Sonarqube, here it :
 ```js
 npm run test:coverage
-sonar-scanner 
+sonar-scanner
 ```
 
-## Technical Documentation with Swagger
+### b. How to generate the technical documentation (with Swagger)
 
 Right here : (https://api.crrs.cloud/doc)
 
-## Launch the project
 
-To launch the local development script, you need to :
-- complete the dotenv **.env.local** your specific parameters ;
-- then, run `npm run local`
+## 3. Dependencies
 
-### Others local service needed
+The project is needing some external services to be properly working :
+- **PSQL database** : it is the part where all the informations about Odin, its users, and applications are stored.
+- **Kafka cluster** : we are using a kafka cluster as a message queue service. from and to where all the live processes are queuing (Application deployment, Storage exports, etc...)
+- **Kong Ingress** : this is where all the user's interfaces are exposed. It comes with an API giving us the possibility to manage it directly.
 
-You may need to deploy your database psql image (from [Caelus](https://gitlab.com/caelus-team/generics-tools/database)).
+To be deleted : 
+- **Kubernetes cluster**: for the moment, the API needs a Kubernetes cluster in which it can deploy all the containers. Note that in a close future this part will be stored in a dedicated vault to give the API the ability to manage multiple *Datacenters*.
 
-> Optional others : MS-DEPLOYMENT.
+## 4. Launching the service localy (dev env)
 
-# Modules
+If you want to contribute or just running this project on your computer / server, you will need to follow this how-to guide.
 
+The complete guide for this part is available in our public documentation : [here you go](https://odin-oss.github.io/docs.odin.github.io/tutorials/1.how-to-set-up-my-development-environment/).
 
-### Plasma environment
-
-In a Plasma environment (multicloud), one MS-API can managed multiple MS-Deployment, each one of those deployed in different Kubernetes cluster.
-
-## Sequelize
+### Sequelize
 
 All the builders in **./src/builders** are using Sequelize as ORM in order to communicate with Caelus and Cirrus PostgreSQL. They are all converted as JavaScript Object **./src/objects**.
 
 We created the `public_format()` method in each object in order to get a format that can be sended to our external client without security issue.
 
-# Deployment
+## 5. Environment variable
 
-All the deployment part is done and managed by ArgoCD.
+This is the full list of all the variables you have to set either in *.env* file or in the container variables :
 
-## Env variables
+### a. Application
+- `APP_ADDRESS` : the current application adress.
+- `APP_PORT` : the port used by nodejs to get all the requests.
+- `APP_ENVIRONMENT` : used for selecting the right dotenv file.
+- `APP_MODE` : #TODO
+- `APP_TZ` : timezone, (Default on `Europe/Paris`)
+- `APP_TOKEN_KEYPASS` : #TODO
+- `APP_TOKEN_KEYPASS` : how many hours before expiration of application (automatic shutdown by MS-Scheduling) - default `6`
+- `USER_APPS_EXPIRATION_HOURS` : #TODO
+- `USER_APPS_HOSTNAME` : #TODO
+- `TLS_ODIN_DASHBOARD` : #TODO
+- `TLS_ODIN_MONOLITH` : #TODO
+- `MAX_CONTENT_SIZE` : #TODO
+- `SWAGGER_URL` : #TODO
+- `SWAGGER_METHOD` : #TODO
 
-### Application
-- **APP_ADRESS** : the current application adress.
-- **APP_PORT** : the port used by nodejs to get all the requests.
-- **ENVIRONMENT** : used for selecting the right dotenv file. If `local`, mtls is disabled on communications with MS-Deployment. Else mtls is enabled.
-- **EXPIRATION_HOURS** : how many hours before expiration of application (automatic shutdown by MS-Scheduling) - default `6`
-- **TZ** : timezone, (Default on `Europe/Paris`)
+### b. PSQL database
+- `DB_DIALECT` : `postgres`.
+- `DB_HOST` : the url to join the database.
+- `DB_NAME` : the cirrus database name.
+- `DB_PASSWORD` : password of the database.
+- `DB_PORT` : the port used by the database.
+- `DB_USER` : username of the database.
 
-### Database parameters
-- **DB_DIALECT** : `postgres`.
-- **DB_HOST** : the url to join the database.
-- **DB_NAME** : the cirrus database name.
-- **DB_PASSWORD** : password of the database.
-- **DB_PORT** : the port used by the database.
-- **DB_USER** : username of the database.
-### JWT / Security
-- **JWT_KEYPASS** : JWT token keypass to crypt/decrypt the id of users.
-- **DURATION_TOKEN** : Duration before expiration of token.
-### MS-Deployment
-- **MS_DEPLOYMENT_ACTIVATED** : `True` / `False` if the API must connect to MS-Deployment or not.
-- **MTLS_MS_DEPLOYMENT_PORT** : MTLS port to access to distant MS-DEPLOYMENT from master cluster. (`31002`)
-- **UNSAFE_MS_DEPLOYMENT_ADRESS** : when `ENV` is on `local`, then we use unsafe ms_deployment. Typical use on local. (`localhost`)
-- **UNSAFE_MS_DEPLOYMENT_METHOD** : when `ENV` is on `local`, then we use unsafe ms_deployment. Typical use on local. (`http`)
-- **UNSAFE_MS_DEPLOYMENT_PORT** : when `ENV` is on `local`, then we use unsafe ms_deployment. Typical use on local. (`10002`)
-### Swagger
-- **SWAGGER_URL** : the url of swagger documentation.
-- **SWAGGER_METHOD** : http / https for swagger.
-### Storage export
-#### Smash (only available option as now)
-- **SMASH_STORAGE_CARRIER_IMAGE** : the image of the carrier.
-- **SMASH_STORAGE_CARRIER_IMAGE_TAG** : the image tag of the carrier.
-- **SMASH_STORAGE_CARRIER_API_KEY** : the Smash api key.
-- **SMASH_STORAGE_CARRIER_REGION** : the Smash export region.
-- **SMASH_STORAGE_CARRIER_TEAMID** : the Smash team id for custom export url.
-### URLs
-- **PUBLIC_URL** : public url of this API
-- **FRONT_END_URL** : url of front-end. 
-- **APPS_CRRS_URL** : url of crrs application (the internal ingress)
+### c. Kafka cluster
+- `KAFKA_BROKER` : the port used by the database.
+- `KAFKA_TOPIC` : username of the database.
+
+### d. KONG ingress
+- `APPS_INGRESS_ACTIVATED` : #TODO
+- `APPS_INGRESS_URL` : #TODO
+
+
+### e. Kubernetes (to be deprecated)
+- `KUBERNETES_VOLUME_TYPE` : #TODO
+- `KUBERNETES_STORAGE_CLASSNAME` : #TODO
+- `KUBERNETES_ACTIVATED` : #TODO
+- `KUBERNETES_URL` : #TODO
+- `KUBERNETES_TOKEN` : #TODO
+- `KUBERNETES_MASTER_IP` : #TODO
+- `KUBERNETES_TOKEN_PATH` : #TODO
+- `KUBERNETES_CA_CERT_PATH` : #TODO
+- `KUBERNETES_ISTIO_ACTIVATED` : #TODO
+
+### f. Smash storage
+- `STORAGE_CARRIER_SENDER_EMAIL` : #TODO
+- `STORAGE_CARRIER_SENDER_NAME` : #TODO
+- `SMASH_STORAGE_CARRIER_IMAGE` : the image of the carrier.
+- `SMASH_STORAGE_CARRIER_IMAGE_TAG` : the image tag of the carrier.
+- `SMASH_STORAGE_CARRIER_API_KEY` : the Smash api key.
+- `SMASH_STORAGE_CARRIER_REGION` : the Smash export region.
+- `SMASH_STORAGE_CARRIER_TEAMID` : the Smash team id for custom export url.
+
+### g. Containers private registry (to be deprecated)
+- `REGISTRY_URL`: #TODO
+- `REGISTRY_USERNAME`: #TODO
+- `REGISTRY_PASSWORD`: #TODO
