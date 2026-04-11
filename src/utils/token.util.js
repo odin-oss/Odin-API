@@ -2,6 +2,7 @@ import logs from '../middlewares/winston.js';
 import * as application_builder from '../builders/applications.builder.js';
 import * as auth_service from '../services/auth.service.js';
 import * as history_builder from '../builders/history.builder.js';
+import * as whitelist_builder from '../builders/whitelist.builder.js';
 import jwt from 'jsonwebtoken';
 import CONFIG from '../config/config.js';
 import {
@@ -17,6 +18,7 @@ import Guard from './guard.util.js';
 import z from 'zod';
 import { ApiResponse } from './response.util.js';
 const { sign, decode, verify } = jwt;
+import bcrypt from 'bcrypt';
 
 /**
  * Method used to generate a new token for user.
@@ -24,25 +26,26 @@ const { sign, decode, verify } = jwt;
  * @param {Function} fns functions to overwrite for unit testing.
  * @returns {String}
  */
-export const generateToken = function (
+export const generateToken = async function (
   props,
   fns = {
     jwt_sign: sign,
   }
 ) {
   const schema = z.object({
-    id_user: z.number().positive(),
+    id_user: z.union([z.string(), z.number()]),
+    is_agent: z.boolean().default(false),
   });
   const data = Guard.validateProps(schema, props);
-  return fns.jwt_sign(
-    {
-      ...data,
-    },
-    CONFIG.APP_TOKEN_KEYPASS,
-    {
-      expiresIn: CONFIG.APP_TOKEN_EXPIRATION_HOURS + 'h',
-    }
-  );
+  const content_part = data.is_agent && { uuid: `agent-${data.id_user}` } || { id_user: data.id_user };
+  const options = data.is_agent ? {} : { expiresIn: CONFIG.APP_TOKEN_EXPIRATION_HOURS + 'h' };
+  const token = fns.jwt_sign(content_part, CONFIG.APP_TOKEN_KEYPASS, options);
+  const hashed_token = bcrypt.hashSync(token, 11);
+  await whitelist_builder.create({
+    uuid: data.is_agent ? `agent-${data.id_user}` : `user-${data.id_user}`,
+    hash_token: hashed_token
+  });
+  return token;
 };
 
 /**
@@ -117,12 +120,16 @@ export const isTokenValid = async (
       throw new BadContentTokenError(
         'The token does not have proper attribute.'
       );
-    const regeneratedToken = fns.generate_token({
+    const hashed_token = await whitelist_builder.get({ uuid: `user-${verifiedToken.id_user}` });
+    if (!bcrypt.compareSync(token, hashed_token))
+      throw new BadContentTokenError('The token is not valid anymore.');
+    await fns.generate_token({
       id_user: verifiedToken.id_user,
-    });
-
-    res.set('authorization', 'Bearer ' + regeneratedToken);
-    next();
+    })
+      .then((newToken) => {
+        res.set('authorization', 'Bearer ' + newToken);
+        next();
+      });
   } catch (error) {
     ApiResponse.error(req, res, new BadContentTokenError(error.message));
   }
@@ -175,8 +182,7 @@ export const app_access_granted = async (
     // save record in history
     if (role === 'ADMINISTRATOR' || app.id_user === verifiedToken.id_user) {
       logs.info(
-        `[${req.method}][200] ${
-          regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
+        `[${req.method}][200] ${regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
         } : Authentication succeeded.`
       );
       history_builder.create({
@@ -194,8 +200,7 @@ export const app_access_granted = async (
     else return res.status(403).json({ result: false });
   } catch (error) {
     logs.error(
-      `[${req.method}][${error.code}][${error.name}] ${
-        regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
+      `[${req.method}][${error.code}][${error.name}] ${regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
       } : ${error.message}.`
     );
     return res.status(error.code).json({ result: false });
@@ -328,9 +333,9 @@ export const isOwner = async (
       fns.isOwner(
         req.query.key === undefined
           ? {
-              id_user: id_user,
-              id_application: req.query.id_application,
-            }
+            id_user: id_user,
+            id_application: req.query.id_application,
+          }
           : { id_user: id_user, key: req.query.key }
       ),
       fns.getRole({ id_user }),

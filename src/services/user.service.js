@@ -118,6 +118,7 @@ export const create = async function (
   const data = Guard.validateProps(schema, props);
   const hashed_password = fns.bcrypt.hashSync(data.pwd, 11);
   const role = await fns.role_by_label({ label: data.role });
+  console.log(hashed_password)
   return await fns
     .create({
       ...data,

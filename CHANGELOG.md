@@ -6,6 +6,7 @@
 - Added `Agent` and `Enum_agent_type` so the Datacenter will be the provider of resource for environments.
 - Added new route for adding a new Agent.
 - Added new route for adding an available agent into an existing Datacenter.
+- Added whitelist table in database to keep trace of authorized token.
 
 
 # 2.0.0

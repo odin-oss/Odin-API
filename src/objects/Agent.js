@@ -36,6 +36,7 @@ export default class Agent {
   #label;
   #type;
   #status;
+  #token;
 
   constructor(props) {
     const data = Guard.validateProps(Agent.schema, props);
@@ -43,6 +44,7 @@ export default class Agent {
     this.#label = data.label;
     this.#type = data.type;
     this.#status = data.status;
+    this.#token = data.token;
   }
 
   // Zod Schema for object validation
@@ -51,8 +53,47 @@ export default class Agent {
     label: z.string().min(2).default('N/A'),
     type: z.string().min(2).default('N/A'),
     status: z.instanceof(Agent_type).default(new Agent_type({})),
+    token: z.string().min(2).default('N/A'),
   });
 
+  get id_agent() {
+    return this.#id_agent;
+  }
+
+  get token() {
+    return this.#token;
+  }
+
+  get label() {
+    return this.#label;
+  }
+
+  get type() {
+    return this.#type;
+  }
+
+  get status() {
+    return this.#status;
+  }
+
+  set token(token) {
+    this.#token = token;
+  }
+
+  set status(status) {
+    this.#status = status;
+  }
+  set type(type) {
+    this.#type = type;
+  }
+
+  set label(label) {
+    this.#label = label;
+  }
+
+  set id_agent(id_agent) {
+    this.#id_agent = id_agent;
+  }
   toJSON() {
     return {
       id_agent: this.#id_agent,

@@ -28,33 +28,16 @@ BEGIN
     INSERT INTO User_role(label) VALUES ('TEACHER') ON CONFLICT (label) DO NOTHING;
     INSERT INTO User_role(label) VALUES ('STUDENT') ON CONFLICT (label) DO NOTHING;
 
-    SELECT id_role INTO roleStudent FROM User_role WHERE label = 'STUDENT';
-    SELECT id_role INTO roleTeacher FROM User_role WHERE label = 'TEACHER';
     SELECT id_role INTO roleAdmin FROM User_role WHERE label = 'ADMINISTRATOR';
 
-    IF NOT EXISTS (SELECT 1 FROM Password WHERE pwd = '$2b$11$Pyql88jT8/WgMqiDusg3CeAbbRRT4ajxPmY4.ABIqmDZvoQVMw2Qi') THEN
-        INSERT INTO Password(pwd) VALUES ('$2b$11$Pyql88jT8/WgMqiDusg3CeAbbRRT4ajxPmY4.ABIqmDZvoQVMw2Qi');
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM Password WHERE pwd = '$2b$11$DlcOO9.YEAEEaTE4WMZh4.nFDCBJdAgCM3leW3Teyy8NgTwVYPvnW') THEN
-        INSERT INTO Password(pwd) VALUES ('$2b$11$DlcOO9.YEAEEaTE4WMZh4.nFDCBJdAgCM3leW3Teyy8NgTwVYPvnW');
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM Password WHERE pwd = '$2b$11$0oHSTJBwaQADSj3M0MfIX.kxiQY6iWs2FqqR4BBxH9u8AvVTNJzE.') THEN
-        INSERT INTO Password(pwd) VALUES ('$2b$11$0oHSTJBwaQADSj3M0MfIX.kxiQY6iWs2FqqR4BBxH9u8AvVTNJzE.');
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM Password WHERE pwd = '$2b$11$hJHRakedeGMWeOYzgYWNpe.T1WvHfrSNIB.lZdPApYqg4AvC3xxBO') THEN
-        INSERT INTO Password(pwd) VALUES ('$2b$11$hJHRakedeGMWeOYzgYWNpe.T1WvHfrSNIB.lZdPApYqg4AvC3xxBO');
+    IF NOT EXISTS (SELECT 1 FROM Password WHERE pwd = '$2b$11$9Labq.sH7IjvHZezC5Pf2.M2xoxaZ9QfKA/lME4p50dSh0vFWqumu') THEN
+        INSERT INTO Password(pwd) VALUES ('$2b$11$9Labq.sH7IjvHZezC5Pf2.M2xoxaZ9QfKA/lME4p50dSh0vFWqumu');
     END IF;
     
-    SELECT id_password INTO pwd1 FROM Password WHERE pwd = '$2b$11$Pyql88jT8/WgMqiDusg3CeAbbRRT4ajxPmY4.ABIqmDZvoQVMw2Qi';
-    SELECT id_password INTO pwd2 FROM Password WHERE pwd = '$2b$11$DlcOO9.YEAEEaTE4WMZh4.nFDCBJdAgCM3leW3Teyy8NgTwVYPvnW';
-    SELECT id_password INTO pwd3 FROM Password WHERE pwd = '$2b$11$0oHSTJBwaQADSj3M0MfIX.kxiQY6iWs2FqqR4BBxH9u8AvVTNJzE.';
-    SELECT id_password INTO pwd4 FROM Password WHERE pwd = '$2b$11$hJHRakedeGMWeOYzgYWNpe.T1WvHfrSNIB.lZdPApYqg4AvC3xxBO';
+    SELECT id_password INTO pwd1 FROM Password WHERE pwd = '$2b$11$9Labq.sH7IjvHZezC5Pf2.M2xoxaZ9QfKA/lME4p50dSh0vFWqumu';
 
-    INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('LEFEBVRE', 'Benoit', 'benoit.lefebvre@getcaelus.cloud', roleAdmin, pwd1) ON CONFLICT (mail) DO NOTHING;
-    INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('VIEILLARD', 'Louis', 'louis.vieillard@getcaelus.cloud', roleAdmin, pwd2) ON CONFLICT (mail) DO NOTHING;
-    INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('VETU', 'Paul-Emile', 'paulemile.vetu@getcaelus.cloud', roleAdmin, pwd3) ON CONFLICT (mail) DO NOTHING;
-    INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('URBANSKI', 'Daphné', 'daphne.urbanski@getcaelus.cloud', roleAdmin, pwd4) ON CONFLICT (mail) DO NOTHING;
-
+    INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('Caelus', 'Odin', 'odin@odin.fr', roleAdmin, pwd1) ON CONFLICT (mail) DO NOTHING;
+    
     INSERT INTO Enum_agent_type(label) VALUES ('Available') ON CONFLICT (label) DO NOTHING;
     INSERT INTO Enum_agent_type(label) VALUES ('Attributed') ON CONFLICT (label) DO NOTHING;
 

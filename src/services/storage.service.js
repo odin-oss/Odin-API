@@ -4,7 +4,6 @@ import * as application_service from './applications.service.js';
 import * as storage_builder from '../builders/storage.builder.js';
 import * as environment_builder from '../builders/environment.builder.js';
 import * as user_builder from '../builders/user.builder.js';
-import { smashExport } from '../objects/kubernetes/storage-carrier.js';
 import CONFIG from '../config/config.js';
 import { exec_transfer_deletion } from '../modules/smash-api.module.js';
 import {
@@ -34,123 +33,6 @@ export const getStorage = async function (
   const data = Guard.validateProps(schema, props);
   const promises = [fns.get_storage({ ...data })];
   return await Promise.all(promises).then((r) => r[0]);
-};
-
-/**
- * Service that execute the export workflow of an application.
- * @param {Number} id_application id of the application we want to export the storage.
- * @param {Boolean} delete_existing_export should we delete the existing export object - optional.
- * @param {Boolean} app_deletion should the application be deleted - default false.
- * @param {Function} fns functions to overwrite for unit testing.
- * @returns {Application_export}
- */
-export const exportStorage = async function (
-  props,
-  fns = {
-    user_get: user_builder.get,
-    environment_get: environment_builder.get,
-    application_get: application_service.get,
-    get_application_export: storage_builder.getNonErrorApplicationStorage,
-    storage_create: storage_builder.create,
-    exec_smash_export: smashExport,
-    service_delete_storage: deleteStorage,
-  }
-) {
-  const schema = z.object({
-    id_application: z.coerce.number().positive(),
-    delete_existing_export: z.boolean().optional(),
-    app_deletion: z.boolean().default(false),
-  });
-  const data = Guard.validateProps(schema, props);
-  let previous_export_deleted = false;
-  const application = await fns.application_get({
-    id_application: data.id_application,
-  });
-  const user = await fns.user_get({ id_user: application.id_user });
-  const application_shutdown_states = ['Off', 'EndedSession', 'DeletedLaunch'];
-  if (!application_shutdown_states.includes(application.state_application)) {
-    throw new StorageError('The application must be shutdown first.');
-  }
-  const applicationStorage = await fns.get_application_export({
-    id_application: data.id_application,
-  });
-  const existing_states = ['Launched', 'Exporting'];
-  if (applicationStorage.id_export && !data.delete_existing_export)
-    throw new StorageAlreadyExists(
-      'Storage already exists for this application.'
-    );
-  else if (
-    applicationStorage.status === 'Available' &&
-    data.delete_existing_export
-  ) {
-    await fns.service_delete_storage({
-      id_application: data.id_application,
-      id_export: applicationStorage.id_export,
-    });
-    previous_export_deleted = true;
-  } else if (
-    existing_states.includes(applicationStorage.status) &&
-    data.delete_existing_export
-  ) {
-    throw new StorageAlreadyExists(
-      'An Export is already in progress. Current status: ' +
-        applicationStorage.status
-    );
-  }
-
-  const environment_infos = await fns.environment_get({
-    id_environment: application.id_environment,
-  });
-
-  const interfacesWithStorage = environment_infos.interfaces.filter(
-    (interfaces) =>
-      interfaces.envs.some(
-        (env) => env.key === 'HSTORAGE' && env.value === 'true'
-      )
-  );
-  if (interfacesWithStorage.length === 0)
-    throw new StorageError('Storage is not enabled for this environment.');
-
-  // Create storage export in database
-  const promises = [
-    fns
-      .storage_create({
-        id_application: data.id_application,
-        availability_days: 1,
-      })
-      .then((application_export) => {
-        fns
-          .exec_smash_export({
-            hash: application.hash,
-            upload_id: application_export.id_export?.toString(),
-            label: selectedInterface?.label?.toLowerCase(),
-            app_deletion: data.app_deletion,
-            folder_path: `/home/${application.username}/`,
-            storage_carrier_image: CONFIG.SMASH_STORAGE_CARRIER_IMAGE,
-            storage_carrier_image_tag: CONFIG.SMASH_STORAGE_CARRIER_IMAGE_TAG,
-            smash_api_key: CONFIG.SMASH_STORAGE_CARRIER_API_KEY,
-            smash_region: CONFIG.SMASH_STORAGE_CARRIER_REGION,
-            smash_teamid: CONFIG.SMASH_STORAGE_CARRIER_TEAMID,
-            web_title: application.custom_label,
-            upload_description: `${application.custom_label} Odin environment export from ${moment().format('YYYY-MM-DD HH:mm:ss')} (${moment.tz(moment.tz.guess()).format('z')})`,
-            export_language: 'fr',
-            availability: '30',
-            sender_name: CONFIG.STORAGE_CARRIER_SENDER_NAME,
-            sender_email: CONFIG.STORAGE_CARRIER_SENDER_EMAIL,
-            receiver_email: user.mail,
-            datacenter: application.datacenter,
-          })
-          .catch((error) => {
-            console.error('Error executing smash export:', error);
-          });
-        return application_export;
-      }),
-  ];
-
-  return await Promise.all(promises).then((r) => {
-    r[0].previous_export_deleted = previous_export_deleted;
-    return r[0];
-  });
 };
 
 /**

@@ -1,6 +1,4 @@
 import dotenv from 'dotenv';
-import https from 'https';
-import fs from 'fs/promises';
 import { z } from 'zod';
 
 // ENVIRONMENT = local || dev || prod
@@ -43,43 +41,6 @@ const envSchema = z.object({
   DB_DIALECT: z.string().default('postgres'),
   DB_NAME: z.string().default('odin'),
 
-  // KAFKA CLUSTER
-  KAFKA_BROKER: z.string().default('broker:29092'),
-  KAFKA_ACTIVATED: z
-    .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
-    .transform((val) => val === 'true')
-    .default(true),
-  KAFKA_TOPIC: z.string().default('upload-logs'),
-
-  // KONG - APPS INGRESS
-  APPS_INGRESS_ACTIVATED: z
-    .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
-    .transform((val) => val === 'true')
-    .default(true),
-  APPS_INGRESS_URL: z.string().default('localhost:8001'),
-
-  // KUBERNETES API
-  KUBERNETES_VOLUME_TYPE: z.string().default('Block'),
-  KUBERNETES_STORAGE_CLASSNAME: z.string().default('sbs-default'),
-  KUBERNETES_ACTIVATED: z
-    .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
-    .transform((val) => val === 'true')
-    .default(true),
-  KUBERNETES_URL: z.string().default('http://127.0.0.1:8080'),
-  KUBERNETES_TOKEN: z.string().default(''),
-  KUBERNETES_MASTER_IP: z.string(),
-  KUBERNETES_TOKEN_PATH: z
-    .string()
-    .default('/var/run/secrets/kubernetes.io/serviceaccount/token'),
-  KUBERNETES_CA_CERT_PATH: z
-    .string()
-    .default('/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'),
-  KUBERNETES_AGENT: z.any().default(undefined),
-  KUBERNETES_ISTIO_ACTIVATED: z
-    .preprocess((val) => String(val).toLocaleLowerCase(), z.string())
-    .transform((val) => val === 'true')
-    .default(true),
-
   // WINSTON LOGGER CONFIGURATION
   LOG_PATH: z.string().default('log'),
   LOG_LEVEL: z.string().default('info'),
@@ -114,18 +75,4 @@ if (!parsed.success) {
   process.exit(1);
 }
 const CONFIG = parsed.data;
-
-if (
-  !['test'].includes(CONFIG.APP_ENVIRONMENT) &&
-  process.env.KUBERNETES_CA_CERT_PATH
-) {
-  const token =
-    (process.env.KUBERNETES_TOKEN_PATH &&
-      (await fs.readFile(CONFIG.KUBERNETES_TOKEN_PATH, 'utf-8'))) ||
-    CONFIG.KUBERNETES_TOKEN;
-  CONFIG.KUBERNETES_TOKEN = token;
-  const ca = await fs.readFile(CONFIG.KUBERNETES_CA_CERT_PATH, 'utf-8');
-  CONFIG.KUBERNETES_AGENT = new https.Agent({ ca });
-}
-
 export default CONFIG;

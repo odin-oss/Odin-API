@@ -28,8 +28,10 @@ export const create = async function (
     const data = Guard.validateProps(schema, req.body);
     return await fns
       .create(data)
-      .then((env) =>
-        ApiResponse.success(req, res, env.toJSON(), 200, 'New agent added.')
+      .then((env) => {
+        logs.info(`[K-AGENT] Please use the following token to connect your agent: ${env.token}`);
+        return ApiResponse.success(req, res, env.toJSON(), 200, 'New agent added.')
+      }
       );
   } catch (err) {
     logs.debug(err);

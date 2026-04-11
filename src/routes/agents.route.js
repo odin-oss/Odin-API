@@ -47,8 +47,8 @@ const router = express.Router();
  *           type: object
  *           $ref: '#/definitions/DBConnexionRefused'
  */
-router.post('/', isTokenValid, isAdmin, (req, res) => {
+router.post('/', (req, res) => {
   agents_controller.create(req, res);
 });
-
+//isTokenValid, isAdmin,
 export default router;

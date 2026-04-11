@@ -20,6 +20,10 @@ BEGIN
         FOREIGN KEY (id_role) REFERENCES User_role(id_role),
         FOREIGN KEY (id_password) REFERENCES Password(id_password)
     );
+    CREATE TABLE IF NOT EXISTS Whitelist (
+        token VARCHAR(255) PRIMARY KEY,
+        uuid VARCHAR(255) NOT NULL UNIQUE
+    );
 
     CREATE TABLE IF NOT EXISTS School (
         id_school SERIAL PRIMARY KEY,
@@ -125,8 +129,8 @@ BEGIN
     CREATE TABLE IF NOT EXISTS Agent (
         id_agent UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         id_enum_agent_type INTEGER NOT NULL,
-        label VARCHAR(255) NOT NULL UNIQUE,
-        type VARCHAR(100) NOT NULL UNIQUE,
+        label VARCHAR(255) NOT NULL,
+        type VARCHAR(100) NOT NULL DEFAULT 'kubernetes',
 
         FOREIGN KEY (id_enum_agent_type) REFERENCES Enum_agent_type(id_enum_agent_type)
     );

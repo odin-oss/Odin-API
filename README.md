@@ -124,3 +124,9 @@ This is the full list of all the variables you have to set either in *.env* file
 - `REGISTRY_URL`: #TODO
 - `REGISTRY_USERNAME`: #TODO
 - `REGISTRY_PASSWORD`: #TODO
+
+## 6. Default Administrator
+
+On first start of the application, the default Administrator user is created :
+- Mail : `odin@odin.fr`
+- Password: `Odin@2026`

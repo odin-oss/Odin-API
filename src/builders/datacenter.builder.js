@@ -3,7 +3,6 @@ import dbManager from '../config/db.config.js';
 import { Datacenter } from '../objects/Datacenter.js';
 import { DBObjectNotFound } from '../utils/errors.util.js';
 import Guard from '../utils/guard.util.js';
-import { id } from 'zod/locales';
 import Agent, { Agent_type } from '../objects/Agent.js';
 
 /**
@@ -23,16 +22,24 @@ export const list = async function () {
       },
     ],
   })
-    .then((dcs) => dcs.map((dc) => new Datacenter({ ...dc.dataValues, 
-      agent: dc.AGENT
-          ? new Agent({
-              ...dc.AGENT.dataValues,
-              status: new Agent_type({
-                id_enum_agent_type: dc.AGENT.ENUM_AGENT_TYPE.id_enum_agent_type,
-                label: dc.AGENT.ENUM_AGENT_TYPE.label,
-              }),
-            })
-          : undefined, })))
+    .then((dcs) =>
+      dcs.map(
+        (dc) =>
+          new Datacenter({
+            ...dc.dataValues,
+            agent: dc.AGENT
+              ? new Agent({
+                  ...dc.AGENT.dataValues,
+                  status: new Agent_type({
+                    id_enum_agent_type:
+                      dc.AGENT.ENUM_AGENT_TYPE.id_enum_agent_type,
+                    label: dc.AGENT.ENUM_AGENT_TYPE.label,
+                  }),
+                })
+              : undefined,
+          })
+      )
+    )
     .catch(dbManager.sequelizeErrorManagement);
 };
 

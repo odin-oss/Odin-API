@@ -4,11 +4,6 @@ import * as user_builder from '../builders/user.builder.js';
 import * as datacenter_builder from '../builders/datacenter.builder.js';
 import * as history_builder from '../builders/history.builder.js';
 import { list as dictionary_list } from '../builders/randomdictionary.builder.js';
-import {
-  exec_shutdown,
-  exec_start,
-  exec_deletion,
-} from './deployment.service.js';
 import * as storage_service from '../services/storage.service.js';
 import moment from 'moment-timezone';
 import CONFIG from '../config/config.js';
@@ -116,8 +111,6 @@ export const list = async function (
     const histories = result.filter((r) => r instanceof History);
     for (let history of histories) {
       if (history.records.length > 0) {
-        console.log(history.records[0].toJSON());
-
         applications.find(
           (app) => app.id_application === history.records[0].id_application
         ).history = history;
@@ -140,8 +133,6 @@ export const update_state = async function (
     application_get: application_builder.get,
     datacenter_get: datacenter_builder.get,
     application_update: application_builder.update_state,
-    exec_start,
-    exec_shutdown,
     environment_get: environment_builder.get,
   }
 ) {
@@ -172,9 +163,7 @@ export const update_state = async function (
     promises.push(
       fns.environment_get({ id_environment: application.id_environment })
     );
-    promises.push(fns.exec_start({ hash: application.hash, datacenter }));
-  } else
-    promises.push(fns.exec_shutdown({ hash: application.hash, datacenter }));
+  }
   return await Promise.all(promises).then((r) => {
     r[0].datacenter = datacenter;
     if (data.state_application === 'Ready') r[0].environment = r[1];
@@ -195,8 +184,6 @@ export const deletion = async function (
     application_get: application_builder.get,
     application_delete: application_builder.deletion,
     datacenter_get: datacenter_builder.get,
-    exec_deletion,
-    exec_shutdown,
     download_deletion: application_builder.download_deletion,
     export_storage: storage_service.exportStorage,
   }
@@ -224,20 +211,10 @@ export const deletion = async function (
     promises.push(
       fns.download_deletion({ id_application: data.id_application })
     );
-    promises.push(
-      fns.exec_shutdown({ hash: app.hash, datacenter }).then(() => {
-        return fns.export_storage({
-          id_application: data.id_application,
-          delete_existing_export: true,
-          app_deletion: true,
-        });
-      })
-    );
   } else {
     promises.push(
       fns.application_delete({ id_application: app.id_application })
     );
-    promises.push(fns.exec_deletion({ hash: app.hash, datacenter }));
   }
 
   return await Promise.all(promises).then((r) => {
