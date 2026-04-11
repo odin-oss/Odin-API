@@ -21,6 +21,9 @@ export const create = async function (
   });
   const data = Guard.validateProps(schema, props);
   const agent = await fns.agent_create(data);
-  agent.token = await generateToken({ id_user: agent.id_agent, is_agent: true });
+  agent.token = await generateToken({
+    id_user: agent.id_agent,
+    is_agent: true,
+  });
   return agent;
-}
+};
