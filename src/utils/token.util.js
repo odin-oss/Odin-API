@@ -19,6 +19,7 @@ import z from 'zod';
 import { ApiResponse } from './response.util.js';
 const { sign, decode, verify } = jwt;
 import bcrypt from 'bcrypt';
+import crypto from 'node:crypto';
 
 /**
  * Method used to generate a new token for user.
@@ -40,6 +41,8 @@ export const generateToken = async function (
   const content_part = (data.is_agent && { uuid: `agent-${data.id_user}` }) || {
     id_user: data.id_user,
   };
+  content_part.jti = crypto.randomBytes(16).toString('hex');
+  content_part.iat = Math.floor(Date.now() / 1000);
   const options = data.is_agent
     ? {}
     : { expiresIn: CONFIG.APP_TOKEN_EXPIRATION_HOURS + 'h' };
@@ -129,14 +132,18 @@ export const isTokenValid = async (
     });
     if (!bcrypt.compareSync(token, hashed_token))
       throw new BadContentTokenError('The token is not valid anymore.');
-    await fns
+    next();
+    /*await fns
       .generate_token({
         id_user: verifiedToken.id_user,
       })
       .then((newToken) => {
+        
+        console.log(token, newToken, bcrypt.compareSync(newToken, hashed_token));
         res.set('authorization', 'Bearer ' + newToken);
         next();
-      });
+      });*/
+    // We can decide to generate a new token at each request, but it is not really necessary and it can cause some issues with the current whitelist system.
   } catch (error) {
     ApiResponse.error(req, res, new BadContentTokenError(error.message));
   }
@@ -189,8 +196,7 @@ export const app_access_granted = async (
     // save record in history
     if (role === 'ADMINISTRATOR' || app.id_user === verifiedToken.id_user) {
       logs.info(
-        `[${req.method}][200] ${
-          regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
+        `[${req.method}][200] ${regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
         } : Authentication succeeded.`
       );
       history_builder.create({
@@ -208,8 +214,7 @@ export const app_access_granted = async (
     else return res.status(403).json({ result: false });
   } catch (error) {
     logs.error(
-      `[${req.method}][${error.code}][${error.name}] ${
-        regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
+      `[${req.method}][${error.code}][${error.name}] ${regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
       } : ${error.message}.`
     );
     return res.status(error.code).json({ result: false });
@@ -342,9 +347,9 @@ export const isOwner = async (
       fns.isOwner(
         req.query.key === undefined
           ? {
-              id_user: id_user,
-              id_application: req.query.id_application,
-            }
+            id_user: id_user,
+            id_application: req.query.id_application,
+          }
           : { id_user: id_user, key: req.query.key }
       ),
       fns.getRole({ id_user }),
