@@ -99,6 +99,27 @@ export const getUserId = function (
 };
 
 /**
+ * Get id_user from the token.
+ * @param {String} token token to decode.
+ * @param {Function} fns functions to overwrite for unit testing.
+ * @returns {Number}
+ */
+export const getAgentId = function (
+  props,
+  fns = {
+    decode_token: decodeToken,
+  }
+) {
+  const schema = z.object({
+    token: z.string().startsWith('Bearer ', {
+      message: 'The token should begin with Bearer.',
+    }),
+  });
+  const data = Guard.validateProps(schema, props);
+  return fns.decode_token({ ...data }).uuid?.slice(6);
+};
+
+/**
  * Method that checks if the token is valid.
  * @param {Request} req HTTP request.
  * @param {Response} res HTTP response.
@@ -196,7 +217,8 @@ export const app_access_granted = async (
     // save record in history
     if (role === 'ADMINISTRATOR' || app.id_user === verifiedToken.id_user) {
       logs.info(
-        `[${req.method}][200] ${regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
+        `[${req.method}][200] ${
+          regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
         } : Authentication succeeded.`
       );
       history_builder.create({
@@ -214,7 +236,8 @@ export const app_access_granted = async (
     else return res.status(403).json({ result: false });
   } catch (error) {
     logs.error(
-      `[${req.method}][${error.code}][${error.name}] ${regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
+      `[${req.method}][${error.code}][${error.name}] ${
+        regex.test(req.url) ? '/apps-ingress-encrypted' : req.originalUrl
       } : ${error.message}.`
     );
     return res.status(error.code).json({ result: false });
@@ -347,9 +370,9 @@ export const isOwner = async (
       fns.isOwner(
         req.query.key === undefined
           ? {
-            id_user: id_user,
-            id_application: req.query.id_application,
-          }
+              id_user: id_user,
+              id_application: req.query.id_application,
+            }
           : { id_user: id_user, key: req.query.key }
       ),
       fns.getRole({ id_user }),

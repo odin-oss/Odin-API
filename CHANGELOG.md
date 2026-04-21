@@ -7,6 +7,8 @@
 - Added new route for adding a new Agent.
 - Added new route for adding an available agent into an existing Datacenter.
 - Added whitelist table in database to keep trace of authorized token.
+- Removed force rotation of token on every request.
+- Add `Caelus` role for Caelus team.
 
 
 # 2.0.0

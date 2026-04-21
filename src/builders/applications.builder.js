@@ -68,12 +68,14 @@ export const get = async function (props) {
 /**
  * Get the Application list from id_user.
  * @param {Number} id_user id of the user.
+ * @param {Number} id_datacenter id of the datacenter.
  * @returns {Array<Application>}
  */
 export const list = async function (props = {}) {
   try {
     const schema = z.object({
       id_user: z.coerce.number().positive().optional(),
+      id_datacenter: z.coerce.number().positive().optional(),
       filter: z.array(z.string()).optional(),
     });
     const data = Guard.validateProps(schema, props);
@@ -92,6 +94,8 @@ export const list = async function (props = {}) {
     if (data.filter)
       options.include[0].where = { label: { [Op.in]: data.filter } };
     if (data.id_user) options.where = { id_user: data.id_user };
+    if (data.id_datacenter) options.where = { id_datacenter: data.id_datacenter };
+
     return await dbManager.models.APPLICATION.findAll(options).then((r) =>
       r.map(
         (app) =>

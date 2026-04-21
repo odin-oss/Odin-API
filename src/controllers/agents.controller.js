@@ -1,6 +1,7 @@
 import { counter, counter_post } from '../middlewares/prometheus.js';
 import { ApiResponse } from '../utils/response.util.js';
 import * as agent_service from '../services/agents.service.js';
+import * as token from '../utils/token.util.js';
 import Guard from '../utils/guard.util.js';
 import logs from '../middlewares/winston.js';
 import z from 'zod';
@@ -37,6 +38,18 @@ export const create = async function (
         200,
         'New agent added.'
       );
+    });
+  } catch (err) {
+    logs.debug(err);
+    ApiResponse.error(req, res, err);
+  }
+};
+
+export const up = async function (req, res) {
+  try {
+    const uuid = token.getAgentId({ token: req.headers['authorization'] });
+    return await agent_service.up(uuid).then((env) => {
+      return ApiResponse.success(req, res, env.toJSON(), 200, 'Agent is up.');
     });
   } catch (err) {
     logs.debug(err);

@@ -27,6 +27,7 @@ BEGIN
     INSERT INTO User_role(label) VALUES ('ADMINISTRATOR') ON CONFLICT (label) DO NOTHING;
     INSERT INTO User_role(label) VALUES ('TEACHER') ON CONFLICT (label) DO NOTHING;
     INSERT INTO User_role(label) VALUES ('STUDENT') ON CONFLICT (label) DO NOTHING;
+    INSERT INTO User_role(label) VALUES ('CAELUS') ON CONFLICT (label) DO NOTHING;
 
     SELECT id_role INTO roleAdmin FROM User_role WHERE label = 'ADMINISTRATOR';
 

@@ -27,3 +27,14 @@ export const create = async function (
   });
   return agent;
 };
+
+/**
+ * Ping up the agent and send back the plans template to be applied by the agent.
+ * @param {String} uuid uuid of the agent
+ * @returns {AgentPlan}
+ */
+export const up = async function (uuid) {
+  const schema = z.string().uuid();
+  const data = Guard.validateProps(schema, uuid);
+  return await agent_builder.up(data);
+};
