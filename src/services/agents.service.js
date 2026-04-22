@@ -1,7 +1,9 @@
 import z from 'zod';
 import * as agent_builder from '../builders/agent.builder.js';
+import * as environment_builder from '../builders/environment.builder.js';
 import Guard from '../utils/guard.util.js';
 import { generateToken } from '../utils/token.util.js';
+
 /**
  * Service that launchs the execution of agent creation.
  * @param {String} label label of the new agent to be created.
@@ -36,5 +38,10 @@ export const create = async function (
 export const up = async function (uuid) {
   const schema = z.string().uuid();
   const data = Guard.validateProps(schema, uuid);
-  return await agent_builder.up(data);
+  const plan = await agent_builder.up(data);
+  for (const i in plan.orders) {
+    const env = plan.orders[i].template;
+    plan.orders[i].template = await environment_builder.get({id_environment: env.id_environment});
+  }
+  return plan;
 };

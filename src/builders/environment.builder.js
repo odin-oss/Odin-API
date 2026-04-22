@@ -18,9 +18,14 @@ import { id } from 'zod/locales';
 
 /**
  * Builder that list all the environments in database.
+ * @param {Array<Number>} ids_environment list of id of environment to get (optional).
  * @returns {Array<Environment>}
  */
-export const list = async function () {
+export const list = async function (props) {
+  const schema = z.object({
+    ids_environment: z.array(z.coerce.number().int().positive()).default([]),
+  });
+  const data = Guard.validateProps(schema, props);
   const queryOptions = {
     include: [
       {
@@ -39,6 +44,13 @@ export const list = async function () {
       },
     ],
   };
+  if (data.ids_environment.length > 0) {
+    queryOptions.where = {
+      id_environment: {
+        [Op.in]: data.ids_environment,
+      },
+    };
+  }
   return await dbManager.models.ENVIRONMENT_HAS_INTERFACE.findAll(queryOptions)
     .then((r) => {
       let result = [];

@@ -77,6 +77,7 @@ export const list = async function (props = {}) {
       id_user: z.coerce.number().positive().optional(),
       id_datacenter: z.coerce.number().positive().optional(),
       filter: z.array(z.string()).optional(),
+      states: z.array(z.string()).optional(),
     });
     const data = Guard.validateProps(schema, props);
     const options = {
@@ -93,8 +94,11 @@ export const list = async function (props = {}) {
     };
     if (data.filter)
       options.include[0].where = { label: { [Op.in]: data.filter } };
+    if (data.states)
+      options.include[0].where = { ...options.include[0].where, label: { [Op.in]: data.states } };
     if (data.id_user) options.where = { id_user: data.id_user };
-    if (data.id_datacenter) options.where = { id_datacenter: data.id_datacenter };
+    if (data.id_datacenter)
+      options.where = { id_datacenter: data.id_datacenter };
 
     return await dbManager.models.APPLICATION.findAll(options).then((r) =>
       r.map(
