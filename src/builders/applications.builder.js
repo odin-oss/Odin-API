@@ -10,6 +10,7 @@ import {
 import { Application } from '../objects/Application.js';
 import { Environment } from '../objects/Environment.js';
 import { Datacenter } from '../objects/Datacenter.js';
+import logs from '../middlewares/winston.js';
 import Guard from '../utils/guard.util.js';
 
 /**
@@ -401,7 +402,7 @@ export const download_deletion = async function (props) {
 };
 
 /**
- * Change the state of the application.
+ * Change the state of the application order.
  * @param {Number} id_application id of the application to update.
  * @param {String} state_application state of the application
  * @returns {Boolean}
@@ -444,6 +445,67 @@ export const update_state = async function (props) {
     else opt_condition.where.hash = data.hash;
 
     return await dbManager.models.APPLICATION_ORDER.update(
+      opt_update,
+      opt_condition
+    ).then((r) => {
+      if (r[0] === 0)
+        throw new DBObjectNotFound('The application to update does not exist.');
+      return r[0] > 0;
+    });
+  } catch (err) {
+    if (err instanceof DBObjectNotFound) throw err;
+    throw dbManager.sequelizeErrorManagement(err);
+  }
+};
+
+/**
+ * Change the state of the application (from agent).
+ * @param {String} hash unique hash used to identify the application.
+ * @param {String} state_application state of the application
+ * @param {String} uuid uuid of the agent that send the update. (checking if the agent is allowed to update the application)
+ * @returns {Boolean}
+ */
+export const update_live_state = async function (props) {
+  try {
+    const schema = z.object({
+      hash: z.string().min(6).max(6),
+      state_application: z.enum(['Off', 'Ready', 'Getting ready']),
+      uuid: z.string().uuid(),
+    });
+    const data = Guard.validateProps(schema, props);
+    const options = {
+      where: { label: data.state_application },
+    };
+    const id_enum_state_application =
+      await dbManager.models.ENUM_STATE_APPLICATION.findOne(options).then(
+        (r) => r.id_enum_state_application
+      );
+
+    // Get the application order from the hash
+    const application_order = await dbManager.models.APPLICATION_ORDER.findOne({
+      where: { hash: data.hash },
+    });
+    if (application_order == null) {
+      logs.debug('The application to update does not exist.');
+      return false;
+    }
+
+    // Check if the agent is allowed to update the application
+    const agent_environments = await dbManager.models.DATACENTER.findOne({ 
+      where: { 
+        id_datacenter: application_order.id_datacenter 
+      }, 
+      include: [{ model: dbManager.models.AGENT, where: { id_agent: data.uuid } }] });
+    console.log(agent_environments.id_datacenter)
+
+    // Updating the state of the application
+    const opt_update = {
+      id_enum_state_application: id_enum_state_application,
+      last_update: moment.tz(CONFIG.APP_TZ).utc().format()
+    };
+    const opt_condition = { where: { id_application_order: application_order.id_application_order } };
+
+    return await dbManager.models.APPLICATION.update(
       opt_update,
       opt_condition
     ).then((r) => {

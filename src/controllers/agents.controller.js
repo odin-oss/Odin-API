@@ -64,7 +64,7 @@ export const up = async function (req, res) {
     });
     const data = Guard.validateProps(schema, req.body);
     return await agent_service
-      .up({ uuid, status: data.my_health.status })
+      .up({ uuid, status: data.my_health.status, environments: data.environments })
       .then((env) => {
         return ApiResponse.success(req, res, env.toJSON(), 200, 'Agent is up.');
       });
