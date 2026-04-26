@@ -127,7 +127,7 @@ export class AgentPlan {
   static schema = z.object({
     orders: z.array(z.instanceof(AgentTemplate)).default([]),
   });
-  
+
   get orders() {
     return this.#orders;
   }

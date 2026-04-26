@@ -95,7 +95,12 @@ export const getUserId = function (
     }),
   });
   const data = Guard.validateProps(schema, props);
-  return fns.decode_token({ ...data }).id_user;
+  const user_token = fns.decode_token({ ...data });
+  if (!user_token.id_user)
+    throw new BadContentTokenError(
+      'The token does not have proper attribute.'
+    );
+  return user_token.id_user;
 };
 
 /**
@@ -116,7 +121,10 @@ export const getAgentId = function (
     }),
   });
   const data = Guard.validateProps(schema, props);
-  return fns.decode_token({ ...data }).uuid?.slice(6);
+  const agent_token = fns.decode_token({ ...data });
+  if (!agent_token.uuid?.startsWith('agent-'))
+    throw new BadContentTokenError('The token is not a valid agent token.');
+  return agent_token.uuid?.slice(6);
 };
 
 /**

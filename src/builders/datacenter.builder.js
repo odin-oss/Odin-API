@@ -3,7 +3,7 @@ import dbManager from '../config/db.config.js';
 import { Datacenter } from '../objects/Datacenter.js';
 import { DBObjectNotFound } from '../utils/errors.util.js';
 import Guard from '../utils/guard.util.js';
-import Agent, { Agent_type } from '../objects/Agent.js';
+import Agent, { Agent_state } from '../objects/Agent.js';
 
 /**
  * Builder that fetchs all the dcs in the database.
@@ -16,7 +16,7 @@ export const list = async function () {
         model: dbManager.models.AGENT,
         include: [
           {
-            model: dbManager.models.ENUM_AGENT_TYPE,
+            model: dbManager.models.ENUM_AGENT_STATE,
           },
         ],
       },
@@ -30,10 +30,10 @@ export const list = async function () {
             agent: dc.AGENT
               ? new Agent({
                   ...dc.AGENT.dataValues,
-                  status: new Agent_type({
-                    id_enum_agent_type:
-                      dc.AGENT.ENUM_AGENT_TYPE.id_enum_agent_type,
-                    label: dc.AGENT.ENUM_AGENT_TYPE.label,
+                  status: new Agent_state({
+                    id_enum_agent_state:
+                      dc.AGENT.ENUM_AGENT_STATE.id_enum_agent_state,
+                    label: dc.AGENT.ENUM_AGENT_STATE.label,
                   }),
                 })
               : undefined,
@@ -60,7 +60,7 @@ export const get = async function (props) {
         model: dbManager.models.AGENT,
         include: [
           {
-            model: dbManager.models.ENUM_AGENT_TYPE,
+            model: dbManager.models.ENUM_AGENT_STATE,
           },
         ],
       },
@@ -74,9 +74,10 @@ export const get = async function (props) {
         agent: r.AGENT
           ? new Agent({
               ...r.AGENT.dataValues,
-              status: new Agent_type({
-                id_enum_agent_type: r.AGENT.ENUM_AGENT_TYPE.id_enum_agent_type,
-                label: r.AGENT.ENUM_AGENT_TYPE.label,
+              status: new Agent_state({
+                id_enum_agent_state:
+                  r.AGENT.ENUM_AGENT_STATE.id_enum_agent_state,
+                label: r.AGENT.ENUM_AGENT_STATE.label,
               }),
             })
           : undefined,
@@ -211,19 +212,19 @@ export const addAgent = async function (props, fns = { get }) {
       where: { id_agent: data.id_agent },
       include: [
         {
-          model: dbManager.models.ENUM_AGENT_TYPE,
+          model: dbManager.models.ENUM_AGENT_STATE,
           required: true,
         },
       ],
     });
     if (!agent)
       throw new DBObjectNotFound('The agent is not existing in database.');
-    if (agent.ENUM_AGENT_TYPE.label !== 'Available')
+    if (agent.ENUM_AGENT_STATE.label !== 'Available')
       throw new Error(
         'The agent is not available to be added to a datacenter.'
       );
 
-    const status_attributed = await dbManager.models.ENUM_AGENT_TYPE.findOne({
+    const status_attributed = await dbManager.models.ENUM_AGENT_STATE.findOne({
       where: { label: 'Attributed' },
     });
     if (!status_attributed)
@@ -240,7 +241,7 @@ export const addAgent = async function (props, fns = { get }) {
 
     await dbManager.models.AGENT.update(
       {
-        id_enum_agent_type: status_attributed.id_enum_agent_type,
+        id_enum_agent_state: status_attributed.id_enum_agent_state,
       },
       { where: { id_agent: data.id_agent } }
     );

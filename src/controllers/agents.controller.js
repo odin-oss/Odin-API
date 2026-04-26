@@ -48,9 +48,26 @@ export const create = async function (
 export const up = async function (req, res) {
   try {
     const uuid = token.getAgentId({ token: req.headers['authorization'] });
-    return await agent_service.up(uuid).then((env) => {
-      return ApiResponse.success(req, res, env.toJSON(), 200, 'Agent is up.');
+
+    const schema = z.object({
+      my_health: z.object({
+        status: z.string(),
+        cpu: z.string().optional(),
+        ram: z.string().optional(),
+      }),
+      environments: z.array(
+        z.object({
+          hash: z.string(),
+          status: z.string(),
+        })
+      ),
     });
+    const data = Guard.validateProps(schema, req.body);
+    return await agent_service
+      .up({ uuid, status: data.my_health.status })
+      .then((env) => {
+        return ApiResponse.success(req, res, env.toJSON(), 200, 'Agent is up.');
+      });
   } catch (err) {
     logs.debug(err);
     ApiResponse.error(req, res, err);

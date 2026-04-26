@@ -5,9 +5,11 @@ import { Datacenter } from './Datacenter.js';
 import { History } from './History.js';
 import z from 'zod';
 import Guard from '../utils/guard.util.js';
+import { id } from 'zod/locales';
 
 export class Application {
   #id_application;
+  #id_application_order;
   #id_user;
   #id_environment;
   #custom_label;
@@ -26,6 +28,7 @@ export class Application {
   constructor(props) {
     const data = Guard.validateProps(Application.schema, props);
     this.#id_application = data.id_application;
+    this.#id_application_order = data.id_application_order;
     this.#custom_label = data.custom_label;
     this.#generated_label = data.generated_label;
     this.#creation_date = data.creation_date;
@@ -45,6 +48,7 @@ export class Application {
   // Zod Schema for object validation
   static schema = z.object({
     id_application: z.coerce.number().int().positive().optional(),
+    id_application_order: z.coerce.number().int().positive().optional(),
     custom_label: z.string().optional(),
     generated_label: z.string().optional(),
     creation_date: z
@@ -79,6 +83,10 @@ export class Application {
   // Getters
   get id_application() {
     return this.#id_application;
+  }
+
+  get id_application_order() {
+    return this.#id_application_order;
   }
 
   get custom_label() {
@@ -142,6 +150,10 @@ export class Application {
     this.#id_application = value;
   }
 
+  set id_application_order(value) {
+    this.#id_application_order = value;
+  }
+
   set custom_label(value) {
     this.#custom_label = value;
   }
@@ -202,6 +214,7 @@ export class Application {
     const format = {
       interfaces: [],
       id_application: this.#id_application,
+      id_application_order: this.#id_application_order,
       environment: this.#environment.label,
       id_environment: this.#environment.id_environment,
       datacenter: this.#datacenter?.public_format(),
@@ -239,6 +252,7 @@ export class Application {
   toJSON() {
     return {
       id_application: this.#id_application,
+      id_application_order: this.#id_application_order,
       custom_label: this.#custom_label,
       generated_label: this.#generated_label,
       creation_date: moment(this.#creation_date).tz(CONFIG.APP_TZ).format(),

@@ -48,18 +48,20 @@ export const get = async function (props) {
       options.where.id_application = data.id_application;
     if (data.key !== undefined) options.where.generated_label = data.key;
     if (data.hash !== undefined) options.where.hash = data.hash;
-    return await dbManager.models.APPLICATION.findOne(options).then((r) => {
-      if (r === null)
-        throw new DBObjectNotFound(
-          `The element id_application = '${data.id_application}' could not be found.`
-        );
-      return new Application({
-        ...r.dataValues,
-        state_application: r.ENUM_STATE_APPLICATION.label,
-        datacenter: new Datacenter(r),
-        environment: new Environment(r.ENVIRONMENT),
-      });
-    });
+    return await dbManager.models.APPLICATION_ORDER.findOne(options).then(
+      (r) => {
+        if (r === null)
+          throw new DBObjectNotFound(
+            `The element id_application = '${data.id_application}' could not be found.`
+          );
+        return new Application({
+          ...r.dataValues,
+          state_application: r.ENUM_STATE_APPLICATION.label,
+          datacenter: new Datacenter(r),
+          environment: new Environment(r.ENVIRONMENT),
+        });
+      }
+    );
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -95,12 +97,15 @@ export const list = async function (props = {}) {
     if (data.filter)
       options.include[0].where = { label: { [Op.in]: data.filter } };
     if (data.states)
-      options.include[0].where = { ...options.include[0].where, label: { [Op.in]: data.states } };
+      options.include[0].where = {
+        ...options.include[0].where,
+        label: { [Op.in]: data.states },
+      };
     if (data.id_user) options.where = { id_user: data.id_user };
     if (data.id_datacenter)
       options.where = { id_datacenter: data.id_datacenter };
 
-    return await dbManager.models.APPLICATION.findAll(options).then((r) =>
+    return await dbManager.models.APPLICATION_ORDER.findAll(options).then((r) =>
       r.map(
         (app) =>
           new Application({
@@ -132,7 +137,8 @@ export const renew_expiration = async function (props) {
         id_application: data.id_application,
       },
     };
-    const application = await dbManager.models.APPLICATION.findOne(options);
+    const application =
+      await dbManager.models.APPLICATION_ORDER.findOne(options);
     if (application == null)
       throw new DBObjectNotFound('The application could not be found.');
 
@@ -150,7 +156,7 @@ export const renew_expiration = async function (props) {
       },
     };
 
-    return await dbManager.models.APPLICATION.update(
+    return await dbManager.models.APPLICATION_ORDER.update(
       opt_update,
       opt_condition
     ).then(() => 'The application expiration have been renewed.');
@@ -219,16 +225,26 @@ export const create = async function (props) {
         .utc()
         .format(),
     };
-    return await dbManager.models.APPLICATION.create(options).then((r) => {
-      return new Application({
-        ...data,
-        id_application: r.id_application,
-        datacenter: undefined,
-        state_application: state_application.label,
-        environment: new Environment({
-          id_environment: r.id_environment,
-        }),
-      });
+    const app = await dbManager.models.APPLICATION_ORDER.create(options).then(
+      (r) => {
+        return new Application({
+          ...data,
+          id_application_order: r.id_application_order,
+          datacenter: undefined,
+          state_application: state_application.label,
+          environment: new Environment({
+            id_environment: r.id_environment,
+          }),
+        });
+      }
+    );
+
+    return await dbManager.models.APPLICATION.create({
+      id_application_order: app.id_application_order,
+      id_enum_state_application: state_application.id_enum_state_application,
+    }).then((res) => {
+      app.id_application = res.id_application;
+      return app;
     });
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
@@ -265,9 +281,9 @@ export const is_owner = async function (props) {
             ],
           };
 
-    return await dbManager.models.APPLICATION.findOne({ where: whereOpt }).then(
-      (r) => r != null
-    );
+    return await dbManager.models.APPLICATION_ORDER.findOne({
+      where: whereOpt,
+    }).then((r) => r != null);
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -289,7 +305,7 @@ export const nameExists = async (props) => {
         generated_label: data.name,
       },
     };
-    return await dbManager.models.APPLICATION.findOne(options).then(
+    return await dbManager.models.APPLICATION_ORDER.findOne(options).then(
       (r) => r != null
     );
   } catch (err) {
@@ -311,7 +327,7 @@ export const hashExists = async (props) => {
     const options = {
       where: { hash: data.hash },
     };
-    return await dbManager.models.APPLICATION.findOne(options).then(
+    return await dbManager.models.APPLICATION_ORDER.findOne(options).then(
       (r) => r != null
     );
   } catch (err) {
@@ -348,9 +364,10 @@ export const deletion = async function (props) {
         id_application: data.id_application,
       },
     };
-    return await dbManager.models.APPLICATION.update(opt_update, options).then(
-      (r) => r > 0
-    );
+    return await dbManager.models.APPLICATION_ORDER.update(
+      opt_update,
+      options
+    ).then((r) => r > 0);
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }
@@ -374,7 +391,7 @@ export const download_deletion = async function (props) {
       await dbManager.models.ENUM_STATE_APPLICATION.findOne(options).then(
         (r) => r.id_enum_state_application
       );
-    return await dbManager.models.APPLICATION.update(
+    return await dbManager.models.APPLICATION_ORDER.update(
       { id_enum_state_application },
       { where: { id_application: data.id_application } }
     ).then((r) => r > 0);
@@ -426,7 +443,7 @@ export const update_state = async function (props) {
       opt_condition.where.id_application = data.id_application;
     else opt_condition.where.hash = data.hash;
 
-    return await dbManager.models.APPLICATION.update(
+    return await dbManager.models.APPLICATION_ORDER.update(
       opt_update,
       opt_condition
     ).then((r) => {
@@ -542,7 +559,7 @@ export const getScheduledApplications = async function () {
       },
     },
   };
-  return await dbManager.models.APPLICATION.findAll(options)
+  return await dbManager.models.APPLICATION_ORDER.findAll(options)
     .then((applications) => {
       const result = [];
       for (const application of applications) {
@@ -603,7 +620,7 @@ export const getApplicationToShutdown = async function () {
       },
     },
   };
-  return await dbManager.models.APPLICATION.findAll(options)
+  return await dbManager.models.APPLICATION_ORDER.findAll(options)
     .then((applications) => {
       const result = [];
       for (const application of applications) {
@@ -650,7 +667,7 @@ export const getApplicationToDelete = async function () {
       },
     ],
   };
-  return await dbManager.models.APPLICATION.findAll(options)
+  return await dbManager.models.APPLICATION_ORDER.findAll(options)
     .then((applications) => {
       const result = [];
       for (const application of applications) {

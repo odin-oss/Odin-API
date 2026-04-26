@@ -2,12 +2,12 @@ import z from 'zod';
 import dbManager from '../config/db.config.js';
 import { DBObjectNotFound } from '../utils/errors.util.js';
 import Guard from '../utils/guard.util.js';
-import Agent, { Agent_type } from '../objects/Agent.js';
+import Agent, { Agent_state } from '../objects/Agent.js';
 import { Datacenter } from '../objects/Datacenter.js';
 import {
   AgentPlan,
   AgentTemplate,
-  AgentTemplateCustom
+  AgentTemplateCustom,
 } from '../objects/Agent_plan.js';
 import { list } from './applications.builder.js';
 import { Environment } from '../objects/Environment.js';
@@ -29,7 +29,7 @@ export const create = async function (props) {
     const eat_options = {
       where: { label: 'Available' },
     };
-    const status = await dbManager.models.ENUM_AGENT_TYPE.findOne(
+    const status = await dbManager.models.ENUM_AGENT_STATE.findOne(
       eat_options
     ).then((r) => {
       if (r == null)
@@ -40,14 +40,14 @@ export const create = async function (props) {
     // We prepare the creation of the agent
     const options = {
       ...data,
-      id_enum_agent_type: status.id_enum_agent_type,
+      id_enum_agent_state: status.id_enum_agent_state,
     };
     return await dbManager.models.AGENT.create(options).then((r) => {
       return new Agent({
         ...data,
         id_agent: r.id_agent,
-        status: new Agent_type({
-          id_enum_agent_type: status.id_enum_agent_type,
+        status: new Agent_state({
+          id_enum_agent_state: status.id_enum_agent_state,
           label: status.label,
         }),
       });
@@ -60,18 +60,30 @@ export const create = async function (props) {
 /**
  * Get informations conerning the datacenter linked to the agent and the applications linked to this datacenter.
  * @param {String} uuid uuid of the agent
+ * @param {String} status status of the agent
  * @returns {AgentPlan}
  */
-export const up = async function (uuid) {
+export const up = async function (props = {}) {
   try {
+    const schema = z.object({
+      uuid: z.string().uuid(),
+      status: z.enum(['Alive', 'Reconciliating', 'Available', 'Attributed']),
+    });
+    const data = Guard.validateProps(schema, props);
     const options = {
-      where: { id_agent: uuid },
+      where: { id_agent: data.uuid },
     };
-
     // We find the datacenter linked to the agent
     const datacenter = await dbManager.models.DATACENTER.findOne(options);
     if (datacenter == null)
       throw new DBObjectNotFound('No datacenter attributed to this agent.');
+
+    // Get the id of the new Agent status
+    const agent_status = await dbManager.models.ENUM_AGENT_STATE.findOne({
+      where: { label: data.status },
+    });
+    if (agent_status == null)
+      throw new DBObjectNotFound('The state could not be found.');
 
     // We find the applications linked to this datacenter
     const applications = await list({
@@ -83,7 +95,7 @@ export const up = async function (uuid) {
     ];
 
     // We prepare the first plan of the agent with the applications and the environments linked to the datacenter
-    return new AgentPlan({
+    const plan = new AgentPlan({
       orders: environments.map(
         (env) =>
           new AgentTemplate({
@@ -110,6 +122,10 @@ export const up = async function (uuid) {
           })
       ),
     });
+
+    return await dbManager.models.AGENT.update({
+      id_enum_agent_state: agent_status.id_enum_agent_state,
+    }, options).then(() => plan);
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }

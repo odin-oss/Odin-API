@@ -228,7 +228,7 @@ export const list = async function (
         for (const [index, app] of result.applications.entries()) {
           const rawUserSession = source.SESSION_HAS_USERs[index];
           app.datacenter = new Datacenter(
-            rawUserSession.APPLICATION.DATACENTER
+            rawUserSession.APPLICATION_ORDER.DATACENTER
           );
           app.environment = result.environment;
           result.datacenter = app.datacenter;
@@ -316,7 +316,7 @@ export const get_on_teacher = async function (props) {
       });
       for (const [i, app] of session.applications.entries()) {
         app.datacenter = new Datacenter(
-          result.SESSION.SESSION_HAS_USERs[i].APPLICATION.DATACENTER
+          result.SESSION.SESSION_HAS_USERs[i].APPLICATION_ORDER.DATACENTER
         );
         app.environment = session.environment;
         session.datacenter = app.datacenter;
@@ -377,7 +377,7 @@ export const get_on_administrator = async function (props) {
           (user) => new User(user.dataValues)
         ),
         applications: result.SESSION_HAS_USERs.map(
-          (app) => new Application(app.APPLICATION.dataValues)
+          (app) => new Application(app.APPLICATION_ORDER.dataValues)
         ),
         professors: result.SESSION_HAS_PROFESSORs.map(
           (user) => new User(user.dataValues)
@@ -385,7 +385,7 @@ export const get_on_administrator = async function (props) {
       });
       for (const [i, app] of session.applications.entries()) {
         app.datacenter = new Datacenter(
-          result.SESSION_HAS_USERs[i].APPLICATION.DATACENTER
+          result.SESSION_HAS_USERs[i].APPLICATION_ORDER.DATACENTER
         );
         app.environment = session.environment;
         session.datacenter = app.datacenter;
@@ -438,8 +438,8 @@ export const getSessionToShutdown = async function () {
   return await dbManager.models.SESSION_HAS_USER.findAll(options)
     .then((applications) =>
       applications.map((app) => ({
-        hash: app.APPLICATION.hash,
-        datacenter: app.APPLICATION.DATACENTER,
+        hash: app.APPLICATION_ORDER.hash,
+        datacenter: app.APPLICATION_ORDER.DATACENTER,
       }))
     )
     .catch((err) => {

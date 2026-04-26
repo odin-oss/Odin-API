@@ -121,18 +121,18 @@ BEGIN
         label VARCHAR (50) NOT NULL UNIQUE
     );
 
-    CREATE TABLE IF NOT EXISTS Enum_agent_type (
-        id_enum_agent_type SERIAL PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS Enum_agent_state (
+        id_enum_agent_state SERIAL PRIMARY KEY,
         label VARCHAR(100) NOT NULL UNIQUE
     );
 
     CREATE TABLE IF NOT EXISTS Agent (
         id_agent UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        id_enum_agent_type INTEGER NOT NULL,
+        id_enum_agent_state INTEGER NOT NULL,
         label VARCHAR(255) NOT NULL,
         type VARCHAR(100) NOT NULL DEFAULT 'kubernetes',
 
-        FOREIGN KEY (id_enum_agent_type) REFERENCES Enum_agent_type(id_enum_agent_type)
+        FOREIGN KEY (id_enum_agent_state) REFERENCES Enum_agent_state(id_enum_agent_state)
     );
 
     CREATE TABLE IF NOT EXISTS Datacenter (
@@ -145,8 +145,8 @@ BEGIN
         FOREIGN KEY (id_agent) REFERENCES Agent(id_agent)
     );
 
-    CREATE TABLE IF NOT EXISTS Application (
-        id_application SERIAL PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS Application_order (
+        id_application_order SERIAL PRIMARY KEY,
         custom_label VARCHAR (64) NOT NULL ,
         generated_label VARCHAR (64) UNIQUE NOT NULL,
         creation_date TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -164,6 +164,18 @@ BEGIN
         FOREIGN KEY (id_environment) REFERENCES Environment(id_environment) ON DELETE CASCADE,
         FOREIGN KEY (id_datacenter) REFERENCES Datacenter(id_datacenter) ON DELETE CASCADE,
         FOREIGN KEY (id_enum_state_application) REFERENCES Enum_state_application(id_enum_state_application)
+    );
+
+    CREATE TABLE IF NOT EXISTS Application (
+        id_application SERIAL PRIMARY KEY,
+        last_update TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        creation_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+
+        id_enum_state_application INTEGER NOT NULL,
+        id_application_order INTEGER UNIQUE,
+
+        FOREIGN KEY (id_enum_state_application) REFERENCES Enum_state_application(id_enum_state_application),
+        FOREIGN KEY (id_application_order) REFERENCES Application_order(id_application_order)
     );
 
     CREATE TABLE IF NOT EXISTS Enum_export_state (
@@ -288,4 +300,5 @@ BEGIN
         PRIMARY KEY (id_user, id_session),
         FOREIGN KEY (id_session) REFERENCES Session(id_session) ON DELETE CASCADE
     );
+
 END $$;

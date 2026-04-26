@@ -33,15 +33,21 @@ export const create = async function (
 /**
  * Ping up the agent and send back the plans template to be applied by the agent.
  * @param {String} uuid uuid of the agent
+ * @param {String} status status of the agent
  * @returns {AgentPlan}
  */
-export const up = async function (uuid) {
-  const schema = z.string().uuid();
-  const data = Guard.validateProps(schema, uuid);
-  const plan = await agent_builder.up(data);
+export const up = async function ({ uuid, status }) {
+  const schema = z.object({
+    uuid: z.string().uuid(),
+    status: z.enum(['Alive', 'Reconciliating', 'Available', 'Attributed']),
+  });
+  const data = Guard.validateProps(schema, { uuid, status });
+  const plan = await agent_builder.up({ uuid: data.uuid, status: data.status });
   for (const i in plan.orders) {
     const env = plan.orders[i].template;
-    plan.orders[i].template = await environment_builder.get({id_environment: env.id_environment});
+    plan.orders[i].template = await environment_builder.get({
+      id_environment: env.id_environment,
+    });
   }
   return plan;
 };

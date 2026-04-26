@@ -2,27 +2,27 @@ import z from 'zod';
 import Guard from '../utils/guard.util.js';
 
 /**
- * Agent_type class represents the type of an agent, which can be either 'Available' or 'Attributed'. It includes a unique identifier and a label for the type.
+ * Agent_state class represents the state of an agent, which can be either 'Available' or 'Attributed'. It includes a unique identifier and a label for the state.
  */
-export class Agent_type {
-  #id_enum_agent_type;
+export class Agent_state {
+  #id_enum_agent_state;
   #label;
 
   constructor(props) {
-    const data = Guard.validateProps(Agent_type.schema, props);
-    this.#id_enum_agent_type = data.id_enum_agent_type;
+    const data = Guard.validateProps(Agent_state.schema, props);
+    this.#id_enum_agent_state = data.id_enum_agent_state;
     this.#label = data.label;
   }
 
   // Zod Schema for object validation
   static schema = z.object({
-    id_enum_agent_type: z.number().int().default(null),
+    id_enum_agent_state: z.number().int().default(null),
     label: z.string().min(2).default('N/A'),
   });
 
   toJSON() {
     return {
-      id_enum_agent_type: this.#id_enum_agent_type,
+      id_enum_agent_state: this.#id_enum_agent_state,
       label: this.#label,
     };
   }
@@ -52,7 +52,7 @@ export default class Agent {
     id_agent: z.string().uuid().default(null),
     label: z.string().min(2).default('N/A'),
     type: z.string().min(2).default('N/A'),
-    status: z.instanceof(Agent_type).default(new Agent_type({})),
+    status: z.instanceof(Agent_state).default(new Agent_state({})),
     token: z.string().min(2).default('N/A'),
   });
 

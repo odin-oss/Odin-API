@@ -39,8 +39,10 @@ BEGIN
 
     INSERT INTO Users(lastname, firstname, mail, id_role, id_password) VALUES ('Caelus', 'Odin', 'odin@odin.fr', roleAdmin, pwd1) ON CONFLICT (mail) DO NOTHING;
     
-    INSERT INTO Enum_agent_type(label) VALUES ('Available') ON CONFLICT (label) DO NOTHING;
-    INSERT INTO Enum_agent_type(label) VALUES ('Attributed') ON CONFLICT (label) DO NOTHING;
+    INSERT INTO Enum_agent_state(label) VALUES ('Available') ON CONFLICT (label) DO NOTHING;
+    INSERT INTO Enum_agent_state(label) VALUES ('Attributed') ON CONFLICT (label) DO NOTHING;
+    INSERT INTO Enum_agent_state(label) VALUES ('Alive') ON CONFLICT (label) DO NOTHING;
+    INSERT INTO Enum_agent_state(label) VALUES ('Reconciliating') ON CONFLICT (label) DO NOTHING;
 
     INSERT INTO Random_dictionary(word)
     VALUES ('swamp'),('lord'),('farquaad'),('castle'),('city'),('dragon'),
