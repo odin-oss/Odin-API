@@ -64,9 +64,8 @@ export const up = async function ({ uuid, status, environments }) {
     await application_builder.update_live_state({
       hash: env.hash,
       state_application: env.status,
-      uuid: data.uuid
+      uuid: data.uuid,
     });
-
   }
   return plan;
 };

@@ -97,9 +97,7 @@ export const getUserId = function (
   const data = Guard.validateProps(schema, props);
   const user_token = fns.decode_token({ ...data });
   if (!user_token.id_user)
-    throw new BadContentTokenError(
-      'The token does not have proper attribute.'
-    );
+    throw new BadContentTokenError('The token does not have proper attribute.');
   return user_token.id_user;
 };
 

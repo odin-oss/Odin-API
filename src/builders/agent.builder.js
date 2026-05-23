@@ -123,9 +123,12 @@ export const up = async function (props = {}) {
       ),
     });
 
-    return await dbManager.models.AGENT.update({
-      id_enum_agent_state: agent_status.id_enum_agent_state,
-    }, options).then(() => plan);
+    return await dbManager.models.AGENT.update(
+      {
+        id_enum_agent_state: agent_status.id_enum_agent_state,
+      },
+      options
+    ).then(() => plan);
   } catch (err) {
     throw dbManager.sequelizeErrorManagement(err);
   }

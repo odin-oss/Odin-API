@@ -162,7 +162,7 @@ router.get('/:id_datacenter', isTokenValid, isAdmin, (req, res) => {
  * @swagger
  * /datacenter/:id_datacenter/agent/:id_agent:
  *  post:
- *    description: Add an agent to a datacenter.
+ *    description: Attributes an agent to a datacenter.
  *    security:
  *     - Bearer: []
  *    tags:

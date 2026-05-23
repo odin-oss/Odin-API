@@ -53,22 +53,11 @@ router.post('/register', (req, res) => {
  * @swagger
  * /agent/up:
  *  post:
- *    description: Connect a new Agent into the system.
+ *    description: Gets the status of the agent, updates existing environments and gets the new plan to apply.
  *    tags:
  *    - Agent
  *    produces:
  *    - application/json
- *    parameters:
- *    - name: label
- *      description: The new Agent's label.
- *      in: formData
- *      required : true
- *      type: string
- *    - name: type
- *      description: The new Agent's type. (kubernetes, docker, etc.)
- *      in: formData
- *      required : true
- *      type: string
  *    responses:
  *       200:
  *         description: OK

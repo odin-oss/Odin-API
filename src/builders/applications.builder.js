@@ -491,19 +491,23 @@ export const update_live_state = async function (props) {
     }
 
     // Check if the agent is allowed to update the application
-    const agent_environments = await dbManager.models.DATACENTER.findOne({ 
-      where: { 
-        id_datacenter: application_order.id_datacenter 
-      }, 
-      include: [{ model: dbManager.models.AGENT, where: { id_agent: data.uuid } }] });
-    console.log(agent_environments.id_datacenter)
+    const agent_environments = await dbManager.models.DATACENTER.findOne({
+      where: {
+        id_datacenter: application_order.id_datacenter,
+      },
+      include: [
+        { model: dbManager.models.AGENT, where: { id_agent: data.uuid } },
+      ],
+    });
 
     // Updating the state of the application
     const opt_update = {
       id_enum_state_application: id_enum_state_application,
-      last_update: moment.tz(CONFIG.APP_TZ).utc().format()
+      last_update: moment.tz(CONFIG.APP_TZ).utc().format(),
     };
-    const opt_condition = { where: { id_application_order: application_order.id_application_order } };
+    const opt_condition = {
+      where: { id_application_order: application_order.id_application_order },
+    };
 
     return await dbManager.models.APPLICATION.update(
       opt_update,

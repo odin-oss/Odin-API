@@ -23,9 +23,7 @@ import { id } from 'zod/locales';
  */
 export const list = async function (props = {}) {
   const schema = z.object({
-    ids_environment: z
-      .array(z.coerce.number().int().positive())
-      .default([]),
+    ids_environment: z.array(z.coerce.number().int().positive()).default([]),
   });
   const data = Guard.validateProps(schema, props);
   const queryOptions = {
